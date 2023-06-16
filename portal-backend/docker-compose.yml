@@ -1,0 +1,39 @@
+version: '3.5'
+
+services:
+  backend:
+    container_name: portal-backend
+    image: portal-backend
+    build: .
+    environment:
+      NODE_ENV: development
+    ports:
+      - '4000:4000'
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    depends_on:
+      - db
+    networks:
+      - activity-moves
+
+  db:
+    container_name: portal_dbmodel
+    image: postgres:latest
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/data/postgres
+    environment:
+      - POSTGRESS_DB=activity-steps-db
+      - POSTGRESS_USER=admin
+      - POSTGRESS_PASSWORD=admin
+      - PGDATA=/data/postgres
+
+volumes:
+  db_data: {}
+
+networks:
+  activity-moves:
+    driver: bridge
+    name: activity-moves

@@ -1,0 +1,13 @@
+# This is the docker compose file used for running the backend from a clean docker file
+
+version: '3.5'
+
+services:
+  backend:
+    command: 'npm run start:debug'
+    ports:
+      - '9229:9229'
+    volumes:
+      - ./src:/app/src
+      - ./test:/app/test
+      - /app/node_modules
