@@ -1,0 +1,28 @@
+version: '3'
+
+tasks:
+  build:
+    cmds:
+      - npm ci
+      - npm run build
+
+  start:
+    desc: Runs the environmemt locally
+    cmds:
+      - npm ci
+      - npm start
+
+  start-dev:
+    desc: Runs the environmemt locally
+    cmds:
+      - npm run start:dev
+
+  docker:build:
+    desc: Builds docker container
+    cmds:
+      - docker-compose up -d
+
+  docker:debug:
+    desc: Runs the application in dev-debug mode from previously build docker images
+    cmds:
+      - docker compose -p portal-backend -f docker-compose.yml -f docker-compose.debug.yml up
