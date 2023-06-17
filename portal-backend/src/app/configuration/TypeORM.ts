@@ -20,20 +20,24 @@ export function TypeOrmRootModule(cli = false) {
     imports: [ConfigModule],
     inject: [ConfigService],
     useFactory: (configService: ConfigService<EnvVars>) => {
+      const url = new URL(configService.get<string>('DATABASE_URL'));
       const useSsl = configService.get<string>('DATABASE_USE_SSL') === 'true';
       const environmentOptions = cli ? cliOptions() : serverOptions();
       const migrationPath = resolve(__dirname, '../../../sql/db_migrations/*.{js,ts}');
       const result: TypeOrmModuleOptions = {
         type: 'postgres',
-        username: 'admin',
-        password: 'admin',
+        host: url.hostname,
+        port: +url.port,
+        username: url.username,
+        password: url.password,
         database: 'activity-steps-db',
         entities: [join(__dirname, '**', '*.entity.{ts, js}')],
-        synchronize: true,
+        synchronize: false,
+        logging: true,
         autoLoadEntities: true,
         connectTimeoutMS: 60000,
         migrations: [migrationPath],
-        ssl: useSsl,
+        // ssl: useSsl,
         ...environmentOptions,
       };
       return result;

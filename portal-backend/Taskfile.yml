@@ -1,5 +1,8 @@
 version: '3'
 
+includes:
+  db: sql/Taskfile.yml
+
 tasks:
   build:
     cmds:
@@ -20,7 +23,12 @@ tasks:
   docker:build:
     desc: Builds docker container
     cmds:
-      - docker-compose up -d
+      - docker-compose up --build
+
+  docker:clean:
+    desc: Clean docker container
+    cmds:
+      - docker rm -f $(docker ps -a -q)
 
   docker:debug:
     desc: Runs the application in dev-debug mode from previously build docker images
