@@ -1,0 +1,46 @@
+version: 3
+
+vars:
+  SQL_DIR:
+    sh: '[ -d sql ] && echo "./sql" || echo "."'
+  DATASOURCE: 'sql/data-source.ts'
+
+tasks:
+  --ensure-cli-args:
+    internal: true
+    preconditions:
+      - sh: '[ {{ if .CLI_ARGS }} "true" {{end}} "true" ]'
+        msg: Please enter a name for the file using 'task command -- your-name-in-this-format'"
+
+  migration:create:
+    deps: [--ensure-cli-args]
+    desc: Creates an empty migration script
+    cmds:
+      - npm run typeorm migration:create sql/db_migrations/{{.CLI_ARGS}}
+
+  migration:generate:
+    deps: [--ensure-cli-args]
+    desc: Generates a migration script to update the database to match current state of all entities.
+    cmds:
+      - npm run typeorm migration:generate sql/db_migrations/{{.CLI_ARGS}} -- -d {{ DATASOURCE}}
+
+  migration:up:
+    desc: runs the migration
+    cmds:
+      - npm run typeorm migration:run -- -d {{.DATASOURCE}}
+
+  migration:rollback:
+    desc: Reverts the migration
+    cmds:
+      - npm run typeorm migration:revert -- -d {{.DATASOURCE}}
+
+  migration:schema-drop:
+    desc: drops the database schema
+    cmds:
+      - npm run typeorm schema:drop -- -d {{.DATASOURCE}}
+
+  reset:
+    desc: Resets and repopulates the database.
+    cmds:
+      - task: migration:schema-drop
+      - task: migration:up
