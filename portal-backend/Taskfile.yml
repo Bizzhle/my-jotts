@@ -23,7 +23,7 @@ tasks:
   docker:build:
     desc: Builds docker container
     cmds:
-      - docker-compose up --build
+      - docker compose build
 
   docker:clean:
     desc: Clean docker container

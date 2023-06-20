@@ -10,29 +10,29 @@ export class UserAccount {
   id: number;
 
   @Column('uuid')
-  userId: string;
+  user_id: string;
 
   @Column()
-  emailAddress: string;
+  email_address: string;
 
   @Column()
-  firstName: string;
+  first_name: string;
 
   @Column()
-  lastName: string;
+  last_name: string;
 
   @Column()
   enabled: boolean;
 
   @Column()
-  registrationDate: Date;
+  registration_date: Date;
 
-  @OneToMany(() => Restaurant, (restaurant) => restaurant.userAccount)
+  @OneToMany(() => Restaurant, (restaurant) => restaurant.user_account)
   restaurants: Restaurant[];
 
-  @OneToMany(() => Recipe, (recipe) => recipe.userAccount)
+  @OneToMany(() => Recipe, (recipe) => recipe.user_account)
   recipes: Recipe[];
 
-  @OneToMany(() => Food, (food) => food.userAccount)
+  @OneToMany(() => Food, (food) => food.user_account)
   foods: Food[];
 }

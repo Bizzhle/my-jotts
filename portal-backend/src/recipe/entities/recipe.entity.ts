@@ -19,9 +19,9 @@ export class Recipe {
   comments: string;
 
   @Column()
-  dateCreated: string;
+  date_created: Date;
 
   @ManyToOne(() => UserAccount, (user) => user.recipes)
   @JoinColumn({ name: 'userId' })
-  userAccount: UserAccount;
+  user_account: UserAccount;
 }
