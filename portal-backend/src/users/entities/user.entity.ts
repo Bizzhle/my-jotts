@@ -2,14 +2,16 @@ import { UUID } from 'crypto';
 import { Food } from '../../food/entities/food.entity';
 import { Recipe } from '../../recipe/entities/recipe.entity';
 import { Restaurant } from '../../restaurant/entities/restaurant.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'user_account' })
 export class UserAccount {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('uuid')
+  @Column()
+  @Generated('uuid')
   user_id: string;
 
   @Column()
@@ -25,6 +27,7 @@ export class UserAccount {
   enabled: boolean;
 
   @Column()
+  @Exclude()
   registration_date: Date;
 
   @OneToMany(() => Restaurant, (restaurant) => restaurant.user_account)

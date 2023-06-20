@@ -2,7 +2,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join, resolve } from 'path';
 import { EnvVars } from 'src/envvars';
-import { CustomNamingStrategy } from 'src/typeorm/custom-foreign-keys-naming-strategy';
+import { CustomNamingStrategy } from '../../typeorm/custom-foreign-keys-naming-strategy';
 
 function cliOptions() {
   return {
