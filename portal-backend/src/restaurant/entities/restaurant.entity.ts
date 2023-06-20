@@ -20,21 +20,21 @@ export class Restaurant {
   rating: number;
 
   @Column({ nullable: true })
-  phoneNumber: string;
+  phone_number: string;
 
   @Column()
-  firstVisit: Date;
+  first_visit: Date;
 
   @Column({ nullable: true })
-  lastVisit: Date;
+  last_visit: Date;
 
   @Column()
-  dateCreated: Date;
+  date_created: Date;
 
   @OneToMany(() => Food, (food) => food.restaurant)
   foods: Food;
 
   @ManyToOne(() => UserAccount, (user) => user.restaurants)
   @JoinColumn({ name: 'userId' })
-  userAccount: UserAccount;
+  user_account: UserAccount;
 }

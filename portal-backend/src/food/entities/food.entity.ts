@@ -20,11 +20,11 @@ export class Food {
   comments: string;
 
   @Column()
-  dateCreated: Date;
+  date_created: Date;
 
   @ManyToOne(() => UserAccount, (user) => user.foods)
   @JoinColumn({ name: 'userId' })
-  userAccount: UserAccount;
+  user_account: UserAccount;
 
   @ManyToOne(() => Restaurant, (restaurant) => restaurant.foods)
   @JoinColumn({ name: 'restaurantId' })
