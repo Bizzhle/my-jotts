@@ -2,6 +2,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join, resolve } from 'path';
 import { EnvVars } from 'src/envvars';
+import { CustomNamingStrategy } from 'src/typeorm/custom-foreign-keys-naming-strategy';
 
 function cliOptions() {
   return {
@@ -36,6 +37,7 @@ export function TypeOrmRootModule(cli = false) {
         logging: true,
         autoLoadEntities: true,
         connectTimeoutMS: 60000,
+        namingStrategy: new CustomNamingStrategy(),
         migrations: [migrationPath],
         // ssl: useSsl,
         ...environmentOptions,
