@@ -9,7 +9,7 @@ tasks:
   --ensure-cli-args:
     internal: true
     preconditions:
-      - sh: '[ {{ if .CLI_ARGS }} "true" {{end}} "true" ]'
+      - sh: '[ {{ if .CLI_ARGS }} "true" {{end}} = "true" ]'
         msg: Please enter a name for the file using 'task command -- your-name-in-this-format'"
 
   migration:create:
@@ -22,7 +22,7 @@ tasks:
     deps: [--ensure-cli-args]
     desc: Generates a migration script to update the database to match current state of all entities.
     cmds:
-      - npm run typeorm migration:generate sql/db_migrations/{{.CLI_ARGS}} -- -d {{ DATASOURCE}}
+      - npm run typeorm migration:generate sql/db_migrations/{{.CLI_ARGS}} -- -d {{.DATASOURCE}}
 
   migration:up:
     desc: runs the migration
