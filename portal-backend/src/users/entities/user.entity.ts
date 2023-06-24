@@ -1,11 +1,11 @@
-import { UUID } from 'crypto';
 import { Food } from '../../food/entities/food.entity';
 import { Recipe } from '../../recipe/entities/recipe.entity';
 import { Restaurant } from '../../restaurant/entities/restaurant.entity';
-import { Column, Entity, Generated, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'user_account' })
+@Unique(['email_address'])
 export class UserAccount {
   @PrimaryGeneratedColumn()
   id: number;
@@ -16,6 +16,10 @@ export class UserAccount {
 
   @Column()
   email_address: string;
+
+  @Column()
+  @Exclude()
+  password: string;
 
   @Column()
   first_name: string;

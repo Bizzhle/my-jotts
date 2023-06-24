@@ -8,6 +8,7 @@ import {
   ApiInternalServerErrorResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { UserAccount } from '../entities/user.entity';
 
 @ApiTags('Users')
 @Controller('users')
@@ -18,7 +19,7 @@ export class UsersController {
   @ApiCreatedResponse({ description: 'User account registered' })
   @ApiBadGatewayResponse({ description: 'Cannot register user' })
   @ApiInternalServerErrorResponse({ description: 'Server error' })
-  public async registerUserAccount(@Body() dto: CreateUserDto) {
+  public async registerUserAccount(@Body() dto: CreateUserDto): Promise<UserAccount> {
     return await this.usersService.registerUserAccount(dto);
   }
   // create(@Payload() createUserDto: CreateUserDto) {
