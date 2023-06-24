@@ -8,17 +8,24 @@ export class UserAccountRepository extends Repository<UserAccount> {
   constructor(ds: DataSource) {
     super(UserAccount, ds.manager);
   }
-  public async createUserAccount(dto: CreateUserDto): Promise<UserAccount> {
+  public async createUserAccount(dto: CreateUserDto, password: string): Promise<UserAccount> {
     const userAccount = this.create({
       first_name: dto.firstName,
       last_name: dto.lastName,
       email_address: dto.emailAddress,
       enabled: true,
       registration_date: new Date(),
+      password: password,
     });
 
     await this.save<UserAccount>(userAccount);
 
     return userAccount;
+  }
+
+  public async findUserByEmail(email_address: string): Promise<UserAccount | null> {
+    return await this.createQueryBuilder()
+      .where('LOWER(userEmail) = LOWER(:email_address)', { email_address })
+      .getOne();
   }
 }

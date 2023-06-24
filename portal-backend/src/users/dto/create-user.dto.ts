@@ -18,7 +18,7 @@ export class CreateUserDto {
   lastName?: string;
 
   @ApiProperty({ description: 'password of user', example: 'Pass12345' })
-  @Validate(UserPasswordValidator)
+  // @Validate(UserPasswordValidator)
   @IsNotEmpty()
-  password?: string;
+  password: string;
 }
