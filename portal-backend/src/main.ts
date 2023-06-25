@@ -8,6 +8,7 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
+  app.useLogger(false);
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   const config = new DocumentBuilder().setTitle('Portal Backend Api').setVersion('1.0').build();
   const document = SwaggerModule.createDocument(app, config);

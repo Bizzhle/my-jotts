@@ -7,7 +7,7 @@ import { UsersModule } from 'src/users/users.module';
 import { FoodModule } from 'src/food/food.module';
 import { RestaurantModule } from 'src/restaurant/restaurant.module';
 import { RecipeModule } from 'src/recipe/recipe.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [

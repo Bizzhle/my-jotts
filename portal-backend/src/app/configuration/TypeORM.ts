@@ -34,7 +34,7 @@ export function TypeOrmRootModule(cli = false) {
         database: 'activity-steps-db',
         entities: [join(__dirname, '**', '*.entity.{ts, js}')],
         synchronize: false,
-        logging: true,
+        logging: false,
         autoLoadEntities: true,
         connectTimeoutMS: 60000,
         namingStrategy: new CustomNamingStrategy(),
