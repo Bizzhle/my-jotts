@@ -8,7 +8,7 @@ import {
   Request,
   Get,
 } from '@nestjs/common';
-import { UsersService } from '../services/users.service';
+import { UsersService } from '../services/user-service/users.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import {
@@ -19,7 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UserAccount } from '../entities/user.entity';
-import { AuthService } from '../../users/services/auth.services';
+import { AuthService } from '../services/user-auth/auth.services';
 import { LocalAuthGuard } from '../../users/guards/local.auth.guard';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
 
