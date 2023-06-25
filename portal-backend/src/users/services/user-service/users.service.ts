@@ -1,10 +1,10 @@
 import { BadGatewayException, Injectable } from '@nestjs/common';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
-import { UserAccountRepository } from '../repositories/user-account.repository';
+import { CreateUserDto } from '../../dto/create-user.dto';
+import { UpdateUserDto } from '../../dto/update-user.dto';
+import { UserAccountRepository } from '../../repositories/user-account.repository';
 import { DataSource } from 'typeorm';
 import { WithTransactionService } from 'src/app/services/with-transaction.services';
-import { PasswordService } from './password.service';
+import { PasswordService } from '../user-password/password.service';
 
 @Injectable()
 export class UsersService extends WithTransactionService {
