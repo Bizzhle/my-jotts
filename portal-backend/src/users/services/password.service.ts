@@ -10,7 +10,7 @@ export class PasswordService {
   }
 
   public async comparePassword(pass: string, hash: string) {
-    const isMactchedPassword = await bcrypt.compare(pass, hash);
+    const isMactchedPassword = await bcrypt.compareSync(pass, hash);
     return isMactchedPassword;
   }
 }

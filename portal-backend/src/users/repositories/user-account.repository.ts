@@ -24,8 +24,10 @@ export class UserAccountRepository extends Repository<UserAccount> {
   }
 
   public async findUserByEmail(email_address: string): Promise<UserAccount | null> {
-    return await this.createQueryBuilder()
-      .where('LOWER(userEmail) = LOWER(:email_address)', { email_address })
+    return await this.createQueryBuilder('user_account')
+      .where('LOWER(user_account.email_address) = LOWER(:email_address)', {
+        email_address: email_address,
+      })
       .getOne();
   }
 }
