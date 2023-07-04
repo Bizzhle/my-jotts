@@ -22,6 +22,8 @@ import { UserAccount } from '../entities/user.entity';
 import { AuthService } from '../services/user-auth/auth.services';
 import { LocalAuthGuard } from '../../users/guards/local.auth.guard';
 import { JwtAuthGuard } from '../guards/jwt.auth.guard';
+import { logoutUserDto } from '../dto/logout-user.dto';
+import { PostLoginResponseDTO } from '../dto/post-login-response.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -42,38 +44,30 @@ export class UsersController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async handleLogin(@Request() req): Promise<any> {
-    // return req.user;
-    return this.authService.login(req.user);
+  async handleLogin(@Request() req): Promise<PostLoginResponseDTO> {
+    return await this.authService.login(req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  async getProfile(@Request() req) {
     return req.user;
   }
 
-  // create(@Payload() createUserDto: CreateUserDto) {
-  //   return this.usersService.create(createUserDto);
-  // }
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getUser(@Request() req): Promise<UserAccount> {
+    return await this.usersService.getUserByEmail(req.user.emailAddress);
+  }
 
-  // @MessagePattern('findAllUsers')
-  // findAll() {
-  //   return this.usersService.findAll();
-  // }
+  @Post('refresh')
+  async refreshTokens(@Request() req) {
+    return this.authService.refreshToken(req.body.refreshToken);
+  }
 
-  // @MessagePattern('findOneUser')
-  // findOne(@Payload() id: number) {
-  //   return this.usersService.findOne(id);
-  // }
-
-  // @MessagePattern('updateUser')
-  // update(@Payload() updateUserDto: UpdateUserDto) {
-  //   return this.usersService.update(updateUserDto.id, updateUserDto);
-  // }
-
-  // @MessagePattern('removeUser')
-  // remove(@Payload() id: number) {
-  //   return this.usersService.remove(id);
-  // }
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logoutUser(@Body() dto: logoutUserDto) {
+    return this.authService.logoutUser(dto.refreshToken);
+  }
 }
