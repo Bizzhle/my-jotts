@@ -1,10 +1,11 @@
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from '../../dto/create-user.dto';
 import { UpdateUserDto } from '../../dto/update-user.dto';
-import { UserAccountRepository } from '../../repositories/user-account.repository';
+import { UserAccountRepository, UserCondition } from '../../repositories/user-account.repository';
 import { DataSource } from 'typeorm';
 import { WithTransactionService } from 'src/app/services/with-transaction.services';
 import { PasswordService } from '../user-password/password.service';
+import { UserAccount } from '../../entities/user.entity';
 
 @Injectable()
 export class UsersService extends WithTransactionService {
@@ -31,5 +32,18 @@ export class UsersService extends WithTransactionService {
     } finally {
       await this.closeTransaction(transaction);
     }
+  }
+
+  public async getUserByEmail(emailAddress): Promise<UserAccount | null> {
+    return await this.getUserDetails(emailAddress);
+  }
+
+  private async getUserDetails(userCondition: UserCondition): Promise<UserAccount> {
+    const userAccount = await this.userAccountRepository.getUserDetail(userCondition);
+
+    if (!userAccount) {
+      throw new NotFoundException('User not found');
+    }
+    return userAccount;
   }
 }

@@ -12,9 +12,16 @@ import { jwtConfig } from 'src/auth/jwt.config';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthService } from './services/user-auth/auth.services';
+import { UserSessionService } from './services/user-session/user-session.service';
+import { UserSessionRepository } from './repositories/user-session.repository';
+import { UserSession } from './entities/usersession.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserAccount]), PassportModule, JwtModule.register(jwtConfig)],
+  imports: [
+    TypeOrmModule.forFeature([UserAccount, UserSession]),
+    PassportModule,
+    JwtModule.register(jwtConfig),
+  ],
   controllers: [UsersController],
   providers: [
     UsersService,
@@ -23,6 +30,8 @@ import { AuthService } from './services/user-auth/auth.services';
     PasswordService,
     LocalStrategy,
     JwtStrategy,
+    UserSessionService,
+    UserSessionRepository,
   ],
   exports: [UsersService, PasswordService],
 })
