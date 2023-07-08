@@ -12,26 +12,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(err, user, info) {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
-      throw err || new UnauthorizedException(' cant');
+      throw err || new UnauthorizedException('Cannot log user in');
     }
     return user;
   }
-  // add custom authentication logic here
-  // canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-  //   return super.canActivate(context);
-  //   // const request = context.switchToHttp().getRequest();
-  //   // return request.isAuthenticated();
-  // }
-  // handleRequest<TUser = any>(
-  //   err: any,
-  //   user: any,
-  //   info: any,
-  //   context: ExecutionContext,
-  //   status?: any,
-  // ): TUser {
-  //   if (err || !user) {
-  //     throw err || new UnauthorizedException();
-  //   }
-  //   return user;
-  // }
 }

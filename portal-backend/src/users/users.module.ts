@@ -1,20 +1,30 @@
 import { Module } from '@nestjs/common';
-import { UsersService } from './services/user-service/users.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './controllers/users.controller';
 import { UserAccount } from './entities/user.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserAccountRepository } from './repositories/user-account.repository';
 import { PasswordService } from './services/user-password/password.service';
+import { UsersService } from './services/user-service/users.service';
 
-import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { jwtConfig } from 'src/auth/jwt.config';
-import { LocalStrategy } from './strategies/local.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { AuthService } from './services/user-auth/auth.services';
-import { UserSessionService } from './services/user-session/user-session.service';
-import { UserSessionRepository } from './repositories/user-session.repository';
+import { UserRefreshController } from './controllers/refresh.controller';
+import { UserDetailContoller } from './controllers/user-detail.controller';
+import { UserLoginController } from './controllers/users-login.controller';
+import { UsersRegistrationController } from './controllers/users-registration.controller';
 import { UserSession } from './entities/usersession.entity';
+import { UserSessionRepository } from './repositories/user-session.repository';
+import { JwtSigningService } from './services/jwt-signing.services';
+import { AuthService } from './services/user-auth/auth.services';
+import { UserDetailService } from './services/user-service/user-details.service';
+import { UserLoginService } from './services/user-service/user-login.service';
+import { UserLogoutService } from './services/user-service/user-logout.service';
+import { UserRegistrationService } from './services/user-service/user-registration.service';
+import { UserSessionRefreshService } from './services/user-session/user-session-refresh.service';
+import { UserSessionService } from './services/user-session/user-session.service';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
 
 @Module({
   imports: [
@@ -22,7 +32,13 @@ import { UserSession } from './entities/usersession.entity';
     PassportModule,
     JwtModule.register(jwtConfig),
   ],
-  controllers: [UsersController],
+  controllers: [
+    UsersController,
+    UsersRegistrationController,
+    UserRefreshController,
+    UserLoginController,
+    UserDetailContoller,
+  ],
   providers: [
     UsersService,
     AuthService,
@@ -32,7 +48,13 @@ import { UserSession } from './entities/usersession.entity';
     JwtStrategy,
     UserSessionService,
     UserSessionRepository,
+    UserLoginService,
+    JwtSigningService,
+    UserRegistrationService,
+    UserLogoutService,
+    UserSessionRefreshService,
+    UserDetailService,
   ],
-  exports: [UsersService, PasswordService],
+  exports: [UsersService, PasswordService, UserRegistrationService],
 })
 export class UsersModule {}
