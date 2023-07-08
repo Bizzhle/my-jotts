@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { generateRandomId } from 'src/app/helpers/id';
+import { addHoursToDate } from '../../../app/helpers/date';
+import { UserSession } from '../../../users/entities/usersession.entity';
 import { UserSessionRepository } from '../../../users/repositories/user-session.repository';
 import { calSessionExpirationTime } from './session-expiration-time-utils';
-import { UserSession } from '../../../users/entities/usersession.entity';
-import { randomUUID } from 'crypto';
-import { addHoursToDate } from '../../../app/helpers/date';
-import { generateRandomId } from 'src/app/helpers/id';
-import { serialize } from 'v8';
 
 export interface Token {
   accessToken: string;
@@ -53,6 +51,7 @@ export class UserSessionService {
       session.session_end = new Date();
       (session.access_token = null),
         (session.refresh_token = null),
+        (session.hashed_at = null),
         await this.userSessionRepository.save(session);
     }
   }

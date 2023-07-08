@@ -3,4 +3,6 @@ export class InitialLoginResponseDTO {
   userSessionId: string;
   emailAddress: string;
   userId: string;
+  firstName: string;
+  lastName: string;
 }
