@@ -1,38 +1,49 @@
-import { UUID } from 'crypto';
 import { Food } from '../../food/entities/food.entity';
 import { Recipe } from '../../recipe/entities/recipe.entity';
 import { Restaurant } from '../../restaurant/entities/restaurant.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Exclude, Expose } from 'class-transformer';
 
 @Entity({ name: 'user_account' })
+@Unique(['email_address'])
 export class UserAccount {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('uuid')
-  userId: string;
+  @Column()
+  @Generated('uuid')
+  @Expose({ name: 'userId' })
+  user_id: string;
 
   @Column()
-  emailAddress: string;
+  @Expose({ name: 'emailAddress' })
+  email_address: string;
 
   @Column()
-  firstName: string;
+  @Exclude()
+  password: string;
 
   @Column()
-  lastName: string;
+  @Expose({ name: 'firstName' })
+  first_name: string;
+
+  @Column()
+  @Expose({ name: 'lastName' })
+  last_name: string;
 
   @Column()
   enabled: boolean;
 
   @Column()
-  registrationDate: Date;
+  @Exclude()
+  registration_date: Date;
 
-  @OneToMany(() => Restaurant, (restaurant) => restaurant.userAccount)
+  @OneToMany(() => Restaurant, (restaurant) => restaurant.user_account)
   restaurants: Restaurant[];
 
-  @OneToMany(() => Recipe, (recipe) => recipe.userAccount)
+  @OneToMany(() => Recipe, (recipe) => recipe.user_account)
   recipes: Recipe[];
 
-  @OneToMany(() => Food, (food) => food.userAccount)
+  @OneToMany(() => Food, (food) => food.user_account)
   foods: Food[];
 }
