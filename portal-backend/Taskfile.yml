@@ -23,7 +23,7 @@ tasks:
   docker:build:
     desc: Builds docker container
     cmds:
-      - docker-compose up --build
+      - docker compose build
 
   docker:clean:
     desc: Clean docker container
@@ -34,3 +34,8 @@ tasks:
     desc: Runs the application in dev-debug mode from previously build docker images
     cmds:
       - docker compose -p portal-backend -f docker-compose.yml -f docker-compose.debug.yml up
+
+  docker:servicesd:
+    desc: starts all docker containers as background services to enable local dev
+    cmds:
+      - docker-compose -p portal-backend up -d db
