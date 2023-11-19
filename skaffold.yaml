@@ -1,0 +1,20 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+metadata:
+  name: activity-steps-skaffold
+build:
+  local:
+    push: false
+  artifacts:
+    - image: bizzhle/portal-backend
+      context: portal-backend
+      sync:
+        manual:
+          - dest: .
+            src: "src/**/*.ts"
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - k8s/ingress.yaml
+    - k8s/portal-backend-deployment.yaml

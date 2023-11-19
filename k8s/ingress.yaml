@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-service
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: api.activity.local
+    http:
+      paths:
+      - path: /api/portal-backend/
+        pathType: Prefix
+        backend:
+          service:
+            name: portal-backend-service
+            port: 
+              number: 4000
