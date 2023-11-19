@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: portal-backend
+  template:
+    metadata:
+      labels:
+        app: portal-backend
+    spec:
+      containers:
+        - name: portal-backend
+          image: bizzhle/portal-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portal-backend-service
+spec:
+  selector:
+    app: portal-backend
+  ports:
+    - name: portal-backend
+      protocol: TCP
+      port: 4000
+      targetPort: 4000
