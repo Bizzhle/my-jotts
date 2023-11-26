@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    app: activitypostgresdb
+  template:
+    metadata:
+      labels:
+        app: activitypostgresdb
+    spec:
+      containers:
+        - name: activitypostgresdb
+          image: postgres:latest
+          volumeMounts:
+            # The volume mounts  for the container
+            - mountPath: /var/lib/postgresql/data
+              name: db-data
+          env:
+            - name: POSTGRES_DB
+              value: activitydb
+            - name: POSTGRES_USER
+              value: bizzhle
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: activity-secret
+                  key: password
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            # reference the PersistentVolumeClaim
+            claimName: pgdb-persistent-volume-claim
+
+---
+apiVersion: v1
+# Kind for service
+kind: Service
+metadata:
+  # Name your service
+  name: activitypostgresdb
+spec:
+  # Choose how to expose your service
+  type: ClusterIP
+  ports:
+    # The port number to expose the service
+    - port: 5432
+      targetPort: 5432
+  # Pod to route service traffic
+  selector:
+    app: activitypostgresdb
