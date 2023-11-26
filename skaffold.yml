@@ -6,8 +6,8 @@ build:
   local:
     push: false
   artifacts:
-    - image: bizzhle/portal-backend
-      context: portal-backend
+    - image: bizzhle/strapi-backend
+      context: strapi-backend
       sync:
         manual:
           - dest: .
@@ -16,5 +16,5 @@ build:
         dockerfile: Dockerfile
 manifests:
   rawYaml:
-    - k8s/ingress.yaml
-    - k8s/portal-backend-deployment.yaml
+    - ./k8s/ingress.yaml
+    - ./k8s/strapi-deployment.yaml
