@@ -5,13 +5,27 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: api.activity.local
-    http:
-      paths:
-      - path: /api/portal-backend/
-        pathType: Prefix
-        backend:
-          service:
-            name: portal-backend-service
-            port: 
-              number: 4000
+    - host: api.activity.local
+      http:
+        paths:
+          - path: /postgres
+            pathType: Prefix
+            backend:
+              service:
+                name: postgres-service
+                port:
+                  number: 5432
+          - path: /admin/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: strapi-service
+                port:
+                  number: 1337
+          - path: /?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: strapi-service
+                port:
+                  number: 1337
