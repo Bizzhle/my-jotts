@@ -3,6 +3,8 @@ version: 3
 vars:
   SQL_DIR:
     sh: '[ -d sql ] && echo "./sql" || echo "."'
+  # TICKET_NO:
+  #   sh: git branch --show-current | awk -F '/' '{ print $2 }' | awk -F '_' '{ print $1"_"$2 }'
   DATASOURCE: 'sql/data-source.ts'
 
 tasks:
@@ -18,6 +20,14 @@ tasks:
     cmds:
       - npm run typeorm migration:create sql/db_migrations/{{.CLI_ARGS}}
 
+  migration:dev-create:
+    deps: [--ensure-cli-args]
+    desc: Creates empty migrations script as dev-migration (for sample data)
+    cmds:
+      - npm run typeorm migration:create sql/db_migrations/dev/{{.CLI_ARGS}}
+      # - sed -i "1 i\import {DevMigration} from 'src/typeorm/migrations'" "$(ls -t sql/db_migrations/dev | head -n 1)"
+      # - sed -i "s/export class/@DevMigration\nexport class/" "{{.SQL_DIR}}/db_migrations/{{.CLI_ARGS}} -- -d {{.DATASOURCE}}"
+
   migration:generate:
     deps: [--ensure-cli-args]
     desc: Generates a migration script to update the database to match current state of all entities.
@@ -29,10 +39,24 @@ tasks:
     cmds:
       - npm run typeorm migration:run -- -d {{.DATASOURCE}}
 
+  migration:dev-up:
+    desc: runs the migration for dev
+    cmds:
+      - npm run typeorm migration:run -- -d {{.DATASOURCE}}
+    env:
+      DATABASE_RUN_DEV_MIGRATIONS: true
+
   migration:rollback:
     desc: Reverts the migration
     cmds:
       - npm run typeorm migration:revert -- -d {{.DATASOURCE}}
+
+  migration:dev-rollback:
+    desc: Reverts the dev migration
+    cmds:
+      - npm run typeorm migration:revert -- -d {{.DATASOURCE}}
+    env:
+      DATABASE_RUN_DEV_MIGRATIONS: true
 
   migration:schema-drop:
     desc: drops the database schema

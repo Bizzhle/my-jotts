@@ -5,11 +5,17 @@ LABEL description="Production image for portal backend"
 
 WORKDIR /usr/src/app
 
+
 COPY package*.json ./
 
 RUN npm install --only=development
 
 COPY . .
+
+# Add the PostgreSQL setup script
+# ADD setup_database.sh /usr/src/app/setup_database.sh
+# RUN chmod +x /usr/src/app//setup_database.sh
+# RUN ./setup_database.sh
 
 RUN npm run build
 
@@ -30,4 +36,3 @@ COPY . .
 COPY --from=development /usr/src/app/dist ./dist
 
 CMD ["node", "dist/main"]
-
