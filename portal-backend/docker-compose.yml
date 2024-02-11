@@ -7,7 +7,7 @@ services:
     build: .
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgres://admin:admin@db:5432/activity-steps-db
+      DATABASE_URL: postgres://admin:admin@db:5432/activitystepsdb
     ports:
       - '4000:4000'
     env_file:
@@ -22,7 +22,7 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_DB: activity-steps-db
+      POSTGRES_DB: activitystepsdb
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_HOST: localhost
