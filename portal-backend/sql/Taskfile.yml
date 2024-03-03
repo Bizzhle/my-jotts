@@ -25,8 +25,8 @@ tasks:
     desc: Creates empty migrations script as dev-migration (for sample data)
     cmds:
       - npm run typeorm migration:create sql/db_migrations/dev/{{.CLI_ARGS}}
-      # - sed -i "1 i\import {DevMigration} from 'src/typeorm/migrations'" "$(ls -t sql/db_migrations/dev | head -n 1)"
-      # - sed -i "s/export class/@DevMigration\nexport class/" "{{.SQL_DIR}}/db_migrations/{{.CLI_ARGS}} -- -d {{.DATASOURCE}}"
+      - sed -i "1 i\import {DevMigration} from 'src/typeorm/migrations'" "$(ls -t sql/db_migrations/dev | head -n 1)"
+      - sed -i "s/export class/@DevMigration\nexport class/" "{{.SQL_DIR}}/db_migrations/{{.CLI_ARGS}} -- -d {{.DATASOURCE}}"
 
   migration:generate:
     deps: [--ensure-cli-args]
