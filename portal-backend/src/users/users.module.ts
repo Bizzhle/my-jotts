@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './controllers/users.controller';
-import { UserAccount } from './entities/user.entity';
+import { UserAccount } from './entities/user-account.entity';
 import { UserAccountRepository } from './repositories/user-account.repository';
 import { PasswordService } from './services/user-password/password.service';
 import { UsersService } from './services/user-service/users.service';
@@ -14,6 +14,7 @@ import { UserDetailContoller } from './controllers/user-detail.controller';
 import { UserLoginController } from './controllers/users-login.controller';
 import { UsersRegistrationController } from './controllers/users-registration.controller';
 import { UserSession } from './entities/usersession.entity';
+import { JwtAuthGuard } from './guards/jwt.auth.guard';
 import { UserSessionRepository } from './repositories/user-session.repository';
 import { JwtSigningService } from './services/jwt-signing.services';
 import { AuthService } from './services/user-auth/auth.services';
@@ -25,10 +26,12 @@ import { UserSessionRefreshService } from './services/user-session/user-session-
 import { UserSessionService } from './services/user-session/user-session.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { Activity } from '../activity/entities/activity.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserAccount, UserSession]),
+    TypeOrmModule.forFeature([UserAccount, UserSession, Activity, Category]),
     PassportModule,
     JwtModule.register(jwtConfig),
   ],
@@ -54,7 +57,14 @@ import { LocalStrategy } from './strategies/local.strategy';
     UserLogoutService,
     UserSessionRefreshService,
     UserDetailService,
+    JwtAuthGuard,
   ],
-  exports: [UsersService, PasswordService, UserRegistrationService],
+  exports: [
+    UsersService,
+    PasswordService,
+    UserRegistrationService,
+    JwtAuthGuard,
+    UserAccountRepository,
+  ],
 })
 export class UsersModule {}
