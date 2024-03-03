@@ -42,7 +42,7 @@ function getConfigValue<T>(
   const value: unknown =
     defaultValue === undefined ? configService.getOrThrow(key) : configService.get(key);
 
-  if (!value) {
+  if (value === undefined) {
     return defaultValue as T;
   } else if (cast) {
     return cast(value as string);
