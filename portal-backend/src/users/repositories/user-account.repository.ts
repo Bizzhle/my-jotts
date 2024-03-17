@@ -1,11 +1,10 @@
-import { DataSource, FindOperator, Raw, Repository } from 'typeorm';
-import { UserAccount } from '../entities/user.entity';
-import { CreateUserDto } from '../dto/create-user.dto';
 import { Injectable } from '@nestjs/common';
+import { DataSource, FindOperator, Raw, Repository } from 'typeorm';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UserAccount } from '../entities/user-account.entity';
 
 export interface UserCondition {
   id?: UserAccount['id'];
-  user_id?: UserAccount['user_id'];
   email_address?: UserAccount['email_address'];
 }
 @Injectable()
@@ -15,12 +14,12 @@ export class UserAccountRepository extends Repository<UserAccount> {
   }
   public async createUserAccount(dto: CreateUserDto, password: string): Promise<UserAccount> {
     const userAccount = this.create({
+      email_address: dto.emailAddress,
+      password: password,
       first_name: dto.firstName,
       last_name: dto.lastName,
-      email_address: dto.emailAddress,
       enabled: true,
       registration_date: new Date(),
-      password: password,
     });
 
     await this.save<UserAccount>(userAccount);

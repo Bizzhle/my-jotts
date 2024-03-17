@@ -25,12 +25,11 @@ export class AuthService {
     await this.userSessionService.createSession(userSessionId);
 
     if (user && decryptedPassword) {
-      const { id, user_id, email_address, first_name, last_name } = user;
+      const { id, email_address, first_name, last_name } = user;
 
       let initialLoginResponse: InitialLoginResponseDTO = {
         id,
         userSessionId,
-        userId: user_id,
         emailAddress: email_address,
         firstName: first_name,
         lastName: last_name,

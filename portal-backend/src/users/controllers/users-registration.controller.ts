@@ -1,13 +1,13 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { UserRegistrationService } from '../services/user-service/user-registration.service';
-import { CreateUserDto } from '../dto/create-user.dto';
 import {
   ApiBadGatewayResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserAccount } from '../entities/user.entity';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UserAccount } from '../entities/user-account.entity';
+import { UserRegistrationService } from '../services/user-service/user-registration.service';
 
 @ApiTags('Users')
 @Controller('users')
