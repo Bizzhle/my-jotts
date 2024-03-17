@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { WithTransactionService } from 'src/app/services/with-transaction.services';
-import { UserAccount } from '../../entities/user.entity';
+import { UserAccount } from '../../entities/user-account.entity';
 import { UserAccountRepository, UserCondition } from '../../repositories/user-account.repository';
 
 @Injectable()

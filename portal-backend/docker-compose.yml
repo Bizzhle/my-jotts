@@ -7,9 +7,11 @@ services:
     build: .
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgres://admin:admin@db:5432/activity-steps-db
+      DATABASE_URL: postgres://admin:admin@db:5432/activitystepsdb
     ports:
       - '4000:4000'
+    env_file:
+      - .env
     depends_on:
       - db
     # networks:
@@ -19,18 +21,27 @@ services:
     container_name: portal_dbmodel
     image: postgres
     restart: always
+    environment:
+      POSTGRES_DB: activitystepsdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_HOST: localhost
+      PG_DATA: /var/lib/postgresql/data
     ports:
       - '5432:5432'
     volumes:
-      - db_data:/data/postgres
-    environment:
-      - POSTGRES_DB=activity-steps-db
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
-      - PGDATA=/data/postgres
+      - pgdata:/var/lib/postgresql/data
+    # networks:
+    #   - activity-moves
+
+  adminer:
+    container_name: activity-adminer
+    image: adminer
+    ports:
+      - '8080:8080'
 
 volumes:
-  db_data: {}
+  pgdata: {}
 
 networks:
   activity-moves:

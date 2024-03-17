@@ -3,13 +3,13 @@ import { JwtService } from '@nestjs/jwt';
 
 export interface JwtPayload {
   iss?: string;
-  sub?: string;
+  sub: string;
   exp?: number;
-  iat?: number;
-  jti?: string;
-  sid?: string;
-  given_name?: string;
-  family_name?: string;
+  iat: number;
+  jti: string;
+  sid: string;
+  given_name: string;
+  family_name: string;
 }
 
 @Injectable()
