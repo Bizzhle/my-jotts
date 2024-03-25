@@ -1,12 +1,12 @@
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateActivityDto {
-  @IsNotEmpty()
   @IsString()
-  title: string;
+  activityTitle: string;
 
   @IsNotEmpty()
-  categoryId: number;
+  @IsString()
+  categoryName: string;
 
   @IsInt()
   @IsOptional()
@@ -21,12 +21,9 @@ export class CreateActivityDto {
 
   @IsString()
   @IsOptional()
-  content?: string;
+  description?: string;
 
   @IsString()
   @IsOptional()
   image?: string;
-
-  @IsInt()
-  userId: number;
 }
