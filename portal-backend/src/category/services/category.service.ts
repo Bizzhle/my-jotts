@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ActivityRepository } from '../../activity/repositories/activity.repository';
-import { CustomLogger } from '../../logs/services/customLogger';
+import { CustomLogger } from '../../logger/services/customLogger';
 import { UsersService } from '../../users/services/user-service/users.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
@@ -13,18 +13,25 @@ export class CategoryService {
     private readonly categoryRepository: CategoryRepository,
     private readonly activityRepository: ActivityRepository,
     private readonly usersService: UsersService,
-    private customLogger: CustomLogger,
-  ) {
-    this.customLogger.setContext('CategoryService');
-  }
+    private readonly customLogger: CustomLogger,
+  ) {}
 
   public async createCategory(dto: CreateCategoryDto, emailAddress: string): Promise<Category> {
     const user = await this.usersService.getUserByEmail(emailAddress);
 
     if (!user) {
-      this.customLogger.warn('About to return cats!');
+      throw new UnauthorizedException('User not available');
     }
-    return await this.categoryRepository.createCategory(dto, user.id);
+
+    const categoryExist = await this.categoryRepository.findCategoryByName(
+      dto.categoryName,
+      user.id,
+    );
+
+    if (!categoryExist) {
+      return await this.categoryRepository.createCategory(dto, user.id);
+    }
+    return categoryExist;
   }
 
   public async getAllUserCategories(emailAddress: string): Promise<Category[]> {
@@ -32,13 +39,9 @@ export class CategoryService {
     return this.categoryRepository.findAllCategoriesForUser(user.id);
   }
 
-  // public async getEntriesByCategory(id: number): Promise<Activity[]> {
-  //   return this.activityRepository.find({
-  //     where: {
-  //       : id
-  //     }
-  //   });
-  // }
+  public async getCategoryByName(name: string, userId: number) {
+    return await this.categoryRepository.findCategoryByName(name, userId);
+  }
 
   async updateCategory(id: number, dto: UpdateCategoryDto, emailAddress: string) {
     const user = await this.usersService.getUserByEmail(emailAddress);
