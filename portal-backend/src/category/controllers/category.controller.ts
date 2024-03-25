@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
 import { IsAuthenticatedUser } from '../../users/guards/jwt.auth.guard';
 import { CreateCategoryDto } from '../dto/create-category.dto';
@@ -31,7 +31,7 @@ export class CategoryController {
   }
 
   @IsAuthenticatedUser()
-  @Put(':id')
+  @Patch(':id/update')
   async updateCategory(
     @Param('id') id: number,
     @Body() dto: UpdateCategoryDto,
