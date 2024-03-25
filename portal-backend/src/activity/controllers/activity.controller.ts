@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  FileTypeValidator,
-  Get,
-  MaxFileSizeValidator,
-  Param,
-  ParseFilePipe,
-  Patch,
-  Post,
-  UploadedFile,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile } from '@nestjs/common';
 import { ApiResponse, ApiServiceUnavailableResponse } from '@nestjs/swagger';
 import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
 import { IsAuthenticatedUser } from '../../users/guards/jwt.auth.guard';
@@ -43,7 +31,7 @@ export class ActivityController {
   }
 
   @IsAuthenticatedUser()
-  @Get(':categoryId/activity')
+  @Get(':categoryId/category')
   async getAllUserActivitiesByCategory(
     @Param('categoryId') categoryId: number,
     @GetCurrentUserFromJwt() emailAddress: string,
@@ -59,22 +47,28 @@ export class ActivityController {
 
   @IsAuthenticatedUser()
   @Patch(':id/update')
-  updateUserActivity(
+  @ApiServiceUnavailableResponse()
+  @ApiResponse({ status: 201, description: 'The record has been successfully created.' })
+  @ApiResponse({ status: 400, description: 'Forbidden.' })
+  async updateUserActivity(
     @Param('id') id: number,
     @Body() dto: UpdateActivityDto,
     @GetCurrentUserFromJwt() emailAddress: string,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 1000 }),
-          new FileTypeValidator({ fileType: /^image\/(jpeg|jpg)$/i }),
-        ],
-      }),
-    )
+    @UploadedFile()
     file?: Express.Multer.File,
   ) {
     return this.activityService.updateActivity(id, dto, emailAddress, file);
   }
+
+  // @IsAuthenticatedUser()
+  // @Patch(':id/update')
+  // async updateCategory(
+  //   @Param('id') id: number,
+  //   @Body() dto: UpdateActivityDto,
+  //   @GetCurrentUserFromJwt() emailAddress: string,
+  // ) {
+  //   return ' this.categoryService.updateCategory(id, dto, emailAddress)';
+  // }
 
   @IsAuthenticatedUser()
   @Delete(':id/delete')
