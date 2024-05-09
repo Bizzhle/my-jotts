@@ -1,9 +1,9 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { InitialLoginResponseDTO } from 'src/users/dto/initial-login-response.dto';
 import { UserAccountRepository } from 'src/users/repositories/user-account.repository';
 import { PasswordService } from 'src/users/services/user-password/password.service';
 import { UserSessionService } from '../user-session/user-session.service';
-import { randomUUID } from 'crypto';
-import { InitialLoginResponseDTO } from 'src/users/dto/initial-login-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,17 +14,13 @@ export class AuthService {
   ) {}
 
   async validateUser(emailAddress: string, pass: string): Promise<InitialLoginResponseDTO> {
-    const user = await this.userAccountRepository.findUserByEmail(emailAddress);
-    const decryptedPassword = await this.passwordService.comparePassword(pass, user.password);
-    const userSessionId = randomUUID();
+    try {
+      const user = await this.userAccountRepository.findUserByEmail(emailAddress);
+      await this.passwordService.verifyPassword(pass, user.password);
+      const userSessionId = randomUUID();
 
-    if (!user || !decryptedPassword) {
-      throw new ForbiddenException('Wrong user details');
-    }
+      await this.userSessionService.createSession(userSessionId);
 
-    await this.userSessionService.createSession(userSessionId);
-
-    if (user && decryptedPassword) {
       const { id, email_address, first_name, last_name } = user;
 
       let initialLoginResponse: InitialLoginResponseDTO = {
@@ -36,8 +32,8 @@ export class AuthService {
       };
 
       return initialLoginResponse;
+    } catch (error) {
+      throw new ForbiddenException('Wrong credentials provided', error);
     }
-
-    return null;
   }
 }

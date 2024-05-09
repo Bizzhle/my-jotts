@@ -1,3 +1,4 @@
+import { ForbiddenException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
 export class PasswordService {
@@ -9,8 +10,12 @@ export class PasswordService {
     return hash;
   }
 
-  public async comparePassword(pass: string, hash: string) {
-    const isMactchedPassword = await bcrypt.compareSync(pass, hash);
-    return isMactchedPassword;
+  public async verifyPassword(pass: string, hash: string) {
+    const isMatchedPassword = await bcrypt.compareSync(pass, hash);
+
+    if (!isMatchedPassword) {
+      throw new ForbiddenException('Wrong credentials provided');
+    }
+    return isMatchedPassword;
   }
 }
