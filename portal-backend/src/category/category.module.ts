@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ActivityRepository } from '../activity/repositories/activity.repository';
 import { LogsModule } from '../logger/logs.module';
+import { UploadModule } from '../upload/upload.module';
 import { UserAccountRepository } from '../users/repositories/user-account.repository';
 import { UsersService } from '../users/services/user-service/users.service';
 import { CategoryController } from './controllers/category.controller';

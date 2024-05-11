@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ActivityRepository } from '../../activity/repositories/activity.repository';
-import { CustomLogger } from '../../logger/services/customLogger';
+import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { UsersService } from '../../users/services/user-service/users.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
@@ -13,7 +18,7 @@ export class CategoryService {
     private readonly categoryRepository: CategoryRepository,
     private readonly activityRepository: ActivityRepository,
     private readonly usersService: UsersService,
-    private readonly customLogger: CustomLogger,
+    private readonly customLogger: AppLoggerService,
   ) {}
 
   public async createCategory(dto: CreateCategoryDto, emailAddress: string): Promise<Category> {
@@ -36,6 +41,9 @@ export class CategoryService {
 
   public async getAllUserCategories(emailAddress: string): Promise<Category[]> {
     const user = await this.usersService.getUserByEmail(emailAddress);
+    if (!user) {
+      throw new BadRequestException('User not logged in');
+    }
     return this.categoryRepository.findAllCategoriesForUser(user.id);
   }
 
@@ -45,6 +53,10 @@ export class CategoryService {
 
   async updateCategory(id: number, dto: UpdateCategoryDto, emailAddress: string) {
     const user = await this.usersService.getUserByEmail(emailAddress);
+
+    if (!user) {
+      throw new BadRequestException('User not logged in');
+    }
 
     return await this.categoryRepository.updateCategory(id, dto, user.id);
   }
