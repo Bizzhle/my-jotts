@@ -2,6 +2,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Activity } from '../../activity/entities/activity.entity';
 import { Category } from '../../category/entities/category.entity';
+import { ImageFile } from '../../image/entities/image-file.entity';
 
 @Entity({ name: 'user_account' })
 @Unique(['email_address'])
@@ -37,24 +38,12 @@ export class UserAccount {
   @Expose({ name: 'lastLoggedIn' })
   last_logged_in: Date;
 
-  // @ManyToMany(() => Role, { onDelete: 'CASCADE' })
-  // @JoinTable({
-  //   name: 'user_account_role',
-  //   joinColumn: { name: 'user_account_id' },
-  //   inverseJoinColumn: { name: 'role_id' },
-  // })
-  // @Exclude()
-  // roles: Role[];
-
-  // @ApiProperty({ description: 'permissions of the user' })
-  // @Expose()
-  // get permissions(): string[] {
-  //   return UserPermissionService.getPermissionList(this);
-  // }
-
   @OneToMany(() => Category, (category) => category.userAccount)
   categories: Category[];
 
   @OneToMany(() => Activity, (activity) => activity.userAccount)
   activities: Activity[];
+
+  @OneToMany(() => ImageFile, (imageFile) => imageFile.userAccount)
+  imageFiles: ImageFile[];
 }

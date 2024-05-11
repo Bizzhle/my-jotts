@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { ImageFile } from '../entities/image-file.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,16 +25,26 @@ export class ImageFileService {
     await this.imageFileRepository.save(data);
   }
 
-  async deleteImageFile(imageId: number): Promise<void> {
-    try {
-      await this.imageFileRepository.delete(imageId);
-    } catch (err) {
-      throw new HttpException('Cannot delete Image', err);
-    }
+  async deleteImageFile(userId: number, activityId: number): Promise<void> {
+    const imageFile = await this.imageFileRepository.findOneBy({
+      user_id: userId,
+      activity_id: activityId,
+    });
+
+    if (!imageFile) throw new NotFoundException('Image file not found for given user and activity');
+
+    await this.imageFileRepository.remove(imageFile);
   }
 
-  async getImageFileById(id: number) {
-    const file = await this.imageFileRepository.findOneBy({ id: id });
+  async getImageFileById(activityId: number, userId: number) {
+    const file = await this.imageFileRepository.findOneBy({
+      activity_id: activityId,
+      user_id: userId,
+    });
+
+    if (!file) {
+      throw new NotFoundException('Image file does not exist');
+    }
 
     return file;
   }
