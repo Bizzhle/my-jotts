@@ -1,65 +1,74 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as AWS from 'aws-sdk';
 import { EnvVars } from '../../envvars';
+import { AppLoggerService } from '../../logger/services/app-logger.service';
+import { Readable } from 'stream';
 
 @Injectable()
 export class UploadService {
   private region: string;
+  private bucket: string;
   private s3: AWS.S3;
 
-  constructor(private configService: ConfigService<EnvVars>) {
-    this.region = configService.getOrThrow<string>('AWS_S3_REGION');
+  constructor(
+    private configService: ConfigService<EnvVars>,
+    private readonly logger: AppLoggerService,
+  ) {
+    this.region = this.configService.getOrThrow<string>('AWS_S3_REGION');
+    this.bucket = this.configService.get<string>('AWS_S3_BUCKET_NAME');
     this.s3 = new AWS.S3({
+      region: this.region,
       accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID'),
       secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY'),
     });
   }
 
   async upload(file) {
-    const bucket = this.configService.get<string>('AWS_S3_BUCKET_NAME');
-    if (!bucket) {
-      throw new Error('AWS S3 bucket name is not configured');
-    }
-
-    try {
-      const uploadedFile = await this.s3_upload(
-        file.buffer,
-        bucket,
-        file.originalname,
-        file.mimetype,
-      );
-      return uploadedFile;
-    } catch (error) {
-      console.error('Error uploading file to S3:', error);
-      throw new Error('Failed to upload file to S3');
-    }
-  }
-
-  private async s3_upload(
-    file: Buffer,
-    bucket: string,
-    name: string,
-    mimetype: string,
-  ): Promise<string> {
     const params = {
-      Bucket: bucket,
-      Key: name,
-      Body: file,
-      ACL: 'public-read',
-      ContentType: mimetype,
+      Bucket: this.bucket,
+      Key: file.originalname,
+      Body: file.buffer,
+      ContentType: file.mimetype,
       ContentDisposition: 'inline',
-      CreateBucketConfiguration: {
-        LocationConstraint: this.region,
-      },
     };
 
     try {
-      const s3Response = await this.s3.upload(params).promise();
-      return s3Response.Location;
-    } catch (error) {
-      console.error('Error uploading file to S3:', error);
-      throw new Error('Failed to upload file to S3');
+      const data = await this.s3.upload(params).promise();
+
+      return data;
+    } catch (err) {
+      this.logger.warn('file could not be uploaded to S3 bucket');
+    }
+  }
+
+  async deleteUploadFile(key: string): Promise<void> {
+    const params = {
+      Bucket: this.bucket,
+      Key: key,
+    };
+
+    try {
+      await this.s3.deleteObject(params).promise();
+    } catch (err) {
+      // throw new HttpException('Cannot delete image', err);
+      console.log(err);
+    }
+  }
+
+  async getImageStreamFromS3(key: string): Promise<string> {
+    const params = {
+      Bucket: this.bucket,
+      Key: key,
+    };
+
+    try {
+      const data = await this.s3.getObject(params).promise();
+      return data.Body.toString();
+    } catch (err) {
+      console.log(err);
+
+      throw new NotFoundException('Could not fetch image');
     }
   }
 }

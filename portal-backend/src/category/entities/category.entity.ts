@@ -1,4 +1,4 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import {
   Column,
   Entity,
@@ -12,7 +12,7 @@ import { Activity } from '../../activity/entities/activity.entity';
 import { UserAccount } from '../../users/entities/user-account.entity';
 
 @Entity({ name: 'category' })
-@Unique(['title'])
+@Unique(['category_name'])
 export class Category {
   @PrimaryGeneratedColumn()
   id: number;
@@ -22,7 +22,8 @@ export class Category {
   user_id: number;
 
   @Column({ type: 'varchar', nullable: false })
-  title: string;
+  @Expose({ name: 'categoryName' })
+  category_name: string;
 
   @Column({ nullable: true })
   description: string;

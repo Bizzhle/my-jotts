@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
 import { IsAuthenticatedUser } from '../../users/guards/jwt.auth.guard';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { CategoryService } from '../services/category.service';
+import { ApiServiceUnavailableResponse } from '@nestjs/swagger';
 
 @Controller('category')
 export class CategoryController {
@@ -15,23 +16,18 @@ export class CategoryController {
     return this.categoryService.getAllUserCategories(emailAddress);
   }
 
-  // @IsAuthenticatedUser()
-  // @Get(':id/entries')
-  // async getEntriesByCategory(@Param('id') id: number) {
-  //   return this.categoryService.getEntriesByCategory(id);
-  // }
-
   @IsAuthenticatedUser()
   @Post()
+  @ApiServiceUnavailableResponse()
   async createCategory(
     @GetCurrentUserFromJwt() emailAddress: string,
     @Body() dto: CreateCategoryDto,
   ) {
-    return this.categoryService.createCategory(dto, emailAddress);
+    return await this.categoryService.createCategory(dto, emailAddress);
   }
 
   @IsAuthenticatedUser()
-  @Put(':id')
+  @Patch(':id/update')
   async updateCategory(
     @Param('id') id: number,
     @Body() dto: UpdateCategoryDto,
