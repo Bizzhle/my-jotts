@@ -1,7 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { Category } from '../../category/entities/category.entity';
+import { ImageFile } from '../../image/entities/image-file.entity';
 import { UserAccount } from '../../users/entities/user-account.entity';
 
 @Entity({ name: 'activity' })
@@ -46,7 +55,7 @@ export class Activity {
     description: 'Description of activity',
     example: 'EarBuds were good, would buy again',
   })
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   description: string;
 
   @ApiProperty({
@@ -54,7 +63,14 @@ export class Activity {
     example: '',
   })
   @Column({ type: 'varchar', nullable: true })
-  image: string;
+  @Transform(({ obj }) => obj.imageFile?.url)
+  @Expose({ name: 'imageUrl' })
+  imageFile_url: string;
+
+  @OneToMany(() => ImageFile, (imageFile) => imageFile.activity)
+  @JoinColumn({ name: 'imageFile_url' })
+  @Exclude()
+  imageFiles: ImageFile[];
 
   @ApiProperty({ description: 'Date of activity creation', example: '2023-01-19 13:09:51' })
   @Column({ type: 'date', nullable: true })
@@ -66,7 +82,7 @@ export class Activity {
   @Expose({ name: 'dateUpdated' })
   date_updated: Date;
 
-  @Column({ type: 'integer' })
+  @Column({ name: 'user_id', type: 'integer' })
   @Exclude()
   user_id: number;
 
