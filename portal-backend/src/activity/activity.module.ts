@@ -7,11 +7,20 @@ import { ActivityController } from './controllers/activity.controller';
 import { Activity } from './entities/activity.entity';
 import { ActivityRepository } from './repositories/activity.repository';
 import { ActivityService } from './service/activity.service';
+import { UploadModule } from '../upload/upload.module';
+import { ImageModule } from '../image/image.module';
+import { AppLoggerService } from '../logger/services/app-logger.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Activity]), CategoryModule],
+  imports: [TypeOrmModule.forFeature([Activity]), CategoryModule, UploadModule, ImageModule],
   controllers: [ActivityController],
-  providers: [ActivityService, ActivityRepository, UserAccountRepository, UploadService],
+  providers: [
+    ActivityService,
+    ActivityRepository,
+    UserAccountRepository,
+    UploadService,
+    AppLoggerService,
+  ],
   exports: [ActivityRepository],
 })
 export class ActivityModule {}
