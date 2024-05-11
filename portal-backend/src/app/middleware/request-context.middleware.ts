@@ -7,6 +7,8 @@ export class RequestContextMiddleware implements NestMiddleware {
   use(req: CustomRequest, res: Response, next: NextFunction) {
     // Set request-specific context here
     // For example, you can set user information from headers, cookies, etc.
+    const token = req.headers['authorization'];
+
     console.log(req.context);
   }
 }
