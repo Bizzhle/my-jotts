@@ -1,5 +1,7 @@
 import {
+  Body,
   Controller,
+  Delete,
   FileTypeValidator,
   MaxFileSizeValidator,
   ParseFilePipe,
@@ -9,6 +11,12 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from '../service/upload.service';
+import { IsString } from 'class-validator';
+
+class DeleteDTO {
+  @IsString()
+  key: string;
+}
 
 @Controller('upload')
 export class UploadController {
@@ -17,16 +25,14 @@ export class UploadController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   public async uploadFile(
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 1000 }),
-          new FileTypeValidator({ fileType: /^image\/(jpeg|jpg)$/i }),
-        ],
-      }),
-    )
+    @UploadedFile()
     file: Express.Multer.File,
   ) {
     return await this.uploadService.upload(file);
+  }
+
+  @Delete()
+  public async deleteFile(@Body() dto: DeleteDTO) {
+    return await this.uploadService.deleteUploadFile(dto.key);
   }
 }

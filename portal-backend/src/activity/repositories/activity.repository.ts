@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { pick, pickBy } from 'lodash';
 import { DataSource, Repository } from 'typeorm';
 import { CreateActivityDto } from '../dto/create-activity.dto';
-import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { Activity } from '../entities/activity.entity';
 
+type CreateActivity = Omit<CreateActivityDto, 'category'>;
 @Injectable()
 export class ActivityRepository extends Repository<Activity> {
   constructor(ds: DataSource) {
@@ -11,63 +12,69 @@ export class ActivityRepository extends Repository<Activity> {
   }
 
   public async createActivity(
-    dto: CreateActivityDto,
-    userid: number,
+    dto: CreateActivity,
+    userId: number,
+    categoryId: number,
     image?: string,
   ): Promise<Activity> {
     const activity = this.create({
-      title: dto.title,
-      category_id: dto.categoryId,
+      activity_title: dto.activityTitle,
+      category_id: categoryId,
       price: dto.price,
       location: dto.location,
       rating: dto.rating,
-      content: dto.content,
+      description: dto.description,
       image: image,
       date_created: new Date(),
-      user_id: userid,
+      user_id: userId,
       ...dto,
     });
-    await this.save<Activity>(activity);
-
-    return activity;
+    return await this.save<Activity>(activity);
   }
 
   async geAllUserActivities(userId: number): Promise<Activity[]> {
-    return await this.find({
-      where: { user_id: userId },
-    });
+    return this.createQueryBuilder('activity')
+      .leftJoin('activity.category', 'category')
+      .select(['activity', 'category.category_name'])
+      .where('activity.user_id = :userId', { userId })
+      .getMany();
   }
 
-  async getActivityByUserIdAndActivityId(activityId: number, userId: number): Promise<Activity> {
-    return await this.findOne({
-      where: {
-        id: activityId,
-        user_id: userId,
-      },
-    });
+  async getActivityByUserIdAndActivityId(activityId: number, userId: number) {
+    return this.createQueryBuilder('activity')
+      .leftJoin('activity.category', 'category')
+      .select(['activity', 'category.category_name'])
+      .where('activity.user_id = :userId', { userId })
+      .andWhere('activity.id = :activityId', { activityId })
+      .getOne();
   }
 
   async getUserActivitiesByCategory(categoryId: number, userId: number): Promise<Activity[]> {
-    return this.find({
-      where: { category_id: categoryId, user_id: userId },
-    });
+    return this.createQueryBuilder('activity')
+      .leftJoin('activity.category', 'category')
+      .select(['activity', 'category.category_name'])
+      .where('activity.user_id = :userId', { userId })
+      .andWhere('category.id = :categoryId', { categoryId })
+      .getMany();
   }
 
-  async updateActivity(id: number, dto: UpdateActivityDto, userId: number, image: string) {
-    return await this.update(
-      {
-        id: id,
-        user_id: userId,
-      },
-      {
-        title: dto.title,
-        category_id: dto.categoryId,
-        price: dto.price,
-        location: dto.location,
-        rating: dto.rating,
-        content: dto.content,
-        image: image,
-      },
+  async updateActivity(activity: Activity, data: Partial<Activity>): Promise<void> {
+    Object.assign(
+      activity,
+      pickBy(
+        pick(data, [
+          'activity_title',
+          'category_id',
+          'price',
+          'rating',
+          'description',
+          'image',
+          'location',
+          'date_updated',
+        ]),
+      ),
     );
+
+    await this.save(activity);
   }
 }

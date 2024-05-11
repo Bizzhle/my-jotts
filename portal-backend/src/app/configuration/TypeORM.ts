@@ -3,7 +3,8 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join, resolve } from 'path';
 import { EnvVars } from 'src/envvars';
 import { CustomNamingStrategy } from '../../typeorm/custom-foreign-keys-naming-strategy';
-import { EnvGetBoolean } from '../decorators/env-get.decorators';
+import { EnvGet, EnvGetBoolean } from '../decorators/env-get.decorators';
+import DatabaseLogger from './databaseLogger';
 
 function cliOptions() {
   return {
@@ -20,30 +21,44 @@ function serverOptions() {
 class DatabaseConfig {
   @EnvGetBoolean('DATABASE_RUN_DEV_MIGRATIONS', false)
   runDevMigrations: boolean;
+
+  @EnvGetBoolean('DATABASE_RUN_MIGRATIONS', false)
+  runMigrations: boolean;
+
+  @EnvGetBoolean('DATABASE_LOG_QUERIES')
+  logQueries: boolean;
+
+  @EnvGetBoolean('DATABASE_USE_SSL')
+  useSsl: boolean;
+
+  @EnvGet('DATABASE_URL', { cast: (url) => new URL(url) })
+  url: URL;
 }
 
 export function TypeOrmRootModule(cli = false) {
   return TypeOrmModule.forRootAsync({
     imports: [ConfigModule],
-    inject: [ConfigService],
-    useFactory: (configService: ConfigService<EnvVars>) => {
-      const url = new URL(configService.get<string>('DATABASE_URL'));
-      const useSsl = configService.get<string>('DATABASE_USE_SSL') === 'true';
+    extraProviders: [DatabaseConfig],
+    inject: [DatabaseConfig],
+    useFactory: (config: DatabaseConfig) => {
+      const { url, useSsl } = config;
       const environmentOptions = cli ? cliOptions() : serverOptions();
+      const database = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
       const migrationPath = resolve(__dirname, '../../../sql/db_migrations/*.{js,ts}');
       const devMigration = resolve(__dirname, '../../../sql/db_migrations/dev/*.{js,ts}');
-      const runMigrations = configService.get<boolean>('DATABASE_RUN_DEV_MIGRATIONS');
+      const runMigrations = config.runDevMigrations;
 
       const result: TypeOrmModuleOptions = {
         type: 'postgres',
+        // logger: new DatabaseLogger(),
         host: url.hostname,
         port: +url.port,
         username: url.username,
         password: url.password,
-        database: 'activitystepsdb',
+        database,
         entities: [join(__dirname, '**', '*.entity.{ts, js}')],
         synchronize: false,
-        logging: false,
+        logging: config.logQueries,
         autoLoadEntities: true,
         connectTimeoutMS: 60000,
         namingStrategy: new CustomNamingStrategy(),

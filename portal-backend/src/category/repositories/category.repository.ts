@@ -13,7 +13,7 @@ export class CategoryRepository extends Repository<Category> {
   public async createCategory(dto: CreateCategoryDto, userId: number): Promise<Category> {
     const category = this.create({
       user_id: userId,
-      title: dto.title,
+      category_name: dto.categoryName,
       description: dto.description,
     });
     await this.save<Category>(category);
@@ -42,8 +42,17 @@ export class CategoryRepository extends Repository<Category> {
   public async updateCategory(id: number, dto: UpdateCategoryDto, userId: number) {
     await this.update(
       { id: id, user_id: userId },
-      { title: dto.title, description: dto.description },
+      { category_name: dto.categoryName, description: dto.description },
     );
+  }
+
+  public async findCategoryByName(categoryName: string, user_id: number): Promise<Category | undefined> {
+    return this.createQueryBuilder('category')
+      .where('LOWER(category.category_name) = LOWER(:categoryName)', {
+        categoryName,
+      })
+      .andWhere('category.user_id = :user_id', { user_id })
+      .getOne();
   }
 
   async deleteCategory(category: Category): Promise<void> {
