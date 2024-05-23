@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -26,6 +27,9 @@ import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { ActivityService } from '../service/activity.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
+import { Roles } from '../../users/decorators/role.decorator';
+import { UserRole } from '../../users/enums/roles.enum';
+import { CheckRole } from '../../users/guards/role.guard';
 
 @Controller('activity')
 export class ActivityController {
@@ -60,6 +64,8 @@ export class ActivityController {
 
   @IsAuthenticatedUser()
   @Get('activities')
+  @Roles(UserRole.USER)
+  @CheckRole()
   @ApiOperation({
     description: 'Gets all activities related to a user',
   })
