@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { PostLoginResponseDTO } from '../dto/post-login-response.dto';
 import { HasAccess } from '../guards/local.auth.guard';
 import { UserLoginService } from '../services/user-service/user-login.service';
+import { RequestWithUser } from '../../auth/request-with-user.interface';
 
 @ApiTags('Users')
 @Controller('users')
@@ -12,7 +13,7 @@ export class UserLoginController {
   @HasAccess()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async handleLogin(@Request() req): Promise<PostLoginResponseDTO> {
+  async handleLogin(@Request() req: RequestWithUser): Promise<PostLoginResponseDTO> {
     return await this.userLoginService.login(req.user);
   }
 }
