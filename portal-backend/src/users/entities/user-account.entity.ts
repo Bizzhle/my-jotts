@@ -3,6 +3,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeo
 import { Activity } from '../../activity/entities/activity.entity';
 import { Category } from '../../category/entities/category.entity';
 import { ImageFile } from '../../image/entities/image-file.entity';
+import { UserRole } from '../enums/roles.enum';
 
 @Entity({ name: 'user_account' })
 @Unique(['email_address'])
@@ -37,6 +38,10 @@ export class UserAccount {
   @Column({ type: 'timestamp', nullable: true })
   @Expose({ name: 'lastLoggedIn' })
   last_logged_in: Date;
+
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  @Exclude()
+  role: UserRole;
 
   @OneToMany(() => Category, (category) => category.userAccount)
   categories: Category[];
