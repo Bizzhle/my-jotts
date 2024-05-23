@@ -65,6 +65,7 @@ import { Category } from '../category/entities/category.entity';
     UserRegistrationService,
     JwtAuthGuard,
     UserAccountRepository,
+    UserSessionService,
   ],
 })
 export class UsersModule {}
