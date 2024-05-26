@@ -63,8 +63,6 @@ export class ActivityController {
 
   @IsAuthenticatedUser()
   @Get('activities')
-  @Roles(UserRole.USER)
-  @CheckRole()
   @ApiOperation({
     description: 'Gets all activities related to a user',
   })
