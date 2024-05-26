@@ -10,7 +10,6 @@ import {
   Patch,
   Post,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -28,7 +27,7 @@ import { ActivityService } from '../service/activity.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
 import { Roles } from '../../users/decorators/role.decorator';
-import { UserRole } from '../../users/enums/roles.enum';
+import { UserRole } from '../../permissions/enums/roles.enum';
 import { CheckRole } from '../../users/guards/role.guard';
 
 @Controller('activity')

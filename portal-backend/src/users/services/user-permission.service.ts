@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RequestContextMiddleware } from '../../app/middleware/request-context.middleware';
-import { Permission } from '../entities/permission.entity';
-import { Permission as PermissionEnum } from '../enums/permissions.enum';
+import { Permission } from '../../permissions/entities/permission.entity';
+import { Permission as PermissionEnum } from '../../permissions/enums/permissions.enum';
 
 @Injectable()
 export class UserPermissionService {
