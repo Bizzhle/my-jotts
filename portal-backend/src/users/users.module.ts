@@ -28,10 +28,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { Activity } from '../activity/entities/activity.entity';
 import { Category } from '../category/entities/category.entity';
+import { Role } from '../permissions/entities/role.entity';
+import { Permission } from '../permissions/entities/permission.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserAccount, UserSession, Activity, Category]),
+    TypeOrmModule.forFeature([UserAccount, UserSession, Activity, Category, Role, Permission]),
     PassportModule,
     JwtModule.register(jwtConfig),
   ],
