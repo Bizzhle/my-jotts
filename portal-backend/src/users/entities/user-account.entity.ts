@@ -1,8 +1,17 @@
 import { Exclude, Expose } from 'class-transformer';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { Activity } from '../../activity/entities/activity.entity';
 import { Category } from '../../category/entities/category.entity';
 import { ImageFile } from '../../image/entities/image-file.entity';
+import { Role } from '../../permissions/entities/role.entity';
 
 @Entity({ name: 'user_account' })
 @Unique(['email_address'])
@@ -37,6 +46,14 @@ export class UserAccount {
   @Column({ type: 'timestamp', nullable: true })
   @Expose({ name: 'lastLoggedIn' })
   last_logged_in: Date;
+
+  @ManyToMany(() => Role, { onDelete: 'CASCADE' })
+  @JoinTable({
+    name: 'user_account_role',
+    joinColumn: { name: 'user_account_id' },
+    inverseJoinColumn: { name: 'role_id' },
+  })
+  roles: Role[];
 
   @OneToMany(() => Category, (category) => category.userAccount)
   categories: Category[];

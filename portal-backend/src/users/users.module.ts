@@ -5,12 +5,10 @@ import { UserAccount } from './entities/user-account.entity';
 import { UserAccountRepository } from './repositories/user-account.repository';
 import { PasswordService } from './services/user-password/password.service';
 import { UsersService } from './services/user-service/users.service';
-
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { jwtConfig } from 'src/auth/jwt.config';
 import { UserRefreshController } from './controllers/refresh.controller';
-import { UserDetailContoller } from './controllers/user-detail.controller';
+import { UserDetailController } from './controllers/user-detail.controller';
 import { UserLoginController } from './controllers/users-login.controller';
 import { UsersRegistrationController } from './controllers/users-registration.controller';
 import { UserSession } from './entities/usersession.entity';
@@ -28,19 +26,31 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { Activity } from '../activity/entities/activity.entity';
 import { Category } from '../category/entities/category.entity';
+import { Role } from '../permissions/entities/role.entity';
+import { Permission } from '../permissions/entities/permission.entity';
+import { SigningSecret } from '../certificates/entities/signing-secret.entity';
+import { SigningSecretService } from '../certificates/services/signing-secret.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserAccount, UserSession, Activity, Category]),
+    TypeOrmModule.forFeature([
+      UserAccount,
+      UserSession,
+      Activity,
+      Category,
+      Role,
+      Permission,
+      SigningSecret,
+    ]),
     PassportModule,
-    JwtModule.register(jwtConfig),
+    JwtModule.register({}),
   ],
   controllers: [
     UsersController,
     UsersRegistrationController,
     UserRefreshController,
     UserLoginController,
-    UserDetailContoller,
+    UserDetailController,
   ],
   providers: [
     UsersService,
@@ -58,6 +68,7 @@ import { Category } from '../category/entities/category.entity';
     UserSessionRefreshService,
     UserDetailService,
     JwtAuthGuard,
+    SigningSecretService,
   ],
   exports: [
     UsersService,
@@ -65,6 +76,7 @@ import { Category } from '../category/entities/category.entity';
     UserRegistrationService,
     JwtAuthGuard,
     UserAccountRepository,
+    UserSessionService,
   ],
 })
 export class UsersModule {}
