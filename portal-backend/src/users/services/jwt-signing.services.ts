@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { SigningSecretService } from '../../certificates/services/signing-secret.service';
 
 export interface JwtPayload {
   iss?: string;
@@ -14,9 +15,13 @@ export interface JwtPayload {
 
 @Injectable()
 export class JwtSigningService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly signingSecretService: SigningSecretService,
+  ) {}
 
-  public signJwt(payload: JwtPayload) {
-    return this.jwtService.sign(payload);
+  public async signJwt(payload: JwtPayload) {
+    const secret = await this.signingSecretService.getValidSecretKey();
+    return this.jwtService.sign(payload, { secret: secret.key });
   }
 }

@@ -7,7 +7,7 @@ import { UserDetailService } from '../services/user-service/user-details.service
 
 @ApiTags('Users')
 @Controller('users')
-export class UserDetailContoller {
+export class UserDetailController {
   constructor(private readonly userDetailService: UserDetailService) {}
 
   @IsAuthenticatedUser()
