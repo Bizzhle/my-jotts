@@ -26,6 +26,9 @@ import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { ActivityService } from '../service/activity.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
+import { Roles } from '../../users/decorators/role.decorator';
+import { UserRole } from '../../permissions/enums/roles.enum';
+import { CheckRole } from '../../users/guards/role.guard';
 
 @Controller('activity')
 export class ActivityController {

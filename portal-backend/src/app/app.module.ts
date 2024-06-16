@@ -5,7 +5,7 @@ import {
   Module,
   NestModule,
 } from '@nestjs/common';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ActivityModule } from 'src/activity/activity.module';
 import { CategoryModule } from 'src/category/category.module';
 import { UsersModule } from 'src/users/users.module';
@@ -18,6 +18,11 @@ import { TypeOrmRootModule } from './configuration/TypeORM';
 import { ExceptionsFilter } from './exceptions.filter';
 import { RequestContextMiddleware } from './middleware/request-context.middleware';
 import { ImageModule } from '../image/image.module';
+import { RolesGuard } from '../users/guards/role.guard';
+import { AuthVerifierMiddleWare } from './middleware/auth-verifier.middleware';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthService } from '../users/services/user-auth/auth.services';
+import { CertificateModule } from '../certificates/certificate.module';
 
 @Module({
   imports: [
@@ -29,11 +34,14 @@ import { ImageModule } from '../image/image.module';
     UploadModule,
     LogsModule,
     ImageModule,
+    JwtModule.register({}),
+    CertificateModule,
   ],
   controllers: [],
   providers: [
+    // RequestContextMiddleware,
     Logger,
-    RequestContextMiddleware,
+
     {
       provide: APP_FILTER,
       useClass: ExceptionsFilter,
@@ -46,10 +54,16 @@ import { ImageModule } from '../image/image.module';
       provide: APP_INTERCEPTOR,
       useClass: ExcludeNullInterceptor,
     },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+    AuthService,
   ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LogsMiddleware).forRoutes('*');
+    // consumer.apply(RequestContextMiddleware).forRoutes('*');
+    consumer.apply(AuthVerifierMiddleWare).forRoutes('*');
   }
 }

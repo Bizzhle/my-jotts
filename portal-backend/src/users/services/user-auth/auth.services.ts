@@ -1,9 +1,12 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { InitialLoginResponseDTO } from 'src/users/dto/initial-login-response.dto';
 import { UserAccountRepository } from 'src/users/repositories/user-account.repository';
 import { PasswordService } from 'src/users/services/user-password/password.service';
 import { UserSessionService } from '../user-session/user-session.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserAccount } from '../../entities/user-account.entity';
+import { SigningSecretService } from '../../../certificates/services/signing-secret.service';
 
 @Injectable()
 export class AuthService {
@@ -11,6 +14,8 @@ export class AuthService {
     private readonly userAccountRepository: UserAccountRepository,
     private readonly passwordService: PasswordService,
     private readonly userSessionService: UserSessionService,
+    private readonly jwtService: JwtService,
+    private readonly signingSecretService: SigningSecretService,
   ) {}
 
   async validateUser(emailAddress: string, pass: string): Promise<InitialLoginResponseDTO> {
@@ -34,6 +39,23 @@ export class AuthService {
       return initialLoginResponse;
     } catch (error) {
       throw new ForbiddenException('Wrong credentials provided', error);
+    }
+  }
+
+  async validateToken(token: string): Promise<UserAccount> {
+    try {
+      const secret = await this.signingSecretService.getValidSecretKey();
+      const decoded = await this.jwtService.verify(token, { secret: secret.key });
+
+      const user = await this.userAccountRepository.findUserByEmail(decoded.sub);
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token', error);
     }
   }
 }
