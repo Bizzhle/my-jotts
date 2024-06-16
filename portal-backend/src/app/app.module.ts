@@ -22,7 +22,7 @@ import { RolesGuard } from '../users/guards/role.guard';
 import { AuthVerifierMiddleWare } from './middleware/auth-verifier.middleware';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from '../users/services/user-auth/auth.services';
-import { UserSessionService } from '../users/services/user-session/user-session.service';
+import { CertificateModule } from '../certificates/certificate.module';
 
 @Module({
   imports: [
@@ -35,6 +35,7 @@ import { UserSessionService } from '../users/services/user-session/user-session.
     LogsModule,
     ImageModule,
     JwtModule.register({}),
+    CertificateModule,
   ],
   controllers: [],
   providers: [
