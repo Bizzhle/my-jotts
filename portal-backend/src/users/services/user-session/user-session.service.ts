@@ -18,7 +18,7 @@ export class UserSessionService {
   public async createSession(userSessionId: string): Promise<UserSession> {
     return await this.userSessionRepository.createSession({
       id: userSessionId,
-      session_end: addHoursToDate(6),
+      session_end: addHoursToDate(1),
       refresh_token_expiration_time: calSessionExpirationTime({
         refreshTokenValidity: 168,
         sessionExpirationOffset: -12,
