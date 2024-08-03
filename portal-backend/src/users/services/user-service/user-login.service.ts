@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InitialLoginResponseDTO } from '../../dto/initial-login-response.dto';
 import { PostLoginResponseDTO } from '../../dto/post-login-response.dto';
 import { randomUUID } from 'crypto';
-import { createDateFromUnixTime, getTimestampInSeconds } from '../../../app/helpers/date';
+import { addHoursToDate, getTimestampInSeconds } from '../../../app/helpers/date';
 import { UserSessionService } from '../user-session/user-session.service';
 import { JwtPayload, JwtSigningService } from '../jwt-signing.services';
 
@@ -18,7 +18,7 @@ export class UserLoginService {
 
     const jti = randomUUID();
 
-    const sessionEnd = createDateFromUnixTime(24);
+    const sessionEnd = addHoursToDate(1);
     const sessionInSetup = await this.userSessionService.getSessionInSetup(user.userSessionId);
 
     const payload: JwtPayload = {
