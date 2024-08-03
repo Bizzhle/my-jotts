@@ -27,11 +27,11 @@ export class UserAccount {
   @Exclude()
   password: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   @Expose({ name: 'firstName' })
   first_name: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   @Expose({ name: 'lastName' })
   last_name: string;
 
@@ -39,11 +39,11 @@ export class UserAccount {
   @Expose()
   enabled: boolean;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamp', nullable: false })
   @Expose({ name: 'registrationDate' })
   registration_date: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamp', nullable: false })
   @Expose({ name: 'lastLoggedIn' })
   last_logged_in: Date;
 

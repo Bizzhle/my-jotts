@@ -16,15 +16,18 @@ export class UserAccountRepository extends Repository<UserAccount> {
     const userAccount = this.create({
       email_address: dto.emailAddress,
       password: password,
-      first_name: dto.firstName,
-      last_name: dto.lastName,
       enabled: true,
       registration_date: new Date(),
+      last_logged_in: new Date(),
     });
 
     await this.save<UserAccount>(userAccount);
 
     return userAccount;
+  }
+
+  public async updateUserAccount(userId: number) {
+    await this.update(userId, { last_logged_in: new Date() });
   }
 
   public async findUserByEmail(email_address: string): Promise<UserAccount | null> {

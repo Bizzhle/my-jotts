@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import {
   ApiBadGatewayResponse,
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiTags,
@@ -16,7 +17,7 @@ export class UsersRegistrationController {
 
   @Post('register')
   @ApiCreatedResponse({ description: 'User account registered' })
-  @ApiBadGatewayResponse({ description: 'Cannot register user' })
+  @ApiBadRequestResponse({ description: 'Cannot register user' })
   @ApiInternalServerErrorResponse({ description: 'Server error' })
   public async registerUserAccount(@Body() dto: CreateUserDto): Promise<UserAccount> {
     return await this.userRegistrationService.registerUserAccount(dto);
