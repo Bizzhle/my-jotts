@@ -14,6 +14,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({ stopAtFirstError: true, forbidNonWhitelisted: true, transform: true }),
   );
+  app.enableCors();
   app.useLogger(app.get(AppLoggerService));
   const config = new DocumentBuilder().setTitle('Portal Backend Api').setVersion('1.0').build();
   const document = SwaggerModule.createDocument(app, config);
