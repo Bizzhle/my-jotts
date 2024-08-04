@@ -1,5 +1,6 @@
 import { Box, Drawer, Toolbar } from "@mui/material";
 import { useState } from "react";
+import NavigationList from "./NavigationList";
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState<boolean>(true);
@@ -18,8 +19,8 @@ export default function Navigation() {
     <>
       <Drawer sx={drawerStyle} open={isOpen} variant="permanent">
         <Toolbar />
-        <Box>
-          <p>Nav</p>
+        <Box sx={{ marginTop: 3 }}>
+          <NavigationList />
         </Box>
       </Drawer>
     </>

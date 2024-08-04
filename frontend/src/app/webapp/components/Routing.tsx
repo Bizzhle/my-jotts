@@ -1,22 +1,43 @@
-import {
-  Route,
-  RouterProvider,
-  createBrowserRouter,
-  createRoutesFromElements,
-} from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Layout from "./Layout";
-import ErrorPage from "../pages/ErrorPage";
 import HomePage from "../pages/HomePage";
+import Register from "../../registration/Register";
+import NotFoundPage from "../pages/NotFoundPage";
+import Login from "../../authentication/Login";
+import { ProtectedRoutes } from "../../libs/auth/RequireAuth";
 
-const routes = createRoutesFromElements(
-  <Route element={<Layout />}>
-    <Route path="/" element={<HomePage />} />
-
-    <Route path="/" errorElement={<ErrorPage />} />
-  </Route>
-);
-
-const router = createBrowserRouter(routes);
+const router = createBrowserRouter([
+  {
+    id: "root",
+    path: "/",
+    loader() {
+      return "";
+    },
+    Component: Layout,
+    children: [
+      {
+        index: true,
+        Component: () => (
+          <ProtectedRoutes>
+            <HomePage />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "protected",
+        Component: NotFoundPage,
+      },
+    ],
+  },
+  {
+    path: "/register",
+    Component: Register,
+  },
+  {
+    path: "/login",
+    Component: Login,
+  },
+]);
 
 export default function Routing() {
   return <RouterProvider router={router} />;
