@@ -8,20 +8,21 @@ function Layout() {
   return (
     <>
       <Header />
-      <Navigation />
+      {/* <Navigation /> */}
       <Box
         component="main"
         sx={{
           display: "flex",
           flexGrow: 1,
-          flexDirection: "column",
           overflowX: "auto",
+          flexDirection: "column",
         }}
       >
         <Grid
           sx={{
-            mx: 3,
+            mx: 20,
             my: 5,
+            border: "4px solid red",
           }}
         >
           <Toolbar />
