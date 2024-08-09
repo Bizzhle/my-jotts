@@ -4,7 +4,7 @@ function JwtFieldDecorator(field: string) {
   return createParamDecorator((data: never, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
 
-    return request.user[field];
+    return request.tokenPayload[field];
   });
 }
 
@@ -20,3 +20,5 @@ export const GetFirstNameFromJWT = JwtFieldDecorator('first_name');
 export const GetLastNameFromJWT = JwtFieldDecorator('last_name');
 
 export const GetUidFromJWT = JwtFieldDecorator('uid');
+
+export const GetEncodedTokenFromJWT = JwtFieldDecorator('encodedToken');

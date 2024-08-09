@@ -1,15 +1,13 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
-import CustomRequest from './custom-request-interface';
+import { RequestContext } from './request.context.interface';
 
 @Injectable()
 export class RequestContextMiddleware implements NestMiddleware {
-  use(req: CustomRequest, res: Response, next: NextFunction) {
+  use(req: RequestContext, res: Response, next: NextFunction) {
     // Set request-specific context here
     // For example, you can set user information from headers, cookies, etc.
     const user = req.user;
-
-    req.context.user = user;
 
     next();
   }

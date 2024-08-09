@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, FindOperator, Raw, Repository } from 'typeorm';
-import { CreateUserDto } from '../dto/create-user.dto';
 import { UserAccount } from '../entities/user-account.entity';
 
 export interface UserCondition {
@@ -12,9 +11,9 @@ export class UserAccountRepository extends Repository<UserAccount> {
   constructor(ds: DataSource) {
     super(UserAccount, ds.manager);
   }
-  public async createUserAccount(dto: CreateUserDto, password: string): Promise<UserAccount> {
+  public async createUserAccount(emailAddress: string, password: string): Promise<UserAccount> {
     const userAccount = this.create({
-      email_address: dto.emailAddress,
+      email_address: emailAddress,
       password: password,
       enabled: true,
       registration_date: new Date(),

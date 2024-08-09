@@ -8,15 +8,15 @@ import {
 } from '@nestjs/swagger';
 import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
 import { UserAccount } from '../entities/user-account.entity';
-import { IsAuthenticatedUser } from '../guards/jwt.auth.guard';
 import { UserDetailService } from '../services/user-service/user-details.service';
+import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 
 @ApiTags('Users')
 @Controller('users')
 export class UserDetailController {
   constructor(private readonly userDetailService: UserDetailService) {}
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Get('me')
   @ApiOperation({ description: 'return user"s details' })
   @HttpCode(HttpStatus.OK)
