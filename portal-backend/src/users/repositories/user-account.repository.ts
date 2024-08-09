@@ -38,6 +38,10 @@ export class UserAccountRepository extends Repository<UserAccount> {
       .getOne();
   }
 
+  public async findUserById(userId: number): Promise<UserAccount | null> {
+    return await this.createQueryBuilder('user_account').where({ id: userId }).getOne();
+  }
+
   public async getUserDetail(userCondition: UserCondition): Promise<UserAccount | null> {
     return await this.findOne({
       where: UserAccountRepository.filterCondition(userCondition),

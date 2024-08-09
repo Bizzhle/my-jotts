@@ -10,7 +10,16 @@ export class UsersService extends WithTransactionService {
   }
 
   public async getUserByEmail(emailAddress): Promise<UserAccount | null> {
-    return await this.getUserDetails(emailAddress);
+    return await this.userAccountRepository.findUserByEmail(emailAddress);
+  }
+
+  public async getUserById(userId: number) {
+    return await this.userAccountRepository.findUserById(userId);
+  }
+
+  public async updateUserPassword(user: UserAccount, hashedPassword: string) {
+    user.password = hashedPassword;
+    return await this.userAccountRepository.save(user);
   }
 
   private async getUserDetails(userCondition: UserCondition): Promise<UserAccount> {

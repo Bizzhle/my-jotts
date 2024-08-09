@@ -23,6 +23,7 @@ import { AuthVerifierMiddleWare } from './middleware/auth-verifier.middleware';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from '../users/services/user-auth/auth.services';
 import { CertificateModule } from '../certificates/certificate.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -36,8 +37,8 @@ import { CertificateModule } from '../certificates/certificate.module';
     ImageModule,
     JwtModule.register({}),
     CertificateModule,
+    AuthModule,
   ],
-  controllers: [],
   providers: [
     // RequestContextMiddleware,
     Logger,
@@ -64,6 +65,6 @@ import { CertificateModule } from '../certificates/certificate.module';
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     // consumer.apply(RequestContextMiddleware).forRoutes('*');
-    consumer.apply(AuthVerifierMiddleWare).forRoutes('*');
+    // consumer.apply(AuthVerifierMiddleWare).forRoutes('*');
   }
 }
