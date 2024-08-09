@@ -3,3 +3,7 @@ export class PostLoginResponseDTO {
   accessToken: string;
   refreshToken: string;
 }
+
+export class PostLoginDTO {
+  refreshToken: string;
+}
