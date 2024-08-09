@@ -20,7 +20,7 @@ export const registerUser = async (
 export async function login(
   data: registrationData
 ): Promise<LoginResponseDto | undefined> {
-  const response = await apiClient.post(`/users/login`, data);
+  const response = await apiClient.post(`/auth/login`, data);
 
   return response.data as LoginResponseDto;
 }

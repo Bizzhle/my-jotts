@@ -19,9 +19,7 @@ import { ExceptionsFilter } from './exceptions.filter';
 import { RequestContextMiddleware } from './middleware/request-context.middleware';
 import { ImageModule } from '../image/image.module';
 import { RolesGuard } from '../users/guards/role.guard';
-import { AuthVerifierMiddleWare } from './middleware/auth-verifier.middleware';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthService } from '../users/services/user-auth/auth.services';
 import { CertificateModule } from '../certificates/certificate.module';
 import { AuthModule } from '../auth/auth.module';
 
@@ -59,7 +57,6 @@ import { AuthModule } from '../auth/auth.module';
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
-    AuthService,
   ],
 })
 export class AppModule {
