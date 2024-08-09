@@ -1,5 +1,6 @@
 export interface EnvVars {
   API_URL: string;
+  FRONTEND_URL: string;
   NODE_ENV: string;
   DATABASE_LOG_QUERIES;
   DATABASE_RUN_MIGRATIONS: boolean;
