@@ -1,5 +1,8 @@
 export class RefreshSessionResponseDto {
-  accesToken: string;
-  hashedAccessToken: string;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export class RefreshSessionDto {
   refreshToken: string;
 }
