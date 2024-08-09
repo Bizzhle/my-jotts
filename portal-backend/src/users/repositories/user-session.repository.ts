@@ -11,6 +11,7 @@ import {
 import { UserSession } from '../entities/usersession.entity';
 import { userSessionDataDto } from '../dto/user-session-data.dto';
 import { createDateFromUnixTime } from '../../app/helpers/date';
+import { randomUUID } from 'crypto';
 
 interface SessionRefresh {
   accessToken: string;
@@ -27,32 +28,23 @@ export class UserSessionRepository extends Repository<UserSession> {
   }
 
   public async createSession(dto: userSessionDataDto): Promise<UserSession> {
-    const userSession = this.create({ ...dto });
-    return await this.save(<UserSession>userSession);
-  }
-
-  public async refreshSession(
-    session: UserSession,
-    sessionRefresh: SessionRefresh,
-  ): Promise<UserSession> {
-    session.access_token = sessionRefresh.accessToken;
-    session.refresh_token = sessionRefresh.refreshToken;
-    session.refresh_token_expiration_time = sessionRefresh.refreshTokenvalidity;
-    session.session_end = createDateFromUnixTime(sessionRefresh.tokenExpirationTime);
-    session.session_id = sessionRefresh.sessionRefreshID;
-
-    return await this.save(session);
-  }
-
-  public async getSessionInSetup(sessionId: string): Promise<UserSession> {
-    return await this.findOne({
-      where: {
-        id: sessionId,
-        session_start: IsNull(),
-        session_end: MoreThanOrEqual(new Date()),
-      },
+    const userSession = this.create({
+      id: randomUUID(),
+      user_id: dto.userId,
+      session_start: new Date(),
+      session_end: dto.sessionEnd,
+      access_token: dto.accessToken,
+      refresh_token: dto.refreshToken,
+      refresh_token_expiration_time: dto.refreshTokenExpirationTime,
     });
+    await this.save<UserSession>(userSession);
+
+    return userSession;
   }
+
+  // public async getSessionByToken(refreshToken: string) {
+  //   5;
+  // }
 
   public async getValidSession(condition: {
     access_token?: string;
