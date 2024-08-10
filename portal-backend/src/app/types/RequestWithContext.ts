@@ -1,5 +1,5 @@
 import express from 'express';
-import { JwtPayload } from '../../users/services/user-service/jwt-signing.services';
+import { JwtPayload } from '../../utils/services/jwt-signing.services';
 
 export interface RequestWithContext extends express.Request {
   context: {
