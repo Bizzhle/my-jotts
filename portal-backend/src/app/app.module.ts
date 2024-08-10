@@ -34,7 +34,9 @@ import { UtilsModule } from '../utils/util.module';
     UploadModule,
     LogsModule,
     ImageModule,
-    JwtModule.register({}),
+    JwtModule.register({
+      global: true,
+    }),
     CertificateModule,
     AuthModule,
     UtilsModule,

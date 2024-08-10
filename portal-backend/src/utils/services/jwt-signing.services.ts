@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { SigningSecretService } from '../../../certificates/services/signing-secret.service';
+import { SigningSecretService } from '../../certificates/services/signing-secret.service';
 
 export interface JwtPayload {
   iss?: string;
