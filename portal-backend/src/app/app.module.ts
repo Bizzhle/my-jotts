@@ -22,6 +22,7 @@ import { RolesGuard } from '../users/guards/role.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { CertificateModule } from '../certificates/certificate.module';
 import { AuthModule } from '../auth/auth.module';
+import { UtilsModule } from '../utils/util.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { AuthModule } from '../auth/auth.module';
     JwtModule.register({}),
     CertificateModule,
     AuthModule,
+    UtilsModule,
   ],
   providers: [
     // RequestContextMiddleware,
@@ -61,7 +63,7 @@ import { AuthModule } from '../auth/auth.module';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    // consumer.apply(RequestContextMiddleware).forRoutes('*');
+    consumer.apply(LogsMiddleware).forRoutes('*');
     // consumer.apply(AuthVerifierMiddleWare).forRoutes('*');
   }
 }

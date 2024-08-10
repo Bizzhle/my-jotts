@@ -9,8 +9,8 @@ import { UserAccount } from '../../users/entities/user-account.entity';
 import { UserRegistrationService } from '../services/user-registration.service';
 import { CreateUserDto } from '../dtos/create-user.dto';
 
-@ApiTags('Users')
-@Controller('users')
+@ApiTags('Auth')
+@Controller('auth')
 export class UsersRegistrationController {
   constructor(private readonly userRegistrationService: UserRegistrationService) {}
 
