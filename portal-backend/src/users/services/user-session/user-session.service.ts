@@ -6,7 +6,7 @@ import { UserSessionRepository } from '../../../users/repositories/user-session.
 import { calSessionExpirationTime } from './session-expiration-time-utils';
 import { randomUUID } from 'crypto';
 import { UserAccount } from '../../entities/user-account.entity';
-import { JwtPayload, JwtSigningService } from '../user-service/jwt-signing.services';
+import { JwtPayload, JwtSigningService } from '../../../utils/services/jwt-signing.services';
 
 export interface Token {
   accessToken: string;

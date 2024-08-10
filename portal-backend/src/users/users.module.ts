@@ -20,8 +20,10 @@ import { Role } from '../permissions/entities/role.entity';
 import { Permission } from '../permissions/entities/permission.entity';
 import { SigningSecret } from '../certificates/entities/signing-secret.entity';
 import { SigningSecretService } from '../certificates/services/signing-secret.service';
-import { JwtSigningService } from './services/user-service/jwt-signing.services';
+import { JwtSigningService } from '../utils/services/jwt-signing.services';
 import { PaswordResetToken } from './entities/password-reset-token.entity';
+import { UtilsModule } from '../utils/util.module';
+import { CertificateModule } from '../certificates/certificate.module';
 
 @Module({
   imports: [
@@ -36,7 +38,8 @@ import { PaswordResetToken } from './entities/password-reset-token.entity';
       PaswordResetToken,
     ]),
     PassportModule,
-    JwtModule.register({}),
+    UtilsModule,
+    CertificateModule,
   ],
   controllers: [UsersController, UserDetailController],
   providers: [
@@ -44,18 +47,11 @@ import { PaswordResetToken } from './entities/password-reset-token.entity';
     UserAccountRepository,
     UserSessionService,
     UserSessionRepository,
-    JwtSigningService,
     UserLogoutService,
     UserDetailService,
     JwtAuthGuard,
     SigningSecretService,
   ],
-  exports: [
-    UsersService,
-    JwtAuthGuard,
-    UserAccountRepository,
-    UserSessionService,
-    JwtSigningService,
-  ],
+  exports: [UsersService, JwtAuthGuard, UserAccountRepository, UserSessionService],
 })
 export class UsersModule {}
