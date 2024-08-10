@@ -26,15 +26,13 @@ import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { ActivityService } from '../service/activity.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
-import { Roles } from '../../users/decorators/role.decorator';
-import { UserRole } from '../../permissions/enums/roles.enum';
-import { CheckRole } from '../../users/guards/role.guard';
+import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 
 @Controller('activity')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Post()
   @ApiOperation({
     summary: 'Creates an activity',
@@ -61,7 +59,7 @@ export class ActivityController {
     return await this.activityService.createActivity(emailAddress, dto, file);
   }
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Get('activities')
   @ApiOperation({
     description: 'Gets all activities related to a user',
@@ -76,7 +74,7 @@ export class ActivityController {
     return await this.activityService.getAllUserActivities(emailAddress);
   }
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Get(':categoryId/category')
   @ApiOperation({
     description: 'Gets activities by category',
@@ -92,7 +90,7 @@ export class ActivityController {
     return this.activityService.getUserActivitiesByCategory(categoryId, emailAddress);
   }
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @ApiNotFoundResponse()
   @ApiOperation({
     description: 'Gets an activity',
@@ -109,7 +107,7 @@ export class ActivityController {
     return this.activityService.getUserActivity(id, emailAddress);
   }
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Patch(':id/update')
   @ApiOperation({
     summary: 'Updates an activity',
@@ -137,7 +135,7 @@ export class ActivityController {
     return this.activityService.updateActivity(activityId, dto, emailAddress, file);
   }
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Delete(':id/delete')
   @ApiOperation({
     summary: 'Deletes an activity',

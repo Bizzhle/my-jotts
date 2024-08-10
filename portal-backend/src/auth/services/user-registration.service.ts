@@ -1,4 +1,9 @@
-import { BadGatewayException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { WithTransactionService } from 'src/app/services/with-transaction.services';
 import { CreateUserDto } from '../dtos/create-user.dto';
@@ -29,7 +34,7 @@ export class UserRegistrationService extends WithTransactionService {
       return userAccount;
     } catch (error) {
       await transaction.rollbackTransaction();
-      throw new BadGatewayException('Cannot register user');
+      throw new BadRequestException('Cannot register user');
     } finally {
       await this.closeTransaction(transaction);
     }
