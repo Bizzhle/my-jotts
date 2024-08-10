@@ -13,7 +13,7 @@ import { RefreshSessionDto } from '../../users/dto/refresh-session-response.dto'
 import { IsAuthorizedUser } from '../guards/auth.guard';
 import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { GetUidFromJWT } from '../../app/jwt.decorators';
-import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
+import { ForgotPasswordDto, ResetPasswordDto } from '../dtos/forgot-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -68,7 +68,19 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'user password change failed' })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server error' })
-  async foorgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return await this.userAuthService.forgotPassword(forgotPasswordDto.emailAddress);
+  }
+
+  @Put('reset-password')
+  @ApiOperation({ summary: 'Reset user password' })
+  @ApiOkResponse({
+    description: 'Password reset',
+  })
+  @ApiBadRequestResponse({ description: 'User password reset failed' })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  @ApiInternalServerErrorResponse({ description: 'Server error' })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.userAuthService.resetPassword(resetPasswordDto);
   }
 }
