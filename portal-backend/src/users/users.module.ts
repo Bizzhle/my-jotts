@@ -21,6 +21,7 @@ import { Permission } from '../permissions/entities/permission.entity';
 import { SigningSecret } from '../certificates/entities/signing-secret.entity';
 import { SigningSecretService } from '../certificates/services/signing-secret.service';
 import { JwtSigningService } from './services/user-service/jwt-signing.services';
+import { PaswordResetToken } from './entities/password-reset-token.entity';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { JwtSigningService } from './services/user-service/jwt-signing.services'
       Role,
       Permission,
       SigningSecret,
+      PaswordResetToken,
     ]),
     PassportModule,
     JwtModule.register({}),
