@@ -9,9 +9,13 @@ import { CategoryController } from './controllers/category.controller';
 import { Category } from './entities/category.entity';
 import { CategoryRepository } from './repositories/category.repository';
 import { CategoryService } from './services/category.service';
+import { JwtSigningService } from '../utils/services/jwt-signing.services';
+import { UtilsModule } from '../utils/util.module';
+import { CertificateModule } from '../certificates/certificate.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category]), LogsModule],
+  imports: [TypeOrmModule.forFeature([Category]), LogsModule, UtilsModule, CertificateModule],
   controllers: [CategoryController],
   providers: [
     CategoryService,
@@ -19,6 +23,7 @@ import { CategoryService } from './services/category.service';
     ActivityRepository,
     UsersService,
     UserAccountRepository,
+    JwtSigningService,
   ],
   exports: [CategoryService],
 })

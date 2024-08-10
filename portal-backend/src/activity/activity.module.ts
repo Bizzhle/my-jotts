@@ -10,9 +10,16 @@ import { ActivityService } from './service/activity.service';
 import { UploadModule } from '../upload/upload.module';
 import { ImageModule } from '../image/image.module';
 import { AppLoggerService } from '../logger/services/app-logger.service';
+import { UtilsModule } from '../utils/util.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Activity]), CategoryModule, UploadModule, ImageModule],
+  imports: [
+    TypeOrmModule.forFeature([Activity]),
+    CategoryModule,
+    UploadModule,
+    ImageModule,
+    UtilsModule,
+  ],
   controllers: [ActivityController],
   providers: [
     ActivityService,

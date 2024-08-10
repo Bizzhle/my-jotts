@@ -1,22 +1,22 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
-import { IsAuthenticatedUser } from '../../users/guards/jwt.auth.guard';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { CategoryService } from '../services/category.service';
 import { ApiServiceUnavailableResponse } from '@nestjs/swagger';
+import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Get('categories')
   async getAllCategories(@GetCurrentUserFromJwt() emailAddress: string) {
     return this.categoryService.getAllUserCategories(emailAddress);
   }
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Post()
   @ApiServiceUnavailableResponse()
   async createCategory(
@@ -26,7 +26,7 @@ export class CategoryController {
     return await this.categoryService.createCategory(dto, emailAddress);
   }
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Patch(':id/update')
   async updateCategory(
     @Param('id') id: number,
@@ -36,7 +36,7 @@ export class CategoryController {
     return this.categoryService.updateCategory(id, dto, emailAddress);
   }
 
-  @IsAuthenticatedUser()
+  @IsAuthorizedUser()
   @Delete(':id')
   async remove(@Param('id') id: number) {
     return this.categoryService.deleteCategory(id);

@@ -14,72 +14,87 @@ import { ActivityCreationFailedException } from '../exceptions/activity-creation
 import { ActivityRepository } from '../repositories/activity.repository';
 import { ImageFileService } from '../../image/services/image-file.service';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
+import { WithTransactionService } from '../../app/services/with-transaction.services';
+import { DataSource } from 'typeorm';
 
 @Injectable()
-export class ActivityService {
+export class ActivityService extends WithTransactionService {
   constructor(
     private readonly userAccountRepository: UserAccountRepository,
     private readonly activityRepository: ActivityRepository,
     private readonly imageUploadService: UploadService,
     private readonly categoryService: CategoryService,
     private readonly imageFileService: ImageFileService,
-  ) {}
+    private readonly datasource: DataSource,
+  ) {
+    super();
+  }
 
   async createActivity(emailAddress: string, dto: CreateActivityDto, file?: Express.Multer.File) {
-    let imageFile;
+    const transaction = await this.createTransaction(this.datasource);
 
-    const user = await this.userAccountRepository.findOne({
-      where: {
-        email_address: emailAddress,
-      },
-    });
+    try {
+      let imageFile;
 
-    if (!user) {
-      throw new BadRequestException('User not logged in');
-    }
+      const user = await this.userAccountRepository.findOne({
+        where: {
+          email_address: emailAddress,
+        },
+      });
 
-    const existingActivity = await this.activityRepository.findOne({
-      where: {
-        activity_title: dto.activityTitle,
-        user_id: user.id,
-      },
-    });
+      if (!user) {
+        throw new BadRequestException('User not logged in');
+      }
 
-    if (existingActivity) {
-      throw new BadRequestException('Activity with this title already exists.');
-    }
+      const existingActivity = await this.activityRepository.findOne({
+        where: {
+          activity_title: dto.activityTitle,
+          user_id: user.id,
+        },
+      });
 
-    let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
-    if (!category) {
-      category = await this.categoryService.createCategory(
-        { categoryName: dto.categoryName },
-        user.email_address,
-      );
-    }
+      if (existingActivity) {
+        throw new BadRequestException('Activity with this title already exists.');
+      }
 
-    if (file) {
-      imageFile = await this.imageUploadService.upload(file);
-    }
+      let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
+      if (!category) {
+        category = await this.categoryService.createCategory(
+          { categoryName: dto.categoryName },
+          user.email_address,
+        );
+      }
 
-    const activity = await this.activityRepository.createActivity(
-      dto,
-      user.id,
-      category.id,
-      imageFile.location,
-    );
-    if (imageFile) {
-      await this.imageFileService.storeImageFile(
-        imageFile.Location,
-        imageFile.Key,
-        activity.id,
+      if (file) {
+        imageFile = await this.imageUploadService.upload(file);
+      }
+
+      const activity = await this.activityRepository.createActivity(
+        dto,
         user.id,
+        category.id,
+        imageFile.location,
       );
+      if (imageFile) {
+        await this.imageFileService.storeImageFile(
+          imageFile.Location,
+          imageFile.Key,
+          activity.id,
+          user.id,
+        );
 
-      activity.imageFile_url = imageFile.Location;
-      await this.activityRepository.save(activity);
+        activity.imageFile_url = imageFile.Location;
+        await this.activityRepository.save(activity);
+      }
+      await transaction.commitTransaction();
+
+      return activity;
+    } catch (err) {
+      await transaction.rollbackTransaction();
+      throw new BadRequestException('Could not create activity');
+    } finally {
+      await this.closeTransaction(transaction);
     }
-
-    return activity;
   }
 
   async getAllUserActivities(emailAddress: string): Promise<ActivityResponseDto[]> {
