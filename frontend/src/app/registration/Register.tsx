@@ -17,6 +17,8 @@ export default function Register() {
         sx={{
           display: "flex",
           justifyContent: "space-between",
+          flexDirection: { xs: "column", lg: "row" },
+          gap: 2,
         }}
       >
         <Banner />

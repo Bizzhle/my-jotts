@@ -1,5 +1,5 @@
-import { useLocation, Navigate, useNavigate } from "react-router-dom";
-import { ReactNode, useContext, useEffect } from "react";
+import { useLocation, Navigate } from "react-router-dom";
+import { ReactNode, useContext } from "react";
 import { AuthContext } from "../../webapp/utils/contexts/AuthContext";
 
 // export function RequireAuth({ children }: { children: JSX.Element }) {
@@ -18,10 +18,8 @@ interface ProtectedLoaderProps {
 }
 
 export const ProtectedRoutes = ({ children }: ProtectedLoaderProps) => {
-  const { authenticatedUser, isAuthenticated } = useContext(AuthContext);
+  const { authenticatedUser } = useContext(AuthContext);
   const location = useLocation();
-
-  console.log(isAuthenticated);
 
   if (!authenticatedUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;

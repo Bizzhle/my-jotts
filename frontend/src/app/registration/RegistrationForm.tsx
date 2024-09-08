@@ -1,7 +1,8 @@
 import { Box, Button, Link, Paper, TextField, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { registerUser } from "../api-service/services/auth-service";
+import { isApiError, registerUser } from "../api-service/services/auth-service";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export interface RegisterData {
   emailAddress: string;
@@ -10,6 +11,7 @@ export interface RegisterData {
 }
 export default function RegistrationForm() {
   const navigate = useNavigate();
+  const [error, setError] = useState<string | undefined>("");
   const {
     handleSubmit,
     register,
@@ -22,7 +24,8 @@ export default function RegistrationForm() {
       await registerUser(data);
       navigate("/login");
     } catch (err) {
-      console.log(err);
+      const errorMessage = isApiError(err);
+      setError(errorMessage);
     }
   };
 
@@ -32,22 +35,27 @@ export default function RegistrationForm() {
   };
 
   return (
-    <Paper sx={{ width: 300, border: "1px solid red", p: 5 }}>
+    <Paper
+      sx={{ width: { xs: 350, md: 400 }, border: "1px solid orange", p: 2 }}
+    >
       <form onSubmit={handleSubmit(onSubmit)}>
         <Typography sx={{ mb: 2 }}>Create an account</Typography>
         <TextField
           fullWidth
           label="email address"
           type="email"
-          {...register("emailAddress")}
+          {...register("emailAddress", { required: "email must not be empty" })}
+          error={!!errors.emailAddress}
+          helperText={errors.emailAddress?.message}
         />
+
         <TextField
           fullWidth
           label="Password"
           type="password"
           variant="outlined"
           margin="normal"
-          {...register("password", { required: true })}
+          {...register("password", { required: "password must not be empty" })}
           error={!!errors.password}
           helperText={errors.password?.message}
         />
@@ -58,12 +66,13 @@ export default function RegistrationForm() {
           variant="outlined"
           margin="normal"
           {...register("confirmPassword", {
-            required: true,
+            required: "password must not be empty",
             validate: validatePasswordMatch,
           })}
           error={!!errors.confirmPassword}
           helperText={errors.confirmPassword?.message}
         />
+        {error && <Typography color="error">{error}</Typography>}
         <Box>
           <Button
             variant="contained"

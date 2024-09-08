@@ -1,31 +1,42 @@
-import { Home, Category, Rowing } from "@mui/icons-material";
+import {
+  Home,
+  PlaylistAddCheckCircleRounded,
+  AccountCircleRounded,
+} from "@mui/icons-material";
+import { IconButton } from "@mui/material";
 
 interface NavigationDataList {
   title: string;
   path: string;
-  icon?: unknown;
+  icon?: JSX.Element;
 }
 
-export const NavigationData = [
+export const NavigationData: NavigationDataList[] = [
   {
     title: "Home",
     path: "/",
-    icon: <Home />,
+    icon: (
+      <IconButton color="secondary" size="large">
+        <Home />
+      </IconButton>
+    ),
   },
   {
     title: "Categories",
     path: "/categories",
-    icon: <Category />,
+    icon: (
+      <IconButton color="secondary" size="large">
+        <PlaylistAddCheckCircleRounded />
+      </IconButton>
+    ),
   },
   {
-    title: "Activity",
-    path: "/activity",
-    icon: <Rowing />,
-  },
-
-  {
-    title: "Logout",
-    path: "/logout",
-    icon: "",
+    title: "Account",
+    path: "/myaccount",
+    icon: (
+      <IconButton color="secondary" size="large">
+        <AccountCircleRounded />
+      </IconButton>
+    ),
   },
 ];

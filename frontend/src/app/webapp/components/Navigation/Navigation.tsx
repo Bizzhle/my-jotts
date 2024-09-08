@@ -1,28 +1,25 @@
 import { Box, Drawer, Toolbar } from "@mui/material";
-import { useState } from "react";
 import NavigationList from "./NavigationList";
 
-export default function Navigation() {
-  const [isOpen, setIsOpen] = useState<boolean>(true);
-  const [isClosing, setIsClosing] = useState<boolean>(false);
+interface NavigationProps {
+  openNavigation: boolean;
+  setOpenNavigation: (value: boolean) => void;
+}
 
-  const drawerStyle = {
-    width: 300,
-    flexShrink: 0,
-    [`& .MuiDrawer-paper`]: {
-      boxSizing: "border-box",
-      width: 300,
-      borderRight: "3px solid grey",
-    },
+export default function Navigation({
+  openNavigation,
+  setOpenNavigation,
+}: NavigationProps) {
+  const toggleDrawer = (newOpen: boolean) => () => {
+    setOpenNavigation(newOpen);
   };
+
   return (
-    <>
-      <Drawer sx={drawerStyle} open={isOpen} variant="permanent">
-        <Toolbar />
-        <Box sx={{ marginTop: 3 }}>
-          <NavigationList />
-        </Box>
-      </Drawer>
-    </>
+    <Drawer open={openNavigation} onClose={toggleDrawer(false)} sx={{}}>
+      <Toolbar />
+      <Box sx={{ marginTop: 3 }}>
+        <NavigationList toggle={toggleDrawer(false)} />
+      </Box>
+    </Drawer>
   );
 }
