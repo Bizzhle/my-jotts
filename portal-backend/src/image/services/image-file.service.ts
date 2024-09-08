@@ -10,36 +10,40 @@ export class ImageFileService {
     private readonly imageFileRepository: Repository<ImageFile>,
   ) {}
 
-  async storeImageFile(
-    imageUrl: string,
-    imageKey: string,
-    activityId: number,
-    userId: number,
-  ): Promise<void> {
+  async storeImageFile(imageUrl: string, imageKey: string, activityId: number, userId: number) {
     const data: Partial<ImageFile> = {
       url: imageUrl,
       key: imageKey,
       activity_id: activityId,
       user_id: userId,
     };
-    await this.imageFileRepository.save(data);
+    const image = await this.imageFileRepository.save(data);
+    return image.url;
   }
 
   async deleteImageFile(userId: number, activityId: number): Promise<void> {
-    const imageFile = await this.imageFileRepository.findOneBy({
-      user_id: userId,
-      activity_id: activityId,
+    const imageFile = await this.imageFileRepository.find({
+      where: {
+        user_id: userId,
+        activity_id: activityId,
+      },
     });
 
     if (!imageFile) throw new NotFoundException('Image file not found for given user and activity');
 
-    await this.imageFileRepository.remove(imageFile);
+    await Promise.all(
+      imageFile.map(async (image) => {
+        await this.imageFileRepository.remove(image);
+      }),
+    );
   }
 
   async getImageFileById(activityId: number, userId: number) {
-    const file = await this.imageFileRepository.findOneBy({
-      activity_id: activityId,
-      user_id: userId,
+    const file = await this.imageFileRepository.find({
+      where: {
+        activity_id: activityId,
+        user_id: userId,
+      },
     });
 
     if (!file) {

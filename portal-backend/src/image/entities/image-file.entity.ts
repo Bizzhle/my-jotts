@@ -22,7 +22,7 @@ export class ImageFile {
   @Exclude()
   user_id: number;
 
-  @ManyToOne(() => Activity, (activity) => activity.imageFiles)
+  @ManyToOne(() => Activity, (activity) => activity)
   @JoinColumn({ name: 'activity_id' })
   @Exclude()
   activity: Activity;

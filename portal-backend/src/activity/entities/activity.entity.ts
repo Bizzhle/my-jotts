@@ -58,20 +58,6 @@ export class Activity {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @ApiProperty({
-    description: 'String url of Image attached to activity gotten from AWS',
-    example: '',
-  })
-  @Column({ type: 'varchar', nullable: true })
-  @Transform(({ obj }) => obj.imageFile?.url)
-  @Expose({ name: 'imageUrl' })
-  imageFile_url: string;
-
-  @OneToMany(() => ImageFile, (imageFile) => imageFile.activity)
-  @JoinColumn({ name: 'imageFile_url' })
-  @Exclude()
-  imageFiles: ImageFile[];
-
   @ApiProperty({ description: 'Date of activity creation', example: '2023-01-19 13:09:51' })
   @Column({ type: 'date', nullable: true })
   @Expose({ name: 'dateCreated' })

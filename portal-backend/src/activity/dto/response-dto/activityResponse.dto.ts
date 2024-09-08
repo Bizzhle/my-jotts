@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ActivityResponseDto {
+  @ApiProperty({ description: 'id of the activity' })
+  id: number;
+
   @ApiProperty({ description: 'Title of the activity' })
   activityTitle: string;
 
@@ -26,5 +29,5 @@ export class ActivityResponseDto {
   dateUpdated?: Date;
 
   @ApiProperty({ description: 'image of activity ' })
-  image?: string;
+  imageUrls?: string[];
 }

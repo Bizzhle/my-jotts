@@ -51,8 +51,7 @@ export class UploadService {
     try {
       await this.s3.deleteObject(params).promise();
     } catch (err) {
-      // throw new HttpException('Cannot delete image', err);
-      console.log(err);
+      throw new HttpException('Cannot delete image', err);
     }
   }
 
@@ -66,9 +65,7 @@ export class UploadService {
       const data = await this.s3.getObject(params).promise();
       return data.Body.toString();
     } catch (err) {
-      console.log(err);
-
-      throw new NotFoundException('Could not fetch image');
+      throw new NotFoundException('Could not fetch image', err);
     }
   }
 }

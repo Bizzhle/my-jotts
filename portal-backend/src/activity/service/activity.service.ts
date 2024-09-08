@@ -10,12 +10,12 @@ import { UserAccountRepository } from '../../users/repositories/user-account.rep
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { Activity } from '../entities/activity.entity';
-import { ActivityCreationFailedException } from '../exceptions/activity-creation-failed.exception';
 import { ActivityRepository } from '../repositories/activity.repository';
 import { ImageFileService } from '../../image/services/image-file.service';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
 import { WithTransactionService } from '../../app/services/with-transaction.services';
 import { DataSource } from 'typeorm';
+import { AppLoggerService } from '../../logger/services/app-logger.service';
 
 @Injectable()
 export class ActivityService extends WithTransactionService {
@@ -25,26 +25,21 @@ export class ActivityService extends WithTransactionService {
     private readonly imageUploadService: UploadService,
     private readonly categoryService: CategoryService,
     private readonly imageFileService: ImageFileService,
+    private readonly logService: AppLoggerService,
     private readonly datasource: DataSource,
   ) {
     super();
   }
 
-  async createActivity(emailAddress: string, dto: CreateActivityDto, file?: Express.Multer.File) {
+  async createActivity(emailAddress: string, dto: CreateActivityDto, file?: Express.Multer.File[]) {
     const transaction = await this.createTransaction(this.datasource);
 
     try {
-      let imageFile;
-
       const user = await this.userAccountRepository.findOne({
         where: {
           email_address: emailAddress,
         },
       });
-
-      if (!user) {
-        throw new BadRequestException('User not logged in');
-      }
 
       const existingActivity = await this.activityRepository.findOne({
         where: {
@@ -58,6 +53,7 @@ export class ActivityService extends WithTransactionService {
       }
 
       let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
+
       if (!category) {
         category = await this.categoryService.createCategory(
           { categoryName: dto.categoryName },
@@ -65,33 +61,43 @@ export class ActivityService extends WithTransactionService {
         );
       }
 
-      if (file) {
-        imageFile = await this.imageUploadService.upload(file);
-      }
+      const activity = await this.activityRepository.create({
+        activity_title: dto.activityTitle,
+        price: dto.price,
+        location: dto.location || null,
+        rating: dto.rating,
+        description: dto.description,
+        user_id: user.id,
+        category_id: category.id,
+        date_created: new Date(),
+        date_updated: new Date(),
+      });
 
-      const activity = await this.activityRepository.createActivity(
-        dto,
-        user.id,
-        category.id,
-        imageFile.location,
-      );
-      if (imageFile) {
-        await this.imageFileService.storeImageFile(
-          imageFile.Location,
-          imageFile.Key,
-          activity.id,
-          user.id,
+      const savedActivity = await this.activityRepository.save(activity);
+
+      if (file && file.length > 0) {
+        const uploadedFiles = await Promise.all(
+          file.map(async (file) => await this.imageUploadService.upload(file)),
         );
 
-        activity.imageFile_url = imageFile.Location;
-        await this.activityRepository.save(activity);
+        const imageFiles = await Promise.all(
+          uploadedFiles.map(
+            async (uploadedFile) =>
+              await this.imageFileService.storeImageFile(
+                uploadedFile.Location,
+                uploadedFile.Key,
+                savedActivity.id,
+                user.id,
+              ),
+          ),
+        );
       }
-      await transaction.commitTransaction();
 
-      return activity;
+      return savedActivity;
     } catch (err) {
       await transaction.rollbackTransaction();
-      throw new BadRequestException('Could not create activity');
+      await this.logService.debug(err);
+      throw new BadRequestException('Could not create activity', err);
     } finally {
       await this.closeTransaction(transaction);
     }
@@ -108,18 +114,16 @@ export class ActivityService extends WithTransactionService {
       throw new BadRequestException('User not logged in');
     }
 
-    const activities = await this.activityRepository.geAllUserActivities(user.id);
+    const activities = await this.activityRepository.getAllUserActivities(user.id);
 
     let activityResponse: ActivityResponseDto[] = [];
 
     for (const activity of activities) {
-      let imageFile;
-      if (activity.imageFile_url) {
-        const { key } = await this.imageFileService.getImageFileById(activity.id, user.id);
-        imageFile = await this.imageUploadService.getImageStreamFromS3(key);
-      }
+      const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
+      const imageUrls = imageFile.map((image) => image.url);
 
       activityResponse.push({
+        id: activity.id,
         activityTitle: activity.activity_title,
         categoryName: activity.category.category_name,
         location: activity.location,
@@ -128,7 +132,7 @@ export class ActivityService extends WithTransactionService {
         description: activity.description,
         dateCreated: activity.date_created,
         dateUpdated: activity.date_updated,
-        image: imageFile,
+        imageUrls: imageUrls,
       });
     }
 
@@ -136,8 +140,6 @@ export class ActivityService extends WithTransactionService {
   }
 
   async getUserActivity(activityId: number, emailAddress: string): Promise<ActivityResponseDto> {
-    let activityResponse: ActivityResponseDto;
-    let imageFile;
     const user = await this.userAccountRepository.findOne({
       where: {
         email_address: emailAddress,
@@ -148,12 +150,17 @@ export class ActivityService extends WithTransactionService {
       user.id,
     );
 
-    if (activity.imageFile_url) {
-      const { key } = await this.imageFileService.getImageFileById(activity.id, user.id);
-      imageFile = await this.imageUploadService.getImageStreamFromS3(key);
+    if (!activity) {
+      throw new NotFoundException('Activity not found.');
     }
 
-    return (activityResponse = {
+    const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
+    const imageUrls = imageFile.map((image) => image.url);
+
+    //imageFile = await this.imageUploadService.getImageStreamFromS3(key);
+
+    return {
+      id: activity.id,
       activityTitle: activity.activity_title,
       categoryName: activity.category.category_name,
       location: activity.location,
@@ -162,8 +169,8 @@ export class ActivityService extends WithTransactionService {
       description: activity.description,
       dateCreated: activity.date_created,
       dateUpdated: activity.date_updated,
-      image: imageFile,
-    });
+      imageUrls: imageUrls,
+    };
   }
 
   async getUserActivitiesByCategory(categoryId: number, emailAddress: string) {
@@ -176,46 +183,118 @@ export class ActivityService extends WithTransactionService {
     return await this.activityRepository.getUserActivitiesByCategory(categoryId, user.id);
   }
 
-  async updateActivity(activityId: number, dto: UpdateActivityDto, emailAddress: string, file) {
-    let imageUrl;
-    if (file) {
-      imageUrl = await this.imageUploadService.upload(file);
-    }
+  async getUserActivitiesByCategoryName(
+    categoryName: string,
+    emailAddress: string,
+  ): Promise<ActivityResponseDto[]> {
     const user = await this.userAccountRepository.findOne({
+      where: { email_address: emailAddress },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const category = await this.categoryService.getCategoryByName(categoryName, user.id);
+
+    //const category = await this.categoryRepository.findOne({ where: { name: categoryName } });
+    if (!category) {
+      throw new NotFoundException(`Category with name ${categoryName} not found`);
+    }
+
+    const activities = await this.activityRepository.find({
       where: {
-        email_address: emailAddress,
+        user_id: user.id,
+        category: { id: category.id },
       },
+      relations: ['category'],
     });
 
-    const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
-      activityId,
-      user.id,
-    );
+    let activityResponse: ActivityResponseDto[] = [];
 
-    if (!activity) {
-      throw new NotFoundException();
+    for (const activity of activities) {
+      const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
+      const imageUrls = imageFile.map((image) => image.url);
+
+      activityResponse.push({
+        id: activity.id,
+        activityTitle: activity.activity_title,
+        categoryName: activity.category.category_name,
+        location: activity.location,
+        price: activity.price,
+        rating: activity.rating,
+        description: activity.description,
+        dateCreated: activity.date_created,
+        dateUpdated: activity.date_updated,
+        imageUrls: imageUrls,
+      });
     }
 
-    let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
-    if (!category) {
-      category = await this.categoryService.createCategory(
-        { categoryName: dto.categoryName },
-        user.email_address,
+    return activityResponse;
+  }
+
+  async updateActivity(
+    activityId: number,
+    dto: UpdateActivityDto,
+    emailAddress: string,
+    files: Express.Multer.File[],
+  ) {
+    try {
+      const user = await this.userAccountRepository.findOne({
+        where: {
+          email_address: emailAddress,
+        },
+      });
+
+      const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
+        activityId,
+        user.id,
       );
+
+      if (!activity) {
+        throw new NotFoundException();
+      }
+
+      let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
+      if (!category) {
+        category = await this.categoryService.createCategory(
+          { categoryName: dto.categoryName },
+          user.email_address,
+        );
+      }
+
+      const activityData: Partial<Activity> = {
+        activity_title: dto.activityTitle,
+        category_id: category.id,
+        price: dto.price,
+        location: dto.location,
+        rating: dto.rating,
+        description: dto.description,
+        date_updated: new Date(),
+      };
+
+      const updatedActivity = await this.activityRepository.updateActivity(activity, activityData);
+      if (files && files.length > 0) {
+        const uploadedFiles = await Promise.all(
+          files.map(async (file) => await this.imageUploadService.upload(file)),
+        );
+
+        const imageFiles = await Promise.all(
+          uploadedFiles.map(
+            async (uploadedFile) =>
+              await this.imageFileService.storeImageFile(
+                uploadedFile.Location,
+                uploadedFile.Key,
+                updatedActivity.id,
+                user.id,
+              ),
+          ),
+        );
+      }
+
+      return updatedActivity;
+    } catch (err) {
+      throw new BadRequestException('Could not update activity', err);
     }
-
-    const activityData: Partial<Activity> = {
-      activity_title: dto.activityTitle,
-      category_id: category.id,
-      price: dto.price,
-      location: dto.location,
-      rating: dto.rating,
-      description: dto.description,
-      date_updated: new Date(),
-      imageFile_url: imageUrl,
-    };
-
-    return await this.activityRepository.updateActivity(activity, activityData);
   }
 
   async deleteActivity(activityId: number, emailAddress: string) {
@@ -241,13 +320,17 @@ export class ActivityService extends WithTransactionService {
       throw new NotFoundException('Activity not found.');
     }
 
-    if (activity.imageFile_url) {
-      const activityImage = await this.imageFileService.getImageFileById(activity.id, user.id);
+    const activityImage = await this.imageFileService.getImageFileById(activity.id, user.id);
 
-      await this.imageUploadService.deleteUploadFile(activityImage.key);
-
-      await this.imageFileService.deleteImageFile(user.id, activity.id);
+    if (activityImage) {
+      await Promise.all(
+        activityImage.map(async (image) => {
+          await this.imageUploadService.deleteUploadFile(image.key);
+        }),
+      );
     }
+
+    await this.imageFileService.deleteImageFile(user.id, activity.id);
 
     await this.activityRepository.remove(activity);
 
