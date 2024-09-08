@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateActivityDto {
@@ -8,7 +9,6 @@ export class CreateActivityDto {
   @IsString()
   categoryName: string;
 
-  @IsInt()
   @IsOptional()
   price?: number;
 
@@ -17,16 +17,12 @@ export class CreateActivityDto {
   location?: string;
 
   @IsInt()
-  @IsOptional()
-  @Min(1, { message: 'Rating must be between 1 and 5' })
-  @Max(5, { message: 'Rating must be between 1 and 5' })
-  rating?: number;
+  @Min(1)
+  @Max(5)
+  @Type(() => Number) // Convert the received string to a number
+  rating: number;
 
   @IsString()
   @IsOptional()
   description?: string;
-
-  @IsString()
-  @IsOptional()
-  image?: string;
 }

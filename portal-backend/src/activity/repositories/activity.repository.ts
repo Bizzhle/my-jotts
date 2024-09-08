@@ -11,28 +11,29 @@ export class ActivityRepository extends Repository<Activity> {
     super(Activity, ds.manager);
   }
 
-  public async createActivity(
-    dto: CreateActivity,
-    userId: number,
-    categoryId: number,
-    image?: string,
-  ): Promise<Activity> {
-    const activity = this.create({
-      activity_title: dto.activityTitle,
-      category_id: categoryId,
-      price: dto.price,
-      location: dto.location,
-      rating: dto.rating,
-      description: dto.description,
-      image: image,
-      date_created: new Date(),
-      user_id: userId,
-      ...dto,
-    });
-    return await this.save<Activity>(activity);
-  }
+  // public async createActivity(
+  //   dto: CreateActivity,
+  //   userId: number,
+  //   categoryId: number,
+  //   image?: string,
+  // ) {
+  //   const activity = this.create({
+  //     activity_title: dto.activityTitle,
+  //     category_id: categoryId,
+  //     price: dto.price,
+  //     location: dto.location,
+  //     rating: dto.rating,
+  //     description: dto.description,
+  //     date_created: new Date(),
+  //     user_id: userId,
+  //     imageFiles: image
+  //   });
+  //   await this.save<Activity>(activity);
 
-  async geAllUserActivities(userId: number): Promise<Activity[]> {
+  //   return activity;
+  // }
+
+  async getAllUserActivities(userId: number): Promise<Activity[]> {
     return this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])
@@ -58,23 +59,35 @@ export class ActivityRepository extends Repository<Activity> {
       .getMany();
   }
 
-  async updateActivity(activity: Activity, data: Partial<Activity>): Promise<void> {
-    Object.assign(
-      activity,
-      pickBy(
-        pick(data, [
-          'activity_title',
-          'category_id',
-          'price',
-          'rating',
-          'description',
-          'image',
-          'location',
-          'date_updated',
-        ]),
-      ),
-    );
+  async getUserActivitiesByCategoryName(categoryName: string, userId: number): Promise<Activity[]> {
+    return this.createQueryBuilder('activity')
+      .leftJoin('activity.category', 'category')
+      .select(['activity', 'category.category_name'])
+      .where('activity.user_id = :userId', { userId })
+      .andWhere('LOWER(category.name) = LOWER(:categoryName)', { categoryName })
+      .getMany();
+  }
 
-    await this.save(activity);
+  async updateActivity(activity: Activity, data: Partial<Activity>): Promise<Activity> {
+    const updatableFields = [
+      'activity_title',
+      'category_id',
+      'price',
+      'rating',
+      'description',
+      'image',
+      'location',
+      'date_updated',
+    ];
+    const updatedData = pick(data, updatableFields);
+
+    if (data.category_id !== undefined) {
+      activity.category_id = data.category_id;
+    }
+
+    Object.assign(activity, updatedData);
+    activity.date_updated = new Date();
+
+    return this.save(activity);
   }
 }
