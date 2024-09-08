@@ -1,7 +1,9 @@
 import {
   BadGatewayException,
   BadRequestException,
+  ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,24 +14,18 @@ import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { Category } from '../entities/category.entity';
 import { CategoryRepository } from '../repositories/category.repository';
-import { WithTransactionService } from '../../app/services/with-transaction.services';
 import { DataSource } from 'typeorm';
 
 @Injectable()
-export class CategoryService extends WithTransactionService {
+export class CategoryService {
   constructor(
     private readonly categoryRepository: CategoryRepository,
     private readonly activityRepository: ActivityRepository,
     private readonly usersService: UsersService,
-    private readonly customLogger: AppLoggerService,
-    private readonly datasource: DataSource,
-  ) {
-    super();
-  }
+    private readonly loggerService: AppLoggerService,
+  ) {}
 
   public async createCategory(dto: CreateCategoryDto, emailAddress: string): Promise<Category> {
-    const transaction = await this.createTransaction(this.datasource);
-
     try {
       const user = await this.usersService.getUserByEmail(emailAddress);
 
@@ -39,17 +35,18 @@ export class CategoryService extends WithTransactionService {
 
       const category = await this.categoryRepository.findCategoryByName(dto.categoryName, user.id);
 
-      if (!category) {
-        return await this.categoryRepository.createCategory(dto, user.id);
+      if (category) {
+        throw new ConflictException('Category with this name already exists.');
       }
-      await transaction.commitTransaction();
 
-      return category;
-    } catch {
-      await transaction.rollbackTransaction();
-      throw new BadRequestException('Cannot register user');
-    } finally {
-      await this.closeTransaction(transaction);
+      const createdCategory = await this.categoryRepository.createCategory(dto, user.id);
+      await this.loggerService.log('Category created');
+      return createdCategory;
+    } catch (error) {
+      if (error instanceof UnauthorizedException || error instanceof ConflictException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('An error occurred while creating the category');
     }
   }
 
