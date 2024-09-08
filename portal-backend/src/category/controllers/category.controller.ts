@@ -3,7 +3,14 @@ import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { CategoryService } from '../services/category.service';
-import { ApiServiceUnavailableResponse } from '@nestjs/swagger';
+import {
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiServiceUnavailableResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 
 @Controller('category')
@@ -18,6 +25,14 @@ export class CategoryController {
 
   @IsAuthorizedUser()
   @Post()
+  @ApiOperation({
+    summary: 'Creates a category',
+    description: 'An category is created by a user',
+  })
+  @ApiOkResponse({ status: 201, description: 'The Category has been successfully created.' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
+  @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   @ApiServiceUnavailableResponse()
   async createCategory(
     @GetCurrentUserFromJwt() emailAddress: string,
