@@ -4,14 +4,21 @@ import { LoginResponseDto, RefreshResponseDto } from "../dtos/sessionInfo.dto";
 import apiClient from "../../libs/Configs/axiosConfig";
 import { LogoutUserDto } from "../dtos/logoutUser.dto";
 import { SessionState } from "../../libs/SessionState";
+import axios, { AxiosError } from "axios";
 
 export type registrationData = Omit<RegisterData, "confirmPassword">;
+
+interface ApiError {
+  status: number;
+  message?: string;
+  error?: string;
+}
 
 export const registerUser = async (
   userData: registrationData
 ): Promise<void> => {
   try {
-    return await apiClient.post(`/users/register`, userData);
+    return await apiClient.post(`/auth/register`, userData);
   } catch (error) {
     console.error("Error registering user", error);
   }
@@ -41,9 +48,21 @@ export async function refreshToken(): Promise<RefreshResponseDto | undefined> {
     throw new Error("No Stored tokens found");
   }
 
-  const response = await apiClient.post(`/users/refresh`, { refreshToken });
-
-  console.log("got here");
+  const response = await apiClient.post(`/auth/refresh`, { refreshToken });
 
   return response.data;
+}
+
+export function isApiError(error: unknown): string | undefined {
+  let errorMessage;
+  if (axios.isAxiosError(error)) {
+    const axiosError = error as AxiosError<ApiError>;
+
+    if (axiosError.response?.data) {
+      errorMessage = axiosError.response.data.message;
+    }
+  } else {
+    errorMessage = "An unexpected error occurred";
+  }
+  return errorMessage;
 }

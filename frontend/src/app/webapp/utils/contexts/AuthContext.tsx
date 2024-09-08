@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext } from "react";
 import { useObjectReducer } from "../shared/objectReducer";
 import {
   getUserData,
@@ -20,7 +20,9 @@ export interface UserInfo {
 }
 
 export interface SessionInfo {
-  emailAddress: string;
+  emailAddress?: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export interface AuthUserContextState {
@@ -45,8 +47,8 @@ export interface useAuthenticatedUserReturn extends AuthContextValue {
 export const useAuth = () => {
   const context = useContext(AuthContext);
 
-  if (!context.authenticatedUser) {
-    throw new Error();
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
 
   return context;
@@ -66,6 +68,7 @@ export function AuthProvider(props: AuthUserProviderProps) {
 
   async function logoutUser() {
     const refreshToken = SessionState.refreshToken;
+
     if (refreshToken) {
       await logout({ refreshToken: refreshToken });
       setState("authenticatedUser", undefined);
@@ -73,8 +76,6 @@ export function AuthProvider(props: AuthUserProviderProps) {
       SessionState.removeRefreshToken();
     }
   }
-
-  console.log(state.authenticatedUser);
 
   return (
     <AuthContext.Provider
@@ -86,7 +87,7 @@ export function AuthProvider(props: AuthUserProviderProps) {
           return !!state.authenticatedUser;
         },
         get isAuthenticated() {
-          return !!state.sessionInfo;
+          return !!state.authenticatedUser?.emailAddress;
         },
         get authenticatedUser() {
           return state.authenticatedUser;
