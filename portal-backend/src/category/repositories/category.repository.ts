@@ -46,7 +46,10 @@ export class CategoryRepository extends Repository<Category> {
     );
   }
 
-  public async findCategoryByName(categoryName: string, user_id: number): Promise<Category | undefined> {
+  public async findCategoryByName(
+    categoryName: string,
+    user_id: number,
+  ): Promise<Category | undefined> {
     return this.createQueryBuilder('category')
       .where('LOWER(category.category_name) = LOWER(:categoryName)', {
         categoryName,
