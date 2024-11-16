@@ -49,7 +49,7 @@ export default function HomeBanner({
       }}
     >
       <Typography variant="h4" color="primary.main">
-        Jotta
+        MyJotts
       </Typography>
 
       <Box
