@@ -28,6 +28,7 @@ async function getSignedUrlWithCache(key: string): Promise<string> {
   const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 
   urlCache[key] = { url, expiry: now + CACHE_DURATION };
+
   return url;
 }
 

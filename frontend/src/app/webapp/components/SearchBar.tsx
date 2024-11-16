@@ -1,56 +1,34 @@
-import { InputBase } from "@mui/material";
-import { alpha, styled } from "@mui/material/styles";
-import SearchIcon from "@mui/icons-material/Search";
+import { InputBase, IconButton, Paper } from "@mui/material";
+import { ChangeEvent } from "react";
+import { Search } from "@mui/icons-material";
 
-export default function SearchBar() {
-  const Search = styled("div")(({ theme }) => ({
-    position: "relative",
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    "&:hover": {
-      backgroundColor: alpha(theme.palette.common.white, 0.25),
-    },
-    marginRight: theme.spacing(2),
-    marginLeft: 0,
-    width: "100",
-    [theme.breakpoints.up("sm")]: {
-      marginLeft: theme.spacing(3),
-      width: "auto",
-    },
-  }));
+interface SearchBarProps {
+  searchQuery: string;
+  handleSearchChange: (value: string) => void;
+}
 
-  const SearchIconWrapper = styled("div")(({ theme }) => ({
-    padding: theme.spacing(0, 2),
-    height: "100%",
-    position: "absolute",
-    pointerEvents: "none",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }));
+export default function SearchBar({
+  searchQuery,
+  handleSearchChange,
+}: SearchBarProps) {
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    e.preventDefault();
+    handleSearchChange(e.target.value);
+  }
 
-  const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: "inherit",
-    "& .MuiInputBase-input": {
-      padding: theme.spacing(1, 1, 1, 0),
-      // vertical padding + font size from searchIcon
-      paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-      transition: theme.transitions.create("width"),
-      width: "100%",
-      [theme.breakpoints.up("md")]: {
-        width: "20ch",
-      },
-    },
-  }));
   return (
-    <Search>
-      <SearchIconWrapper>
-        <SearchIcon />
-      </SearchIconWrapper>
-      <StyledInputBase
-        placeholder="Search…"
-        inputProps={{ "aria-label": "search" }}
-      />
-    </Search>
+    <form>
+      <Paper>
+        <IconButton>
+          <Search />
+        </IconButton>
+        <InputBase
+          placeholder="Search activities…"
+          inputProps={{ "aria-label": "search" }}
+          value={searchQuery}
+          onChange={handleChange}
+        />
+      </Paper>
+    </form>
   );
 }
