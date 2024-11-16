@@ -4,10 +4,8 @@ import { UserAccount } from '../../entities/user-account.entity';
 import { UserAccountRepository, UserCondition } from '../../repositories/user-account.repository';
 
 @Injectable()
-export class UsersService extends WithTransactionService {
-  constructor(private readonly userAccountRepository: UserAccountRepository) {
-    super();
-  }
+export class UsersService {
+  constructor(private readonly userAccountRepository: UserAccountRepository) {}
 
   public async getUserByEmail(emailAddress): Promise<UserAccount | null> {
     return await this.userAccountRepository.findUserByEmail(emailAddress);
