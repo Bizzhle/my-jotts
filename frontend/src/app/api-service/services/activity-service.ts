@@ -23,7 +23,7 @@ export async function createActivity(
     });
   }
 
-  return await apiClient.post(`/activity`, formData, {
+  return await apiClient.post(`/activities`, formData, {
     headers: {
       "Content-Type": "multipart/form-data", // Ensure the correct content type is set
     },
@@ -31,19 +31,27 @@ export async function createActivity(
 }
 
 export async function getActivity(id: string): Promise<ActivityResponseDto> {
-  const activity = await apiClient.get(`/activity/${id}`);
+  const activity = await apiClient.get(`/activities/${id}`);
   return activity.data;
 }
 
-export async function getActivities(): Promise<ActivityResponseDto[]> {
-  const activities = await apiClient.get(`/activity/activities`);
-  return activities.data;
+export async function getActivities(
+  search?: string
+): Promise<ActivityResponseDto[]> {
+  const searchParams = search ? new URLSearchParams({ search }) : undefined;
+
+  const { data } = await apiClient.get(
+    `/activities?${searchParams?.toString()}`
+  );
+  return data;
 }
 
 export async function getActivitiesByCategoryName(
   categoryName: string
 ): Promise<ActivityResponseDto[]> {
-  const activities = await apiClient.get(`/activity/${categoryName}/activity`);
+  const activities = await apiClient.get(
+    `/activities/${categoryName}/activity`
+  );
   return activities.data;
 }
 
@@ -64,7 +72,7 @@ export async function updateActivity(
     });
   }
 
-  return await apiClient.patch(`/activity/${activityId}/update`, formData, {
+  return await apiClient.patch(`/activities/${activityId}/update`, formData, {
     headers: {
       "Content-Type": "multipart/form-data", // Ensure the correct content type is set
     },
@@ -75,3 +83,9 @@ export async function getCategories(): Promise<[]> {
   const categories = await apiClient.get(`/category/categories`);
   return categories.data;
 }
+
+// export async function searchByName(search?: string) {
+//   const res = await apiClient.get(`/activity?search=${search}`);
+
+//   return res.data;
+// }
