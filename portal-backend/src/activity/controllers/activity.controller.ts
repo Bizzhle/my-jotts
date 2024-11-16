@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
@@ -24,8 +26,8 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { OptionalFileValidationPipe } from '../validator/optional-parse-file';
-
-@Controller('activity')
+@ApiTags('Activities')
+@Controller('activities')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
@@ -53,7 +55,7 @@ export class ActivityController {
   }
 
   @IsAuthorizedUser()
-  @Get('activities')
+  @Get('')
   @ApiOperation({
     description: 'Gets all activities related to a user',
   })
@@ -63,8 +65,9 @@ export class ActivityController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getAllUserActivities(
     @GetCurrentUserFromJwt() emailAddress: string,
+    @Query('search') search?: string,
   ): Promise<ActivityResponseDto[]> {
-    return await this.activityService.getAllUserActivities(emailAddress);
+    return await this.activityService.getAllUserActivities(emailAddress, search);
   }
 
   @IsAuthorizedUser()

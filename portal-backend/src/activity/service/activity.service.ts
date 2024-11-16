@@ -13,9 +13,9 @@ import { Activity } from '../entities/activity.entity';
 import { ActivityRepository } from '../repositories/activity.repository';
 import { ImageFileService } from '../../image/services/image-file.service';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
-import { WithTransactionService } from '../../app/services/with-transaction.services';
 import { DataSource } from 'typeorm';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
+import { WithTransactionService } from '../../app/services/with-transaction.services';
 
 @Injectable()
 export class ActivityService extends WithTransactionService {
@@ -55,10 +55,14 @@ export class ActivityService extends WithTransactionService {
       let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
 
       if (!category) {
-        category = await this.categoryService.createCategory(
-          { categoryName: dto.categoryName },
-          user.email_address,
-        );
+        // Apply transaction to category creation
+        category = await this.datasource.transaction(async (entityManager) => {
+          return await this.categoryService.createCategory(
+            { categoryName: dto.categoryName },
+            user.email_address,
+            entityManager, // Pass the entity manager to handle the transaction
+          );
+        });
       }
 
       const activity = await this.activityRepository.create({
@@ -93,6 +97,7 @@ export class ActivityService extends WithTransactionService {
         );
       }
 
+      await transaction.commitTransaction();
       return savedActivity;
     } catch (err) {
       await transaction.rollbackTransaction();
@@ -103,7 +108,7 @@ export class ActivityService extends WithTransactionService {
     }
   }
 
-  async getAllUserActivities(emailAddress: string): Promise<ActivityResponseDto[]> {
+  async getAllUserActivities(emailAddress: string, search: string): Promise<ActivityResponseDto[]> {
     const user = await this.userAccountRepository.findOne({
       where: {
         email_address: emailAddress,
@@ -114,13 +119,14 @@ export class ActivityService extends WithTransactionService {
       throw new BadRequestException('User not logged in');
     }
 
-    const activities = await this.activityRepository.getAllUserActivities(user.id);
+    const activities = await this.activityRepository.getAllUserActivities(user.id, search);
 
     let activityResponse: ActivityResponseDto[] = [];
 
     for (const activity of activities) {
+      let imageUrls;
       const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
-      const imageUrls = imageFile.map((image) => image.url);
+      if (imageFile) imageUrls = imageFile.map((image) => image.url);
 
       activityResponse.push({
         id: activity.id,
@@ -140,6 +146,7 @@ export class ActivityService extends WithTransactionService {
   }
 
   async getUserActivity(activityId: number, emailAddress: string): Promise<ActivityResponseDto> {
+    let imageUrls: string[] | null;
     const user = await this.userAccountRepository.findOne({
       where: {
         email_address: emailAddress,
@@ -155,7 +162,7 @@ export class ActivityService extends WithTransactionService {
     }
 
     const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
-    const imageUrls = imageFile.map((image) => image.url);
+    if (imageFile) imageUrls = imageFile.map((image) => image.url);
 
     //imageFile = await this.imageUploadService.getImageStreamFromS3(key);
 
@@ -236,7 +243,7 @@ export class ActivityService extends WithTransactionService {
     activityId: number,
     dto: UpdateActivityDto,
     emailAddress: string,
-    files: Express.Multer.File[],
+    files?: Express.Multer.File[],
   ) {
     try {
       const user = await this.userAccountRepository.findOne({
@@ -278,7 +285,7 @@ export class ActivityService extends WithTransactionService {
           files.map(async (file) => await this.imageUploadService.upload(file)),
         );
 
-        const imageFiles = await Promise.all(
+        await Promise.all(
           uploadedFiles.map(
             async (uploadedFile) =>
               await this.imageFileService.storeImageFile(
@@ -296,6 +303,38 @@ export class ActivityService extends WithTransactionService {
       throw new BadRequestException('Could not update activity', err);
     }
   }
+
+  // async searchByName(emailAddress: string, search?: string) {
+  //   const user = await this.userAccountRepository.findOne({
+  //     where: { email_address: emailAddress },
+  //   });
+  //   if (!user) {
+  //     throw new NotFoundException('User not found');
+  //   }
+
+  //   const activities = await this.activityRepository.filterByName(user.id, search);
+  //   let activityResponse: ActivityResponseDto[] = [];
+
+  //   for (const activity of activities) {
+  //     const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
+  //     const imageUrls = imageFile.map((image) => image.url);
+
+  //     activityResponse.push({
+  //       id: activity.id,
+  //       activityTitle: activity.activity_title,
+  //       categoryName: activity.category.category_name,
+  //       location: activity.location,
+  //       price: activity.price,
+  //       rating: activity.rating,
+  //       description: activity.description,
+  //       dateCreated: activity.date_created,
+  //       dateUpdated: activity.date_updated,
+  //       imageUrls: imageUrls,
+  //     });
+  //   }
+
+  //   return activityResponse;
+  // }
 
   async deleteActivity(activityId: number, emailAddress: string) {
     const user = await this.userAccountRepository.findOne({
