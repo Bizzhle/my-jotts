@@ -38,9 +38,11 @@ export function useObjectReducer<T>(initialState: T) {
 
   const setState: setStateFn<T> = useCallback(
     (key: string | number | symbol | Partial<T>, value?: unknown) => {
-      if (typeof key === "object")
+      if (typeof key === "object") {
         Object.entries(key).forEach(([key, value]) => dispatch({ key, value }));
-      dispatch({ key, value } as ReducerAction);
+      } else {
+        dispatch({ key, value } as ReducerAction);
+      }
     },
     []
   );
