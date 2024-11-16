@@ -21,7 +21,11 @@ export default function NavigationList({ toggle }: NavigationListProps) {
   return (
     <List sx={{ width: 230 }}>
       {NavigationData.map((item, index) => (
-        <Link to={item.path} key={index}>
+        <Link
+          to={item.path}
+          key={index}
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
           <ListItem disablePadding onClick={toggle}>
             <ListItemButton>
               <ListItemIcon>{item.icon}</ListItemIcon>

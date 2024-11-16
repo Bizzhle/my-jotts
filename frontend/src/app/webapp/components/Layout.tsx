@@ -16,6 +16,7 @@ function Layout() {
 
   return (
     <Container
+      maxWidth="md"
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -37,14 +38,12 @@ function Layout() {
           overflowX: "auto",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
         }}
         onClick={handleClose}
       >
         <Toolbar />
         <Box
           sx={{
-            maxWidth: "sm",
             px: { xs: 2, sm: 4, md: 6, lg: 8 },
             py: { xs: 4, sm: 4 },
             flexGrow: 1,
