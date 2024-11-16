@@ -28,9 +28,7 @@ const router = createBrowserRouter([
         index: true,
         Component: () => (
           <ProtectedRoutes>
-            <ActivityProvider>
-              <HomePage />
-            </ActivityProvider>
+            <HomePage />
           </ProtectedRoutes>
         ),
       },
@@ -42,9 +40,7 @@ const router = createBrowserRouter([
         path: "activity/:id",
         Component: () => (
           <ProtectedRoutes>
-            <ActivityProvider>
-              <ActivityDetail />
-            </ActivityProvider>
+            <ActivityDetail />
           </ProtectedRoutes>
         ),
       },
@@ -52,9 +48,7 @@ const router = createBrowserRouter([
         path: "categories/:categoryName",
         Component: () => (
           <ProtectedRoutes>
-            <ActivityProvider>
-              <CategoryDetail />
-            </ActivityProvider>
+            <CategoryDetail />
           </ProtectedRoutes>
         ),
       },
@@ -62,9 +56,7 @@ const router = createBrowserRouter([
         path: "categories",
         Component: () => (
           <ProtectedRoutes>
-            <ActivityProvider>
-              <Category />
-            </ActivityProvider>
+            <Category />
           </ProtectedRoutes>
         ),
       },

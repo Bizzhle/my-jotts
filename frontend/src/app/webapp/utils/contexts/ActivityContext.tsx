@@ -9,6 +9,7 @@ import {
   getCategories,
 } from "../../../api-service/services/activity-service";
 import { useParams } from "react-router-dom";
+import { useDebounce } from "../shared/useDebounce";
 
 interface Activity extends ActivityResponseDto {}
 interface Category {
@@ -18,12 +19,13 @@ interface Category {
 }
 
 interface ActivityProviderProps {
-  children?: React.ReactElement;
+  children?: React.ReactNode;
 }
 
 interface ActivityContextState {
   activities: Activity[];
   categories: Category[];
+  searchQuery: string;
   error?: string;
   loading: boolean;
   activityData?: Activity;
@@ -33,17 +35,21 @@ interface ActivityContextState {
 
 interface ActivityContextValue extends ActivityContextState {
   reloadActivity: () => void;
+  findActivity: (value: string) => void;
 }
 
 const initialState: ActivityContextState = {
   activities: [],
   categories: [],
+  searchQuery: "",
   error: undefined,
   loading: false,
   activityDataLoading: false,
   activityDataError: "",
 };
-export const ActivityContext = createContext<ActivityContextValue>({} as never);
+export const ActivityContext = createContext<ActivityContextValue>(
+  {} as ActivityContextValue
+);
 
 export function useActivities(): ActivityContextValue {
   const context = useContext(ActivityContext);
@@ -53,41 +59,47 @@ export function useActivities(): ActivityContextValue {
   return context;
 }
 
-export function ActivityProvider(props: ActivityProviderProps) {
+export function ActivityProvider({ children }: ActivityProviderProps) {
   const { id, categoryName } = useParams<{
     id?: string;
     categoryName?: string;
   }>();
-  const [state, setState] =
-    useObjectReducer<ActivityContextState>(initialState);
+  const [
+    {
+      activities,
+      activityData,
+      searchQuery,
+      categories,
+      loading,
+      activityDataLoading,
+    },
+    setState,
+  ] = useObjectReducer(initialState);
+  const debouncedSearch = useDebounce(searchQuery);
 
-  const fetchActivities = useCallback(async () => {
-    try {
-      setState("loading", true);
-      if (categoryName) {
-        const response = await getActivitiesByCategoryName(categoryName);
-        setState("activities", response);
-      } else {
-        const response = await getActivities();
-        setState("activities", response);
+  function findActivity(searchQuery: string) {
+    setState({ searchQuery });
+  }
+
+  useEffect(() => {
+    if (!id) {
+      async function loadActivities() {
+        try {
+          setState("loading", true);
+          const response = categoryName
+            ? await getActivitiesByCategoryName(categoryName)
+            : await getActivities(debouncedSearch);
+
+          setState({ activities: response });
+        } catch (err) {
+          setState("error", isApiError(err));
+        } finally {
+          setState("loading", false);
+        }
       }
-    } catch (err) {
-      setState("error", isApiError(err));
-    } finally {
-      setState("loading", false);
+      loadActivities();
     }
-  }, [categoryName, setState]);
-
-  //async function fetchActivitiesByCategoryName(categoryName: string) {
-  //  try {
-  //     setState("loading", true);
-  //        const response = await getActivitiesByCategoryName(categoryName);
-  //     setState("activities", response);
-  //   } catch (err) {
-  //     const errorMsg = isApiError(err);
-  //    setState("error", errorMsg);
-  //  }
-  //}
+  }, [debouncedSearch, categoryName, id, setState]);
 
   const reloadActivity = useCallback(async () => {
     if (!id) {
@@ -117,17 +129,23 @@ export function ActivityProvider(props: ActivityProviderProps) {
   }, [reloadActivity]);
 
   useEffect(() => {
-    fetchActivities();
     fetchCategories();
-  }, [fetchActivities, fetchCategories]);
+  }, [fetchCategories]);
 
   return (
     <ActivityContext.Provider
       value={{
-        ...state,
         reloadActivity,
+        findActivity,
+        activities,
+        categories,
+        searchQuery,
+        loading,
+        activityDataLoading,
+        activityData,
       }}
-      {...props}
-    />
+    >
+      {children}
+    </ActivityContext.Provider>
   );
 }

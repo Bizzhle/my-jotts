@@ -36,7 +36,7 @@ export default function Header({
   openNavigation,
 }: HeaderProps) {
   const { logoutUser } = useAuth();
-  const { categories } = useActivities();
+  const { categories, searchQuery, findActivity } = useActivities();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -112,12 +112,15 @@ export default function Header({
             )}
             <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
               <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
-                {isMobile ? <SummarizeTwoTone /> : "Jotta"}
+                {isMobile ? <SummarizeTwoTone /> : "MyJotts"}
               </Link>
             </Typography>
-            <SearchBar />
+            <SearchBar
+              searchQuery={searchQuery}
+              handleSearchChange={findActivity}
+            />
             {!isMobile && (
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
                 <ButtonGroup variant="text" ref={anchorRef}>
                   <Button color="inherit" onClick={handleToggle}>
                     Categories
