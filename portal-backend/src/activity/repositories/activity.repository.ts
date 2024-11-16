@@ -33,12 +33,17 @@ export class ActivityRepository extends Repository<Activity> {
   //   return activity;
   // }
 
-  async getAllUserActivities(userId: number): Promise<Activity[]> {
-    return this.createQueryBuilder('activity')
+  async getAllUserActivities(userId: number, search: string): Promise<Activity[]> {
+    const query = await this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])
-      .where('activity.user_id = :userId', { userId })
-      .getMany();
+      .where('activity.user_id = :userId', { userId });
+
+    if (search) {
+      query.where('activity.activity_title ILIKE :name', { name: `%${search}%` });
+    }
+
+    return query.getMany();
   }
 
   async getActivityByUserIdAndActivityId(activityId: number, userId: number) {
