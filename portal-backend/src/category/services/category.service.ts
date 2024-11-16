@@ -14,7 +14,7 @@ import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { Category } from '../entities/category.entity';
 import { CategoryRepository } from '../repositories/category.repository';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 
 @Injectable()
 export class CategoryService {
@@ -25,8 +25,13 @@ export class CategoryService {
     private readonly loggerService: AppLoggerService,
   ) {}
 
-  public async createCategory(dto: CreateCategoryDto, emailAddress: string): Promise<Category> {
+  public async createCategory(
+    dto: CreateCategoryDto,
+    emailAddress: string,
+    entityManager?: EntityManager,
+  ): Promise<Category> {
     try {
+      let createdCategory;
       const user = await this.usersService.getUserByEmail(emailAddress);
 
       if (!user) {
@@ -39,7 +44,11 @@ export class CategoryService {
         throw new ConflictException('Category with this name already exists.');
       }
 
-      const createdCategory = await this.categoryRepository.createCategory(dto, user.id);
+      if (entityManager) {
+        createdCategory = await entityManager.save(Category, category);
+      } else {
+        createdCategory = await this.categoryRepository.createCategory(dto, user.id);
+      }
       await this.loggerService.log('Category created');
       return createdCategory;
     } catch (error) {
