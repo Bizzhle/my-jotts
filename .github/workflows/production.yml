@@ -1,0 +1,35 @@
+name: Production CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node.js for Frontend
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - run: cd frontend && npm install
+      - run: cd frontend && npm test
+      - name: Deploy Frontend to Production
+        run: echo "Deploying frontend to production... "
+
+  portal-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node.js for Backend
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - run: cd frontend && npm install
+      - run: cd frontend && npm test
+      - name: Deploy Baackend to Production
+        run: echo "Deploying backend to production... "
