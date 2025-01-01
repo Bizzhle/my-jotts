@@ -48,29 +48,6 @@ export default function AccountPage() {
           </Box>
         </ProfileCards>
         <Toolbar />
-        <ProfileCards title="My Subscriptions">
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Your subscriptions and billing
-            </Typography>
-            <Box mt={2}>
-              <Typography variant="body1" component="div">
-                Subscriptions
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#b0b0b5" }}>
-                Disney+ Standard ( monthly subscription )
-              </Typography>
-              <Typography variant="caption" sx={{ display: "block", mt: 1 }}>
-                Manage your subscription settings in your iTunes account.
-              </Typography>
-            </Box>
-          </Box>
-
-          <Button variant="contained" sx={{ mt: 2 }}>
-            Cancel Subscription
-          </Button>
-        </ProfileCards>
-        <Toolbar />
 
         <ProfileCards title="Additional settings">
           <Typography variant="h6" gutterBottom>
