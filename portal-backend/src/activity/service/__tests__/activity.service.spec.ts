@@ -11,7 +11,6 @@ import { ImageFileService } from '../../../image/services/image-file.service';
 import { AppLoggerService } from '../../../logger/services/app-logger.service';
 import { JwtSigningService } from '../../../utils/services/jwt-signing.services';
 import { Activity } from '../../entities/activity.entity';
-import { Category } from '../../../category/entities/category.entity';
 
 const category = {
   id: 1,
