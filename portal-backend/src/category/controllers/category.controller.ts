@@ -4,27 +4,31 @@ import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { CategoryService } from '../services/category.service';
 import {
+  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiServiceUnavailableResponse,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
-
+@ApiTags('Category')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @IsAuthorizedUser()
   @Get('categories')
+  @ApiBearerAuth()
   async getAllCategories(@GetCurrentUserFromJwt() emailAddress: string) {
     return this.categoryService.getAllUserCategories(emailAddress);
   }
 
   @IsAuthorizedUser()
   @Post()
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Creates a category',
     description: 'An category is created by a user',
@@ -43,6 +47,7 @@ export class CategoryController {
 
   @IsAuthorizedUser()
   @Patch(':id/update')
+  @ApiBearerAuth()
   async updateCategory(
     @Param('id') id: number,
     @Body() dto: UpdateCategoryDto,
@@ -53,6 +58,7 @@ export class CategoryController {
 
   @IsAuthorizedUser()
   @Delete(':id')
+  @ApiBearerAuth()
   async remove(@Param('id') id: number) {
     return this.categoryService.deleteCategory(id);
   }
