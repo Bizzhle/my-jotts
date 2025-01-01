@@ -7,19 +7,22 @@ export class PaymentPlan {
   id: number;
 
   @Column({ type: 'enum', enum: PaymentPlanEnum })
-  name: PaymentPlanEnum; // e.g., "Basic Plan", "Pro Plan"
+  name: PaymentPlanEnum;
 
   @Column({ nullable: true })
   description: string;
 
   @Column()
-  stripePriceId: string; // Stripe price ID for this plan
+  stripePriceId: string;
+
+  @Column({ nullable: true })
+  stripeProductId: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  price: number; // Price in USD or another currency
+  price: number;
 
   @Column()
-  currency: string; // e.g., "USD"
+  currency: string;
 
   @Column()
   billingInterval: 'month' | 'year';
