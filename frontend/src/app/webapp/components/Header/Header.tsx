@@ -36,7 +36,8 @@ export default function Header({
   openNavigation,
 }: HeaderProps) {
   const { logoutUser } = useAuth();
-  const { categories, searchQuery, findActivity } = useActivities();
+  const { categories, searchQuery, findActivity, reloadActivity } =
+    useActivities();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -82,6 +83,12 @@ export default function Header({
     setAnchorEl(null);
   };
 
+  const handleReloadActivity = () => {
+    console.log(" reloading activity");
+
+    reloadActivity();
+  };
+
   return (
     <>
       <AppBar
@@ -111,7 +118,11 @@ export default function Header({
               />
             )}
             <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-              <Link to="/" style={{ color: "inherit", textDecoration: "none" }}>
+              <Link
+                to="/"
+                style={{ color: "inherit", textDecoration: "none" }}
+                onClick={handleReloadActivity}
+              >
                 {isMobile ? <SummarizeTwoTone /> : "MyJotts"}
               </Link>
             </Typography>
@@ -216,7 +227,7 @@ export default function Header({
                       to="/subscribe"
                       style={{ textDecoration: "none", color: "inherit" }}
                     >
-                      Subscribe
+                      Subscription
                     </Link>
                   </MenuItem>
                   <MenuItem onClick={handleLogout}>Logout</MenuItem>

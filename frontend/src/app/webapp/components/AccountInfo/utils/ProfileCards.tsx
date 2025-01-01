@@ -2,7 +2,7 @@ import { Box, Card, CardContent, Typography } from "@mui/material";
 import React from "react";
 
 interface ProfileCardsProps {
-  title: string;
+  title?: string;
   children: React.ReactNode;
 }
 
@@ -15,9 +15,11 @@ export default function ProfileCards({ title, children }: ProfileCardsProps) {
       }}
     >
       <Box sx={{ bgcolor: "primary.main", px: 2, py: 1 }}>
-        <Typography color="secondary.main" variant="h5" gutterBottom>
-          {title}
-        </Typography>
+        {title && (
+          <Typography color="secondary.main" variant="h6" gutterBottom>
+            {title}
+          </Typography>
+        )}
       </Box>
       <CardContent>{children}</CardContent>
     </Card>
