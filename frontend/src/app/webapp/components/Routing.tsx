@@ -10,6 +10,8 @@ import { ActivityProvider } from "../utils/contexts/ActivityContext";
 import CategoryDetail from "./Category/CategoryDetail";
 import Category from "../pages/Category";
 import AccountPage from "./AccountInfo/AccountPage";
+import SubscribePage from "./Subscription/SubscribePage";
+import WrappedCheckoutForm from "./Subscription/CheckoutForm";
 
 const router = createBrowserRouter([
   {
@@ -72,7 +74,15 @@ const router = createBrowserRouter([
         path: "subscribe",
         Component: () => (
           <ProtectedRoutes>
-            <AccountPage />
+            <SubscribePage />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "checkout",
+        Component: () => (
+          <ProtectedRoutes>
+            <WrappedCheckoutForm />
           </ProtectedRoutes>
         ),
       },

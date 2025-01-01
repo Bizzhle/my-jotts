@@ -11,6 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -33,6 +34,7 @@ export class ActivityController {
 
   @IsAuthorizedUser()
   @Post()
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Creates an activity',
     description: 'An activity is created by a user',

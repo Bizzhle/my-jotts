@@ -23,6 +23,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { CertificateModule } from '../certificates/certificate.module';
 import { AuthModule } from '../auth/auth.module';
 import { UtilsModule } from '../utils/util.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { UtilsModule } from '../utils/util.module';
     CertificateModule,
     AuthModule,
     UtilsModule,
+    SubscriptionModule,
   ],
   providers: [
     // RequestContextMiddleware,
