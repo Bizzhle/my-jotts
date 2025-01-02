@@ -14,7 +14,14 @@ export default function ProfileCards({ title, children }: ProfileCardsProps) {
         boxShadow: "0 3px 10px rgba(0, 0, 0, 0.2)",
       }}
     >
-      <Box sx={{ bgcolor: "primary.main", px: 2, py: 1 }}>
+      <Box
+        sx={{
+          px: 2,
+          py: 1,
+          borderBottom: 1,
+          borderColor: "primary.dark",
+        }}
+      >
         {title && (
           <Typography color="secondary.main" variant="h6" gutterBottom>
             {title}

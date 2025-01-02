@@ -1,4 +1,4 @@
-import { InputBase, IconButton, Paper } from "@mui/material";
+import { InputBase, IconButton, Box } from "@mui/material";
 import { ChangeEvent } from "react";
 import { Search } from "@mui/icons-material";
 
@@ -18,7 +18,12 @@ export default function SearchBar({
 
   return (
     <form>
-      <Paper>
+      <Box
+        sx={{
+          backgroundColor: "primary.light",
+          borderRadius: 2,
+        }}
+      >
         <IconButton>
           <Search />
         </IconButton>
@@ -28,7 +33,7 @@ export default function SearchBar({
           value={searchQuery}
           onChange={handleChange}
         />
-      </Paper>
+      </Box>
     </form>
   );
 }
