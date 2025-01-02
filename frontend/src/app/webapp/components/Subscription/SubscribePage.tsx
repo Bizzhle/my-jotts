@@ -31,8 +31,6 @@ export default function SubscribePage() {
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlanDto[]>();
   const [subscription, setSubscription] = useState<SubscriptionDto>();
 
-  console.log(formatDateString(subscription?.currentPeriodEnd));
-
   useEffect(() => {
     fetchPlans();
     fetchSubscription();
