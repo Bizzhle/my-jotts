@@ -1,4 +1,4 @@
-import { InputBase, IconButton, Box } from "@mui/material";
+import { InputBase, Box } from "@mui/material";
 import { ChangeEvent } from "react";
 import { Search } from "@mui/icons-material";
 
@@ -20,18 +20,28 @@ export default function SearchBar({
     <form>
       <Box
         sx={{
+          display: "flex",
+          alignItems: "center",
           backgroundColor: "primary.light",
           borderRadius: 2,
+          padding: "2px 8px",
+          width: {
+            xs: "100%",
+            sm: "400px",
+          },
+          flexGrow: {
+            xs: 1,
+            sm: 0,
+          },
         }}
       >
-        <IconButton>
-          <Search />
-        </IconButton>
+        <Search />
         <InputBase
           placeholder="Search activities…"
           inputProps={{ "aria-label": "search" }}
           value={searchQuery}
           onChange={handleChange}
+          sx={{ flex: 1 }}
         />
       </Box>
     </form>

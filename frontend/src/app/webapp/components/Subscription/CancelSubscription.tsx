@@ -13,7 +13,7 @@ export const CancelSubscription = ({
   };
 
   return (
-    <Button onClick={handleCancelSubscription} variant="contained">
+    <Button fullWidth onClick={handleCancelSubscription} variant="contained">
       Cancel Subscription
     </Button>
   );

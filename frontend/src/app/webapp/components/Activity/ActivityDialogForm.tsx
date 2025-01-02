@@ -118,6 +118,7 @@ export default function ActivityDialogForm({
             fullWidth
             margin="normal"
             {...register("activityTitle")}
+            color="secondary"
           />
           <AutoCompleteElement
             value={value}
@@ -132,6 +133,7 @@ export default function ActivityDialogForm({
             fullWidth
             margin="normal"
             {...register("price")}
+            color="secondary"
           />
           <TextField
             id="location"
@@ -140,6 +142,7 @@ export default function ActivityDialogForm({
             fullWidth
             margin="normal"
             {...register("location")}
+            color="secondary"
           />
           <ActivityRating rating={rating} setRating={setRating} />
           <TextField
@@ -149,6 +152,7 @@ export default function ActivityDialogForm({
             fullWidth
             margin="normal"
             {...register("description")}
+            color="secondary"
           />
           <Box mt={2}>
             <input
