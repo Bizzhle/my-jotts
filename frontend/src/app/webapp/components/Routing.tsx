@@ -71,7 +71,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "subscribe",
+        path: "subscription",
         Component: () => (
           <ProtectedRoutes>
             <SubscribePage />
