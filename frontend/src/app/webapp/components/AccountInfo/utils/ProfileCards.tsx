@@ -17,7 +17,7 @@ export default function ProfileCards({ title, children }: ProfileCardsProps) {
       <Box
         sx={{
           px: 2,
-          py: 1,
+          py: 0,
           borderBottom: 1,
           borderColor: "primary.dark",
         }}
