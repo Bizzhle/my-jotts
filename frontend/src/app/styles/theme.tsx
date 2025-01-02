@@ -3,17 +3,32 @@ import { createTheme } from "@mui/material";
 export const theme = createTheme({
   palette: {
     primary: {
-      main: "#2c5c51",
-      light: "",
-      dark: "",
+      main: "#fff",
+      light: "#ECECEC",
+      dark: "#DEDEE0",
     },
     secondary: {
-      main: "#FF5733",
+      main: "#000",
+      light: "#5C5C5F",
     },
+    divider: "#5C5C5F",
   },
   typography: {
     body2: {
       fontSize: 10,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#2c5c51",
+          color: "#fff",
+          "&:hover": {
+            backgroundColor: "darkgreen",
+          },
+        },
+      },
     },
   },
 });
