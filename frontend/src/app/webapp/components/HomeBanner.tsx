@@ -48,7 +48,7 @@ export default function HomeBanner({
         alignItems: "center",
       }}
     >
-      <Typography variant="h4" color="primary.main">
+      <Typography variant="h6" color="secondary">
         MyJotts
       </Typography>
 
@@ -96,6 +96,7 @@ export default function HomeBanner({
             <Button
               startIcon={<Add />}
               variant="outlined"
+              color="secondary"
               sx={{ mr: 2 }}
               onClick={handleButtonClick(setActivityFormOpen)}
             >
@@ -104,6 +105,7 @@ export default function HomeBanner({
             <Button
               startIcon={<Add />}
               variant="outlined"
+              color="secondary"
               onClick={handleButtonClick(setCategoryFormOpen)}
             >
               Category
