@@ -29,7 +29,9 @@ export default function AutoCompleteElement({
       }}
       sx={{ width: 300 }}
       isOptionEqualToValue={(option, value) => option === value || value === ""}
-      renderInput={(params) => <TextField {...params} label={label} />}
+      renderInput={(params) => (
+        <TextField {...params} label={label} color="secondary" />
+      )}
     />
   );
 }
