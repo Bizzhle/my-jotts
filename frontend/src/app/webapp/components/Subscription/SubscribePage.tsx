@@ -125,7 +125,13 @@ export default function SubscribePage() {
 
         <Toolbar />
         <ProfileCards title="All plans">
-          <Box sx={{ display: "flex", gap: 3, flexDirection: "row" }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 3,
+              flexDirection: { xs: "column", md: "row" },
+            }}
+          >
             {paymentPlans &&
               paymentPlans.map((plan) => (
                 <Container

@@ -22,13 +22,44 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          backgroundColor: "#2c5c51",
+          backgroundColor: "#108BE3",
           color: "#fff",
           "&:hover": {
-            backgroundColor: "darkgreen",
+            backgroundColor: "#0268B0",
           },
         },
       },
     },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          // backgroundColor: "#108BE3",
+          color: "#0268B0",
+          "&:hover": {
+            BorderColor: "#0268B0",
+          },
+        },
+      },
+    },
+    // MuiTextField: {
+    //   styleOverrides: {
+    //     root: {
+    //       "& .MuiInputBase-root": {
+    //         backgroundColor: "#f5f5f5",
+    //       },
+    //       "& .MuiOutlinedInput-root": {
+    //         "& fieldset": {
+    //           borderColor: "#ccc",
+    //         },
+    //         "&:hover fieldset": {
+    //           borderColor: "#888",
+    //         },
+    //         "&.Mui-focused fieldset": {
+    //           borderColor: "#000",
+    //         },
+    //       },
+    //     },
+    //   },
+    // },
   },
 });

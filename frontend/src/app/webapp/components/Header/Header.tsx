@@ -123,12 +123,10 @@ export default function Header({
           </Typography>
         )}
 
-        <Box sx={{ width: 400 }}>
-          <SearchBar
-            searchQuery={searchQuery}
-            handleSearchChange={findActivity}
-          />
-        </Box>
+        <SearchBar
+          searchQuery={searchQuery}
+          handleSearchChange={findActivity}
+        />
 
         {!isMobile && (
           <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
@@ -159,7 +157,7 @@ export default function Header({
               </Tooltip>
             </ButtonGroup>
             <Popper
-              sx={{ zIndex: 1, pt: 2 }}
+              sx={{ zIndex: 1, mt: "45px", minWidth: 150 }}
               open={open}
               anchorEl={anchorRef.current}
               role={undefined}

@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import AutoCompleteElement from "../AutoCompleteElement";
 import { createCategory } from "../../../api-service/services/category-services";
 import { isApiError } from "../../../api-service/services/auth-service";
+import { useActivities } from "../../utils/contexts/ActivityContext";
 
 interface DialogFormProps {
   open: boolean;
@@ -28,12 +29,13 @@ export interface CategoryData {
 export default function CategoryForm({ open, handleClose }: DialogFormProps) {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | undefined>("");
+  const { reloadCategory } = useActivities();
 
   const {
     handleSubmit,
     register,
     reset,
-    formState: { errors },
+    // formState: { errors },
   } = useForm<CategoryData>();
 
   function onClose() {
@@ -50,6 +52,7 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
     };
     try {
       await createCategory(categoryData);
+      await reloadCategory();
       onClose();
     } catch (err) {
       const errorMessage = isApiError(err);
@@ -71,7 +74,7 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
             value={value}
             setValue={setValue}
             label="Category"
-            options={["ya know"]}
+            options={[]}
           />
 
           <TextField
@@ -81,6 +84,7 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
             fullWidth
             margin="normal"
             {...register("description")}
+            color="secondary"
           />
         </DialogContent>
         <DialogActions>
