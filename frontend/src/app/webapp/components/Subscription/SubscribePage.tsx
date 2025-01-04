@@ -86,7 +86,7 @@ export default function SubscribePage() {
           <Box
             sx={{
               display: "flex",
-              gap: 3,
+              gap: { xs: 0, md: 3 },
               flexDirection: "row",
               justifyContent: "space-between",
             }}
@@ -128,7 +128,7 @@ export default function SubscribePage() {
           <Box
             sx={{
               display: "flex",
-              gap: 3,
+              gap: { xs: 2, md: 3 },
               flexDirection: { xs: "column", md: "row" },
             }}
           >
@@ -138,7 +138,7 @@ export default function SubscribePage() {
                   key={plan.id}
                   sx={{
                     padding: 2,
-                    width: 300,
+                    width: { xs: "100%", md: 300 },
                     borderRadius: 2,
                     border: "1px solid #ddd",
                   }}
