@@ -10,20 +10,21 @@ export default function ProfileCards({ title, children }: ProfileCardsProps) {
   return (
     <Card
       sx={{
+        flexGrow: 1,
         borderRadius: 2,
         boxShadow: "0 3px 10px rgba(0, 0, 0, 0.2)",
       }}
     >
       <Box
         sx={{
-          px: 2,
-          py: 0,
           borderBottom: 1,
           borderColor: "primary.dark",
+          px: 2,
+          py: 1,
         }}
       >
         {title && (
-          <Typography color="secondary.main" variant="h6" gutterBottom>
+          <Typography color="secondary.main" variant="subtitle1">
             {title}
           </Typography>
         )}

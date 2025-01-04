@@ -36,7 +36,7 @@ export default function ActivityCard({ value }: CardProps) {
     >
       <CardMedia
         component="img"
-        image={imageUrl[0]}
+        image={imageUrl[0] || `../public/dummy.jpeg`}
         alt={value.activityTitle}
         sx={{
           maxWidth: 120,

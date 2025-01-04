@@ -20,5 +20,6 @@ import { UtilsModule } from '../utils/util.module';
   ],
   controllers: [SubscriptionController, PaymentPlanController],
   providers: [SubscriptionService, InvoiceService, UserAccountRepository, PaymentPlanService],
+  exports: [SubscriptionService, PaymentPlanService, InvoiceService],
 })
 export class SubscriptionModule {}

@@ -2,6 +2,7 @@ import {
   BadGatewayException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -15,6 +16,8 @@ import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { Category } from '../entities/category.entity';
 import { CategoryRepository } from '../repositories/category.repository';
 import { DataSource, EntityManager } from 'typeorm';
+import { SubscriptionStatus } from '../../subscription/enum/subscrition.enum';
+import { SubscriptionService } from '../../subscription/services/subscription.service';
 
 @Injectable()
 export class CategoryService {
@@ -22,6 +25,7 @@ export class CategoryService {
     private readonly categoryRepository: CategoryRepository,
     private readonly activityRepository: ActivityRepository,
     private readonly usersService: UsersService,
+    private readonly subscriptionService: SubscriptionService,
     private readonly loggerService: AppLoggerService,
   ) {}
 
@@ -36,6 +40,18 @@ export class CategoryService {
 
       if (!user) {
         throw new UnauthorizedException('User not available');
+      }
+
+      const categoryCount = await this.categoryRepository.count({ where: { user_id: user.id } });
+
+      const subscription = await this.subscriptionService.getUserSubscriptionInformation(
+        user.email_address,
+      );
+      const isSubscriptionActive =
+        subscription && subscription.status === SubscriptionStatus.active;
+
+      if (!isSubscriptionActive && categoryCount >= 5) {
+        throw new ForbiddenException('Maximum categories');
       }
 
       const category = await this.categoryRepository.findCategoryByName(dto.categoryName, user.id);

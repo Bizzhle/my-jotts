@@ -16,13 +16,30 @@ export default function Register() {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
           flexDirection: { xs: "column", lg: "row" },
+          justifyContent: "space-between",
+          alignItems: "center",
           gap: 2,
+          width: "100%",
         }}
       >
-        <Banner />
-        <RegistrationForm />
+        <Box
+          sx={{
+            width: { xs: "100%", lg: "50%" },
+            maxWidth: 500,
+            mb: { xs: 2, lg: 0 },
+          }}
+        >
+          <Banner />
+        </Box>
+        <Box
+          sx={{
+            width: { xs: "100%", lg: "50%" },
+            maxWidth: 500,
+          }}
+        >
+          <RegistrationForm />
+        </Box>
       </Box>
     </Container>
   );
