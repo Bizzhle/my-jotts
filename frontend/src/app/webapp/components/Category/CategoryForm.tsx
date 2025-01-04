@@ -1,12 +1,11 @@
 import {
-  Alert,
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   TextField,
-  Typography,
 } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -14,6 +13,7 @@ import AutoCompleteElement from "../AutoCompleteElement";
 import { createCategory } from "../../../api-service/services/category-services";
 import { isApiError } from "../../../api-service/services/auth-service";
 import { useActivities } from "../../utils/contexts/ActivityContext";
+import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
 
 interface DialogFormProps {
   open: boolean;
@@ -62,13 +62,9 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add Category</DialogTitle>
-      {error && (
-        <Typography color="error" sx={{ ml: 3 }}>
-          {error}
-        </Typography>
-      )}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <DialogTitle sx={{ mb: -2 }}>Add Category</DialogTitle>
+      {error && getErrorMessage(error)}
+      <Box sx={{ mt: -2 }} component="form" onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           <AutoCompleteElement
             value={value}
@@ -91,7 +87,7 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
           <Button onClick={onClose}>Cancel</Button>
           <Button type="submit">Submit</Button>
         </DialogActions>
-      </form>
+      </Box>
     </Dialog>
   );
 }
