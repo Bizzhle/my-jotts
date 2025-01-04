@@ -35,7 +35,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "protected",
+        path: "*",
         Component: NotFoundPage,
       },
       {

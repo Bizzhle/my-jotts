@@ -27,10 +27,15 @@ export default function AutoCompleteElement({
       onInputChange={(event, newInputValue) => {
         setValue(newInputValue);
       }}
-      sx={{ width: 300 }}
       isOptionEqualToValue={(option, value) => option === value || value === ""}
       renderInput={(params) => (
-        <TextField {...params} label={label} color="secondary" />
+        <TextField
+          margin="normal"
+          {...params}
+          fullWidth
+          label={label}
+          color="secondary"
+        />
       )}
     />
   );

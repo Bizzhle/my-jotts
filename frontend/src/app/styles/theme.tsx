@@ -34,9 +34,20 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           // backgroundColor: "#108BE3",
-          color: "#0268B0",
+          color: "#108BE3",
           "&:hover": {
             BorderColor: "#0268B0",
+          },
+        },
+      },
+    },
+    MuiFab: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#108BE3",
+          color: "#fff",
+          "&:hover": {
+            backgroundColor: "#0268B0",
           },
         },
       },

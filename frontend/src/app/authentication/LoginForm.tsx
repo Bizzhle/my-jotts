@@ -1,4 +1,4 @@
-import { Box, Button, Link, Paper, TextField, Typography } from "@mui/material";
+import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import {
   isApiError,
@@ -30,7 +30,7 @@ export default function LoginForm() {
 
   const from = location.state?.from?.pathname || "/";
 
-  const handleLogin = async (data: registrationData) => {
+  const onSubmit = async (data: registrationData) => {
     try {
       const response = await login(data);
       SessionState.accessToken = response?.accessToken;
@@ -46,13 +46,8 @@ export default function LoginForm() {
       navigate(from, { replace: true });
     } catch (err) {
       const errorMessage = isApiError(err);
-
       setError(errorMessage);
     }
-  };
-
-  const onSubmit = async (data: registrationData) => {
-    await handleLogin(data);
   };
 
   const handleReload = async () => {
@@ -81,48 +76,58 @@ export default function LoginForm() {
   }, [authenticatedUser]);
 
   return (
-    <Paper
-      sx={{ width: { xs: 350, md: 400 }, border: "2px solid orange", p: 2 }}
+    <Box
+      component="form"
+      sx={{
+        flexGrow: 1,
+        border: "2px solid orange",
+        p: { xs: 2, md: 2 },
+      }}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
     >
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Typography sx={{ mb: 2 }}>Log in</Typography>
-        <TextField
-          fullWidth
-          label="email address"
-          type="email"
-          {...register("emailAddress")}
-        />
-        <TextField
-          fullWidth
-          label="Password"
-          type="password"
-          variant="outlined"
-          margin="normal"
-          {...register("password", { required: true })}
-          error={!!errors.password}
-          helperText={errors.password?.message}
-        />
-        {error && <Typography color="error">{error}</Typography>}
+      <Typography sx={{ mb: 2 }}>Sign In</Typography>
+      <TextField
+        fullWidth
+        label="email address"
+        type="email"
+        {...register("emailAddress")}
+        color="secondary"
+      />
+      <TextField
+        fullWidth
+        label="Password"
+        type="password"
+        variant="outlined"
+        margin="normal"
+        {...register("password", { required: true })}
+        error={!!errors.password}
+        helperText={errors.password?.message}
+        color="secondary"
+      />
+      {error && (
+        <Typography color="error" variant="body2">
+          Username or password is wrong, please try again
+        </Typography>
+      )}
 
-        <Box sx={{ textAlign: "center", mt: 2 }}>
-          <Button
-            variant="contained"
-            size="medium"
-            color="primary"
-            fullWidth={true}
-            type="submit"
-            disableElevation
-          >
-            Submit
-          </Button>
-        </Box>
-        <Box sx={{ textAlign: "center", mt: 2 }}>
-          <Typography>
-            <Link href="/register">Register here</Link> if you do not have an
-            account
-          </Typography>
-        </Box>
-      </form>
-    </Paper>
+      <Button
+        variant="contained"
+        size="medium"
+        color="primary"
+        fullWidth={true}
+        type="submit"
+        sx={{ textAlign: "center", mt: 1 }}
+      >
+        Submit
+      </Button>
+      <Typography sx={{ textAlign: "center", mt: 2 }}>
+        Register {""}
+        <Link href="/register" color="#108BE3">
+          here
+        </Link>{" "}
+        if you do not have an account
+      </Typography>
+    </Box>
   );
 }

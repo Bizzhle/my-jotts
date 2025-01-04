@@ -5,35 +5,22 @@ import { CreateActivityDto } from '../dto/create-activity.dto';
 import { Activity } from '../entities/activity.entity';
 
 type CreateActivity = Omit<CreateActivityDto, 'category'>;
+
+interface activityOptions {
+  take?: number;
+  order?: { [key: string]: 'ASC' | 'DESC' };
+}
 @Injectable()
 export class ActivityRepository extends Repository<Activity> {
   constructor(ds: DataSource) {
     super(Activity, ds.manager);
   }
 
-  // public async createActivity(
-  //   dto: CreateActivity,
-  //   userId: number,
-  //   categoryId: number,
-  //   image?: string,
-  // ) {
-  //   const activity = this.create({
-  //     activity_title: dto.activityTitle,
-  //     category_id: categoryId,
-  //     price: dto.price,
-  //     location: dto.location,
-  //     rating: dto.rating,
-  //     description: dto.description,
-  //     date_created: new Date(),
-  //     user_id: userId,
-  //     imageFiles: image
-  //   });
-  //   await this.save<Activity>(activity);
-
-  //   return activity;
-  // }
-
-  async getAllUserActivities(userId: number, search: string): Promise<Activity[]> {
+  async getAllUserActivities(
+    userId: number,
+    search: string,
+    options?: activityOptions,
+  ): Promise<Activity[]> {
     const query = await this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])
@@ -41,6 +28,11 @@ export class ActivityRepository extends Repository<Activity> {
 
     if (search) {
       query.where('activity.activity_title ILIKE :name', { name: `%${search}%` });
+    }
+
+    if (options) {
+      query.limit(options.take);
+      query.orderBy(options.order);
     }
 
     return query.getMany();

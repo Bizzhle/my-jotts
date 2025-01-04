@@ -43,7 +43,7 @@ export class ActivityController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
-  @UseInterceptors(FilesInterceptor('files', 5))
+  @UseInterceptors(FilesInterceptor('files', 3))
   async createActivity(
     @GetCurrentUserFromJwt() emailAddress: string,
     @Body() dto: CreateActivityDto,
