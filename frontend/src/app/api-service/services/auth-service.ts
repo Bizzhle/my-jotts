@@ -17,11 +17,7 @@ interface ApiError {
 export const registerUser = async (
   userData: registrationData
 ): Promise<void> => {
-  try {
-    return await apiClient.post(`/auth/register`, userData);
-  } catch (error) {
-    console.error("Error registering user", error);
-  }
+  return await apiClient.post(`/auth/register`, userData);
 };
 
 export async function login(
@@ -59,10 +55,9 @@ export function isApiError(error: unknown): string | undefined {
     const axiosError = error as AxiosError<ApiError>;
 
     if (axiosError.response?.data) {
-      errorMessage = axiosError.response.data.message;
+      const apiError = axiosError.response.data;
+      return apiError.message || apiError.error;
     }
-  } else {
-    errorMessage = "An unexpected error occurred";
   }
   return errorMessage;
 }
