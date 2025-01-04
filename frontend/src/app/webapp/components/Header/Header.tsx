@@ -84,8 +84,8 @@ export default function Header({
     setAnchorEl(null);
   };
 
-  const handleReloadActivity = () => {
-    reloadActivity();
+  const handleReloadActivity = async () => {
+    await reloadActivity();
   };
 
   return (
