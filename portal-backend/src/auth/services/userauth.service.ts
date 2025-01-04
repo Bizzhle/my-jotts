@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { LoginDto } from '../../users/dto/initial-login-response.dto';
 import { UsersService } from '../../users/services/user-service/users.service';
 import { PasswordService } from './password.service';
@@ -23,21 +23,27 @@ export class UserAuthService {
   ) {}
 
   async login({ emailAddress, password }: LoginDto) {
-    const user = await this.userService.getUserByEmail(emailAddress);
-    const sessionId = randomUUID();
+    try {
+      const sessionId = randomUUID();
+      const user = await this.userService.getUserByEmail(emailAddress);
 
-    if (!user) {
-      throw new UnauthorizedException('Wrong credentials');
+      if (!user) {
+        throw new NotFoundException({
+          message: 'Email address does not exist',
+        });
+      }
+
+      await this.passwordService.verifyPassword(password, user.password);
+      const { accessToken, refreshToken } = await this.userSession.generateToken(user, sessionId);
+
+      return {
+        emailAddress: user.email_address,
+        accessToken,
+        refreshToken,
+      };
+    } catch (error) {
+      throw error;
     }
-
-    await this.passwordService.verifyPassword(password, user.password);
-    const { accessToken, refreshToken } = await this.userSession.generateToken(user, sessionId);
-
-    return {
-      emailAddress: user.email_address,
-      accessToken,
-      refreshToken,
-    };
   }
 
   async refreshSession(token: string) {
