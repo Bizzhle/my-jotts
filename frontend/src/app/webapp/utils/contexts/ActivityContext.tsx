@@ -36,6 +36,7 @@ interface ActivityContextState {
 interface ActivityContextValue extends ActivityContextState {
   reloadActivity: () => void;
   findActivity: (value: string) => void;
+  reloadCategory: () => void;
 }
 
 const initialState: ActivityContextState = {
@@ -115,6 +116,15 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     }
   }, [setState, id]);
 
+  const reloadCategory = useCallback(async () => {
+    try {
+      const response = await getCategories();
+      setState("categories", response);
+    } catch (err) {
+      setState("error", isApiError(err));
+    }
+  }, [setState]);
+
   const fetchCategories = useCallback(async () => {
     try {
       const response = await getCategories();
@@ -143,6 +153,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
         loading,
         activityDataLoading,
         activityData,
+        reloadCategory,
       }}
     >
       {children}
