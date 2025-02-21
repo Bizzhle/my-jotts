@@ -1,18 +1,19 @@
 import {
-  Alert,
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   TextField,
-  Typography,
 } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import AutoCompleteElement from "../AutoCompleteElement";
 import { createCategory } from "../../../api-service/services/category-services";
 import { isApiError } from "../../../api-service/services/auth-service";
+import { useActivities } from "../../utils/contexts/ActivityContext";
+import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
 
 interface DialogFormProps {
   open: boolean;
@@ -28,12 +29,13 @@ export interface CategoryData {
 export default function CategoryForm({ open, handleClose }: DialogFormProps) {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | undefined>("");
+  const { reloadCategory } = useActivities();
 
   const {
     handleSubmit,
     register,
     reset,
-    formState: { errors },
+    // formState: { errors },
   } = useForm<CategoryData>();
 
   function onClose() {
@@ -50,6 +52,7 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
     };
     try {
       await createCategory(categoryData);
+      await reloadCategory();
       onClose();
     } catch (err) {
       const errorMessage = isApiError(err);
@@ -59,19 +62,15 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add Category</DialogTitle>
-      {error && (
-        <Typography color="error" sx={{ ml: 3 }}>
-          {error}
-        </Typography>
-      )}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <DialogTitle sx={{ mb: -2 }}>Add Category</DialogTitle>
+      {error && getErrorMessage(error)}
+      <Box sx={{ mt: -2 }} component="form" onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           <AutoCompleteElement
             value={value}
             setValue={setValue}
             label="Category"
-            options={["ya know"]}
+            options={[]}
           />
 
           <TextField
@@ -81,13 +80,14 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
             fullWidth
             margin="normal"
             {...register("description")}
+            color="secondary"
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
           <Button type="submit">Submit</Button>
         </DialogActions>
-      </form>
+      </Box>
     </Dialog>
   );
 }

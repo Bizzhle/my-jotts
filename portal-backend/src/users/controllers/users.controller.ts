@@ -24,7 +24,6 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: 'User mot logged out' })
   @ApiBadRequestResponse({ description: 'No refreshToken ' })
   @ApiInternalServerErrorResponse({ description: 'Server error' })
-  @HttpCode(HttpStatus.OK)
   async logoutUser(@Body() dto: logoutUserDto) {
     return this.userLogoutService.logoutUser(dto.refreshToken);
   }

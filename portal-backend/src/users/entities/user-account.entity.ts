@@ -12,6 +12,8 @@ import { Activity } from '../../activity/entities/activity.entity';
 import { Category } from '../../category/entities/category.entity';
 import { ImageFile } from '../../image/entities/image-file.entity';
 import { Role } from '../../permissions/entities/role.entity';
+import { Subscription } from '../../subscription/entities/subscription.entity';
+import { Invoice } from '../../subscription/entities/invoice.entity';
 
 @Entity({ name: 'user_account' })
 @Unique(['email_address'])
@@ -63,4 +65,10 @@ export class UserAccount {
 
   @OneToMany(() => ImageFile, (imageFile) => imageFile.userAccount)
   imageFiles: ImageFile[];
+
+  @OneToMany(() => Subscription, (subscription) => subscription.user)
+  subscriptions: Subscription[];
+
+  @OneToMany(() => Invoice, (invoice) => invoice.user)
+  invoices: Invoice[];
 }

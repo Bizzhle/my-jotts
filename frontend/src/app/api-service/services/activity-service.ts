@@ -83,9 +83,3 @@ export async function getCategories(): Promise<[]> {
   const categories = await apiClient.get(`/category/categories`);
   return categories.data;
 }
-
-// export async function searchByName(search?: string) {
-//   const res = await apiClient.get(`/activity?search=${search}`);
-
-//   return res.data;
-// }

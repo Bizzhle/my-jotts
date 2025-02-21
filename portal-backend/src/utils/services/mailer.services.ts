@@ -22,6 +22,17 @@ export class MailerService {
     });
   }
 
+  async sendMail(email: string, subject: string, text: string) {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject,
+      text,
+    };
+
+    return this.transporter.sendMail(mailOptions);
+  }
+
   async sendPasswordResetEmail(to: string, token: string) {
     const resetLink = `${this.frontend_url}/reset-password?token=${token}`;
 

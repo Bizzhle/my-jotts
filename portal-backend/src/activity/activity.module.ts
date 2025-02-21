@@ -11,6 +11,7 @@ import { UploadModule } from '../upload/upload.module';
 import { ImageModule } from '../image/image.module';
 import { AppLoggerService } from '../logger/services/app-logger.service';
 import { UtilsModule } from '../utils/util.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UtilsModule } from '../utils/util.module';
     UploadModule,
     ImageModule,
     UtilsModule,
+    SubscriptionModule,
   ],
   controllers: [ActivityController],
   providers: [
