@@ -21,7 +21,7 @@ export default function HomePage() {
   return (
     <>
       {!isMobile && <Toolbar />}
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 4 }}>
         <HomeBanner
           setActivityFormOpen={setActivityFormOpen}
           setCategoryFormOpen={setCategoryFormOpen}

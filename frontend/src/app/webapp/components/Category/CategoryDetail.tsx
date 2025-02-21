@@ -32,7 +32,9 @@ export default function CategoryDetail() {
           >
             Categories
           </Link>
-          <Typography color="text.primary">{categoryName}</Typography>
+          <Typography variant="body1" color="secondary.main">
+            {categoryName}
+          </Typography>
         </Breadcrumbs>
       </Box>
 

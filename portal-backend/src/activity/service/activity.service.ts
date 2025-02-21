@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -16,6 +17,8 @@ import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
 import { DataSource } from 'typeorm';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { WithTransactionService } from '../../app/services/with-transaction.services';
+import { SubscriptionService } from '../../subscription/services/subscription.service';
+import { SubscriptionStatus } from '../../subscription/enum/subscrition.enum';
 
 @Injectable()
 export class ActivityService extends WithTransactionService {
@@ -25,6 +28,7 @@ export class ActivityService extends WithTransactionService {
     private readonly imageUploadService: UploadService,
     private readonly categoryService: CategoryService,
     private readonly imageFileService: ImageFileService,
+    private readonly subscriptionService: SubscriptionService,
     private readonly logService: AppLoggerService,
     private readonly datasource: DataSource,
   ) {
@@ -41,16 +45,7 @@ export class ActivityService extends WithTransactionService {
         },
       });
 
-      const existingActivity = await this.activityRepository.findOne({
-        where: {
-          activity_title: dto.activityTitle,
-          user_id: user.id,
-        },
-      });
-
-      if (existingActivity) {
-        throw new BadRequestException('Activity with this title already exists.');
-      }
+      await this.validateActivityCreation(user.id, emailAddress, dto, file);
 
       let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
 
@@ -102,7 +97,7 @@ export class ActivityService extends WithTransactionService {
     } catch (err) {
       await transaction.rollbackTransaction();
       await this.logService.debug(err);
-      throw new BadRequestException('Could not create activity', err);
+      throw err;
     } finally {
       await this.closeTransaction(transaction);
     }
@@ -119,7 +114,20 @@ export class ActivityService extends WithTransactionService {
       throw new BadRequestException('User not logged in');
     }
 
-    const activities = await this.activityRepository.getAllUserActivities(user.id, search);
+    const subscription = await this.subscriptionService.getUserSubscriptionInformation(
+      emailAddress,
+    );
+    const isSubscriptionActive = subscription && subscription.status === 'active';
+
+    let activities;
+    if (isSubscriptionActive) {
+      activities = await this.activityRepository.getAllUserActivities(user.id, search);
+    } else {
+      activities = await this.activityRepository.getAllUserActivities(user.id, search, {
+        take: 5,
+        order: { date_created: 'DESC' },
+      });
+    }
 
     let activityResponse: ActivityResponseDto[] = [];
 
@@ -304,38 +312,6 @@ export class ActivityService extends WithTransactionService {
     }
   }
 
-  // async searchByName(emailAddress: string, search?: string) {
-  //   const user = await this.userAccountRepository.findOne({
-  //     where: { email_address: emailAddress },
-  //   });
-  //   if (!user) {
-  //     throw new NotFoundException('User not found');
-  //   }
-
-  //   const activities = await this.activityRepository.filterByName(user.id, search);
-  //   let activityResponse: ActivityResponseDto[] = [];
-
-  //   for (const activity of activities) {
-  //     const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
-  //     const imageUrls = imageFile.map((image) => image.url);
-
-  //     activityResponse.push({
-  //       id: activity.id,
-  //       activityTitle: activity.activity_title,
-  //       categoryName: activity.category.category_name,
-  //       location: activity.location,
-  //       price: activity.price,
-  //       rating: activity.rating,
-  //       description: activity.description,
-  //       dateCreated: activity.date_created,
-  //       dateUpdated: activity.date_updated,
-  //       imageUrls: imageUrls,
-  //     });
-  //   }
-
-  //   return activityResponse;
-  // }
-
   async deleteActivity(activityId: number, emailAddress: string) {
     const user = await this.userAccountRepository.findOne({
       where: {
@@ -374,5 +350,47 @@ export class ActivityService extends WithTransactionService {
     await this.activityRepository.remove(activity);
 
     return { message: 'Activity deleted successfully' };
+  }
+
+  private async validateActivityCreation(
+    userId: number,
+    emailAddress: string,
+    dto: CreateActivityDto,
+    file?: Express.Multer.File[],
+  ) {
+    // Check subscription status
+    const subscription = await this.subscriptionService.getUserSubscriptionInformation(
+      emailAddress,
+    );
+    const isSubscriptionActive = subscription && subscription.status === SubscriptionStatus.active;
+
+    // Count user's activities
+    const activityCount = await this.activityRepository.count({ where: { user_id: userId } });
+
+    // Restrict activity creation if subscription is not active and activity count is 5 or more
+    if (!isSubscriptionActive && activityCount >= 5) {
+      throw new ForbiddenException({
+        message: 'Maximum activities',
+      });
+    }
+
+    // Restrict file upload if subscription is not active and more than 1 file is uploaded
+    if (!isSubscriptionActive && file && file.length > 1) {
+      throw new ForbiddenException({
+        message: 'Maximum upload',
+      });
+    }
+
+    // Check for existing activity with the same title
+    const existingActivity = await this.activityRepository.findOne({
+      where: {
+        activity_title: dto.activityTitle,
+        user_id: userId,
+      },
+    });
+
+    if (existingActivity) {
+      throw new ForbiddenException('Activity with this title already exists.');
+    }
   }
 }

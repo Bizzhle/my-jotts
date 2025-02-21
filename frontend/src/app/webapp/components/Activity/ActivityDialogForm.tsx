@@ -19,6 +19,9 @@ import {
 import { isApiError } from "../../../api-service/services/auth-service";
 import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
 import { useActivities } from "../../utils/contexts/ActivityContext";
+import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
+import { getSubscription } from "../../../api-service/services/subscription-services";
+import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
 
 interface DialogFormProps {
   open: boolean;
@@ -46,6 +49,7 @@ export default function ActivityDialogForm({
   const [files, setFiles] = useState<File[]>([]);
   const [rating, setRating] = useState<number>(activityToEdit?.rating || 0);
   const { handleSubmit, register, reset } = useForm<ActivityData>();
+  const [subscription, setSubscription] = useState<SubscriptionDto>();
 
   useEffect(() => {
     if (activityToEdit) {
@@ -67,7 +71,17 @@ export default function ActivityDialogForm({
         description: "",
       });
     }
+    fetchSubscription();
   }, [activityToEdit, reset]);
+
+  const fetchSubscription = async () => {
+    try {
+      const subscription = await getSubscription();
+      setSubscription(subscription);
+    } catch (error) {
+      console.error("Error fetching subscription", error);
+    }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -94,7 +108,7 @@ export default function ActivityDialogForm({
       } else {
         await createActivity(activityData, files);
       }
-      reloadActivity();
+      await reloadActivity();
       handleClose();
     } catch (err) {
       const errorMessage = isApiError(err);
@@ -104,11 +118,10 @@ export default function ActivityDialogForm({
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Add Activity</DialogTitle>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <DialogTitle sx={{ mb: -2 }}>Add Activity</DialogTitle>
+      <Box sx={{ mt: -2 }} component="form" onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
-          {error && <Typography color="warning">{error}</Typography>}
-
+          {error && getErrorMessage(error)}
           <TextField
             autoFocus
             required
@@ -118,6 +131,7 @@ export default function ActivityDialogForm({
             fullWidth
             margin="normal"
             {...register("activityTitle")}
+            color="secondary"
           />
           <AutoCompleteElement
             value={value}
@@ -132,6 +146,7 @@ export default function ActivityDialogForm({
             fullWidth
             margin="normal"
             {...register("price")}
+            color="secondary"
           />
           <TextField
             id="location"
@@ -140,6 +155,7 @@ export default function ActivityDialogForm({
             fullWidth
             margin="normal"
             {...register("location")}
+            color="secondary"
           />
           <ActivityRating rating={rating} setRating={setRating} />
           <TextField
@@ -149,6 +165,7 @@ export default function ActivityDialogForm({
             fullWidth
             margin="normal"
             {...register("description")}
+            color="secondary"
           />
           <Box mt={2}>
             <input
@@ -160,8 +177,10 @@ export default function ActivityDialogForm({
               style={{ display: "none" }}
             />
             <label htmlFor="image-upload">
-              <Button variant="contained" component="span">
-                Upload Images (Max 5)
+              <Button variant="outlined" component="span">
+                {subscription?.status === "active"
+                  ? "Upload Images (Max 3)"
+                  : "Upload Images (Max 1)"}
               </Button>
             </label>
             {files.length > 0 && (
@@ -175,7 +194,7 @@ export default function ActivityDialogForm({
           <Button onClick={handleClose}>Cancel</Button>
           <Button type="submit">{activityToEdit ? "Update" : "Submit"}</Button>
         </DialogActions>
-      </form>
+      </Box>
     </Dialog>
   );
 }
