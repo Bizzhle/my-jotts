@@ -20,11 +20,11 @@ export default function AutoCompleteElement({
       id="combo-box-demo"
       value={value}
       inputValue={value}
-      onChange={(event, newValue) => {
+      onChange={(_, newValue) => {
         setValue(newValue || "");
       }}
       options={options}
-      onInputChange={(event, newInputValue) => {
+      onInputChange={(_, newInputValue) => {
         setValue(newInputValue);
       }}
       isOptionEqualToValue={(option, value) => option === value || value === ""}
