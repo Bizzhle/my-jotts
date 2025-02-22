@@ -1,17 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  FileTypeValidator,
-  MaxFileSizeValidator,
-  ParseFilePipe,
-  Post,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from '../service/upload.service';
 import { IsString } from 'class-validator';
+import { Express } from 'express';
 
 class DeleteDTO {
   @IsString()

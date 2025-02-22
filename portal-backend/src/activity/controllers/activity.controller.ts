@@ -27,6 +27,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { OptionalFileValidationPipe } from '../validator/optional-parse-file';
+import { Express } from 'express';
 @ApiTags('Activities')
 @Controller('activities')
 export class ActivityController {

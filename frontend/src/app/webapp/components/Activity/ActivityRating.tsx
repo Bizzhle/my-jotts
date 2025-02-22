@@ -9,13 +9,9 @@ interface ActivityRatingProps {
 
 const labels: { [index: string]: string } = {
   1: "Useless",
-
   2: "Poor",
-
   3: "Ok",
-
   4: "Good",
-
   5: "Excellent",
 };
 
@@ -40,10 +36,10 @@ export default function ActivityRating({
         value={rating}
         precision={1}
         getLabelText={getLabelText}
-        onChange={(event, newValue) => {
+        onChange={(_, newValue) => {
           setRating(newValue || 0);
         }}
-        onChangeActive={(event, newHover) => {
+        onChangeActive={(_, newHover) => {
           setHover(newHover);
         }}
         emptyIcon={<Star style={{ opacity: 0.55 }} fontSize="inherit" />}
