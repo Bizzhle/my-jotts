@@ -6,6 +6,7 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
 } from '@nestjs/common';
+import { Express } from 'express';
 
 @Injectable()
 export class OptionalFileValidationPipe implements PipeTransform {

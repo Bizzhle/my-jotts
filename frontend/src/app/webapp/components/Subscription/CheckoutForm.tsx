@@ -16,8 +16,8 @@ const CheckoutForm: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [name, setName] = useState("");
+  // const location = useLocation();
+  const [name] = useState("");
   const [messages, setMessages] = useState<string>("");
 
   const setMessage = (message?: string) => {

@@ -4,7 +4,9 @@ services:
   backend:
     container_name: portal-backend
     image: portal-backend
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     environment:
       NODE_ENV: development
       DATABASE_URL: postgres://admin:admin@db:5432/activitystepsdb

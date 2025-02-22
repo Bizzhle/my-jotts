@@ -19,6 +19,7 @@ import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { WithTransactionService } from '../../app/services/with-transaction.services';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
 import { SubscriptionStatus } from '../../subscription/enum/subscrition.enum';
+import { Express } from 'express';
 
 @Injectable()
 export class ActivityService extends WithTransactionService {
