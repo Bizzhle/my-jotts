@@ -1,0 +1,17 @@
+version: "3"
+
+tasks:
+  docker:build:
+    desc: Builds docker container
+    cmds:
+      - docker-compose -f docker-compose.prod.yml build
+
+  docker:stop:
+    desc: Stops docker container
+    cmds:
+      - docker-compose -f docker-compose.prod.yml down
+
+  docker:start:
+    desc: starts all docker containers as background services to enable local dev
+    cmds:
+      - docker-compose -f docker-compose.prod.yml up -d
