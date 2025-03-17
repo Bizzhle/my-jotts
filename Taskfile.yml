@@ -1,17 +1,58 @@
 version: "3"
 
 tasks:
-  docker:build:
+  dev:build:
     desc: Builds docker container
     cmds:
-      - docker-compose -f docker-compose.prod.yml build
+      - docker-compose -f docker-compose.dev.yml build
 
-  docker:stop:
-    desc: Stops docker container
+  dev:start:
+    desc: starts all docker containers as background services to enable local dev
+    cmds:
+      - docker-compose -f docker-compose.dev.yml up -d
+
+  dev:stop:
+    desc: Stops dev docker container
+    cmds:
+      - docker-compose -f docker-compose.dev.yml down  --volumes --remove-orphans
+
+  dev:restart:
+    desc: Restarts dev docker container
+    cmds:
+      - docker-compose -f docker-compose.dev.yml restart nginx backend
+
+  prod:build:
+    desc: Builds docker container for production
+    cmds:
+      - docker-compose -f docker-compose.prod.yml build --no-cache
+
+  prod:start:
+    desc: starts production docker container
+    cmds:
+      - docker-compose -f docker-compose.prod.yml up -d
+
+  prod:stop:
+    desc: Stops production container
     cmds:
       - docker-compose -f docker-compose.prod.yml down
 
-  docker:start:
-    desc: starts all docker containers as background services to enable local dev
+  clean:
+    desc: Clean up by removing all stopped containers and unused volumes
     cmds:
-      - docker-compose -f docker-compose.prod.yml up -d
+      - docker system prune -f
+      - docker volume prune -f
+
+  logs:
+    desc: Show logs of all containers
+    cmds:
+      - docker-compose -f docker-compose.dev.yml logs -f backend
+
+  ssl:generate:
+    desc: Generate SSL certificates
+    cmds:
+      - docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /var/www/certbot:/var/www/certbot certbot/certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email --staging -d myjotts.com -d www.myjotts.com
+
+  ssl:run:
+    desc: Run SSL certificates
+    cmds:
+      - docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /var/www/certbot:/var/www/certbot certbot/certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email -d myjotts.com -d www.myjotts.com

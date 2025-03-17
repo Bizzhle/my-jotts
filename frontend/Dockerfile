@@ -1,16 +1,17 @@
 FROM node:18-alpine as builder
 
-LABEL description="Frontend for My-Jotta"
+LABEL description="Frontend for MyJotts"
 
 # Set the working directory
-WORKDIR /app
-
+WORKDIR /usr/src/app
 
 COPY package.json ./ 
 
 RUN npm install
 
 COPY . .
+
+RUN npm run build
 
 EXPOSE 5173
 CMD ["npm", "run", "dev"]
