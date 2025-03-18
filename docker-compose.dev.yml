@@ -23,11 +23,16 @@ services:
     env_file:
       - .env
     volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
+      - ./frontend:/app
       - /app/node_modules
     ports:
       - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR INTERVAL=500
+      - WATCHPACK_POLLING=true
+      - VITE_HMR_CLIENT_PORT=5173
+    command: npm run dev -- --host
     depends_on:
       - backend
 
@@ -35,12 +40,14 @@ services:
     restart: always
     build:
       context: ./portal-backend
+      target: development
     container_name: backend
     env_file:
       - .env
     volumes:
-      - ./portal-backend:/usr/src/app # Mount code directory
-      - /usr/src/app/node_modules
+      - ./portal-backend:/app # Mount code directory
+      - /app/node_modules
+    command: npm run start:dev
     environment:
       DATABASE_URL: ${DATABASE_URL}
       NODE_ENV: development

@@ -3,7 +3,7 @@ FROM node:18-alpine as development
 LABEL version="1.0"
 LABEL description="Development image for portal backend"
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY package*.json ./
 
@@ -21,7 +21,7 @@ RUN npm run build
 
 EXPOSE 4000
 
-CMD ["npm", "run", "start:debug"]
+CMD ["npm", "run", "start:dev"]
 
 
 FROM node:18-alpine as production
@@ -29,15 +29,15 @@ FROM node:18-alpine as production
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY package*.json ./
 
 RUN npm install --only=production
 
 
-COPY --from=development /usr/src/app/dist ./dist
-COPY --from=development /usr/src/app/node_modules ./node_modules
+COPY --from=development /app/dist ./dist
+COPY --from=development /app/node_modules ./node_modules
 
 
 EXPOSE 4000
