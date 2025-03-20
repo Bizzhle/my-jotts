@@ -37,6 +37,7 @@ interface ActivityContextValue extends ActivityContextState {
   reloadActivity: () => void;
   findActivity: (value: string) => void;
   reloadCategory: () => void;
+  fetchActivity: () => void;
 }
 
 const initialState: ActivityContextState = {
@@ -102,7 +103,19 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     }
   }, [debouncedSearch, categoryName, id, setState]);
 
-  const reloadActivity = useCallback(async () => {
+  const reloadActivity = async () => {
+    try {
+      setState("loading", true);
+      const activity = await getActivities();
+      setState({ activities: activity });
+    } catch (err) {
+      setState("error", isApiError(err));
+    } finally {
+      setState("loading", false);
+    }
+  };
+
+  const fetchActivity = useCallback(async () => {
     if (!id) {
       setState("activityData", undefined);
       return;
@@ -135,8 +148,8 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   }, [setState]);
 
   useEffect(() => {
-    reloadActivity();
-  }, [reloadActivity]);
+    fetchActivity();
+  }, [fetchActivity]);
 
   useEffect(() => {
     fetchCategories();
@@ -154,6 +167,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
         activityDataLoading,
         activityData,
         reloadCategory,
+        fetchActivity,
       }}
     >
       {children}
