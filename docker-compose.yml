@@ -3,30 +3,30 @@ version: "3.9"
 services:
   nginx:
     restart: always
+    image: nginx:alpine
     build:
       context: ./nginx
       dockerfile: Dockerfile
+    container_name: nginx
     ports:
       - "80:80"
       - "443:443"
-    container_name: nginx
     depends_on:
       - frontend
       - backend
     networks:
       - my-jotts
+    volumes:
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf:/etc/letsencrypt/:ro
 
   frontend:
     restart: always
     build:
       context: ./frontend
-      dockerfile: Dockerfile
     container_name: frontend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    ports:
-      - "5173:5173"
+    env_file:
+      - .env
     depends_on:
       - backend
     networks:
@@ -36,39 +36,53 @@ services:
     restart: always
     build:
       context: ./portal-backend
-      dockerfile: Dockerfile
+      target: production
     container_name: backend
-    depends_on:
-      - postgres
+    env_file:
+      - .env
     environment:
       DATABASE_URL: ${DATABASE_URL}
       NODE_ENV: production
     ports:
       - "4000:4000"
-    env_file:
-      - ./portal-backend/.env
+    depends_on:
+      - database
     networks:
       - my-jotts
 
-  postgres:
-    image: postgres:15
-    container_name: portal_db
+  database:
+    image: postgres:15-alpine
+    container_name: database
     restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    env_file:
-      - ./portal-backend/.env
+      PGDATA: /var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - my-jotts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: certbot
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./certbot/www:/var/www/certbot/:rw
+      - ./certbot/conf:/etc/letsencrypt/:rw
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
     networks:
       - my-jotts
 
 volumes:
-  pgdata: {}
+  db_data: {}
 
 networks:
   my-jotts:

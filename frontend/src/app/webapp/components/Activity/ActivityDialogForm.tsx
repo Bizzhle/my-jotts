@@ -43,7 +43,7 @@ export default function ActivityDialogForm({
   handleClose,
   activityToEdit,
 }: DialogFormProps) {
-  const { categories, reloadActivity } = useActivities();
+  const { categories, reloadActivity, fetchActivity } = useActivities();
   const [value, setValue] = useState(activityToEdit?.categoryName || "");
   const [error, setError] = useState<string | undefined>("");
   const [files, setFiles] = useState<File[]>([]);
@@ -105,6 +105,7 @@ export default function ActivityDialogForm({
     try {
       if (activityToEdit) {
         await updateActivity(activityToEdit.id, activityData, files);
+        await fetchActivity();
       } else {
         await createActivity(activityData, files);
       }
