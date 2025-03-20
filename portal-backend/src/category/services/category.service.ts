@@ -61,6 +61,11 @@ export class CategoryService {
       }
 
       if (entityManager) {
+        const category = await this.categoryRepository.create({
+          user_id: user.id,
+          category_name: dto.categoryName,
+          description: dto.description,
+        });
         createdCategory = await entityManager.save(Category, category);
       } else {
         createdCategory = await this.categoryRepository.createCategory(dto, user.id);
@@ -91,7 +96,7 @@ export class CategoryService {
     const user = await this.usersService.getUserByEmail(emailAddress);
 
     if (!user) {
-      throw new BadRequestException('User not logged in');
+      throw new UnauthorizedException('User not logged in');
     }
 
     return await this.categoryRepository.updateCategory(id, dto, user.id);
