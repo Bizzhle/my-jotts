@@ -14,7 +14,7 @@ tasks:
   dev:stop:
     desc: Stops dev docker container
     cmds:
-      - docker-compose -f docker-compose.dev.yml down  --volumes --remove-orphans
+      - docker-compose -f docker-compose.dev.yml down
 
   dev:restart:
     desc: Restarts dev docker container
@@ -24,17 +24,17 @@ tasks:
   prod:build:
     desc: Builds docker container for production
     cmds:
-      - docker-compose -f docker-compose.prod.yml build --no-cache
+      - docker-compose build
 
   prod:start:
     desc: starts production docker container
     cmds:
-      - docker-compose -f docker-compose.prod.yml up -d
+      - docker-compose up -d
 
   prod:stop:
     desc: Stops production container
     cmds:
-      - docker-compose -f docker-compose.prod.yml down
+      - docker-compose down
 
   clean:
     desc: Clean up by removing all stopped containers and unused volumes
@@ -45,13 +45,13 @@ tasks:
   logs:
     desc: Show logs of all containers
     cmds:
-      - docker-compose -f docker-compose.dev.yml logs -f backend
+      - docker-compose logs -f backend
 
   ssl:generate:
     desc: Generate SSL certificates
     cmds:
-      - docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /var/www/certbot:/var/www/certbot certbot/certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email --staging -d myjotts.com -d www.myjotts.com
-
+      - docker-compose run --rm certbot certonly --webroot -w /var/www/certbot -d myjotts.com --dry-run -d myjotts.com
+      # - docker-compose run certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email -d myjotts.com -d www.myjotts.com
   ssl:run:
     desc: Run SSL certificates
     cmds:

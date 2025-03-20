@@ -16,13 +16,12 @@ async function bootstrap() {
   );
   app.enableCors({
     origin: process.env.NODE_ENV === 'production' ? 'https://www.myjotts.com' : '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    // methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
     optionsSuccessStatus: 204,
   });
   app.useLogger(app.get(AppLoggerService));
-  // app.setGlobalPrefix('api/v1');
   const config = new DocumentBuilder()
     .addBearerAuth()
     .setTitle('Portal Backend Api')
