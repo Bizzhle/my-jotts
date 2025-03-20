@@ -15,10 +15,10 @@ export class UploadService {
     private configService: ConfigService<EnvVars>,
     private readonly logger: AppLoggerService,
   ) {
-    this.region = this.configService.getOrThrow<string>('AWS_S3_REGION');
+    this.region = this.configService.get<string>('AWS_S3_REGION');
     this.bucket = this.configService.get<string>('AWS_S3_BUCKET_NAME');
     this.s3 = new AWS.S3({
-      region: this.region,
+      region: this.configService.get<string>('AWS_S3_REGION'),
       accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID'),
       secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY'),
     });
