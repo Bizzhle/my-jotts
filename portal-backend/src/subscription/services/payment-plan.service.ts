@@ -4,15 +4,13 @@ import { PaymentPlan } from '../entities/payment-plan.entity';
 import { Repository } from 'typeorm';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
-import { EnvVars } from '../../envvars';
 import { CreatePaymentPlanDto } from '../dtos/payment-plan.dto';
-import { PaymentPlanEnum } from '../enum/payment-plan.enum';
 
 @Injectable()
 export class PaymentPlanService {
   private stripe: Stripe;
   constructor(
-    private configService: ConfigService<EnvVars>,
+    private readonly configService: ConfigService,
     @InjectRepository(PaymentPlan)
     private paymentPlanRepository: Repository<PaymentPlan>,
   ) {

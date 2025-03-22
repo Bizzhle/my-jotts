@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
-import { EnvVars } from '../../envvars';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Subscription } from '../entities/subscription.entity';
@@ -12,13 +10,14 @@ import { InvoiceService } from './invoice.service';
 import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { PaymentPlan } from '../entities/payment-plan.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SubscriptionService {
   private stripe: Stripe;
   private webhookSecret: string;
   constructor(
-    private configService: ConfigService<EnvVars>,
+    private readonly configService: ConfigService,
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
     private readonly userAccountRepository: UserAccountRepository,
@@ -41,7 +40,7 @@ export class SubscriptionService {
     if (!stripeCustomerId) {
       const customer = await this.stripe.customers.create({
         email: userEmail,
-        name: 'Paul Egbo Emilia',
+        name: 'Paul Egbo',
       });
       return customer.id;
     }
