@@ -7,7 +7,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --only=development
+RUN npm install --development=true
 RUN npm install -g nodemon
 
 COPY . .
@@ -16,6 +16,9 @@ COPY . .
 # ADD setup_database.sh /usr/src/app/setup_database.sh
 # RUN chmod +x /usr/src/app//setup_database.sh
 # RUN ./setup_database.sh
+
+# Increase memory limit for the build process
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm run build
 
@@ -33,7 +36,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --only=production
+RUN npm install --production=true
 
 
 COPY --from=development /app/dist ./dist
