@@ -2,11 +2,8 @@ version: "3.9"
 
 services:
   nginx:
-    restart: always
-    image: nginx:alpine
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
+    restart: unless-stopped
+    image: nginx
     container_name: nginx
     ports:
       - "80:80"
@@ -14,11 +11,10 @@ services:
     depends_on:
       - frontend
       - backend
-    networks:
-      - my-jotts
     volumes:
-      - ./certbot/www:/var/www/certbot/:ro
-      - ./certbot/conf:/etc/letsencrypt/:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
 
   frontend:
     restart: always
@@ -29,8 +25,6 @@ services:
       - .env
     depends_on:
       - backend
-    networks:
-      - my-jotts
 
   backend:
     restart: always
@@ -47,8 +41,6 @@ services:
       - "4000:4000"
     depends_on:
       - database
-    networks:
-      - my-jotts
 
   database:
     image: postgres:15-alpine
@@ -63,23 +55,14 @@ services:
       PGDATA: /var/lib/postgresql/data
     ports:
       - "5432:5432"
-    networks:
-      - my-jotts
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   certbot:
     image: certbot/certbot:latest
     container_name: certbot
     volumes:
-      - ./certbot/www:/var/www/certbot/:rw
-      - ./certbot/conf:/etc/letsencrypt/:rw
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
-    networks:
-      - my-jotts
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email gabrieluche2@gmail.com -d myjotts.com -d www.myjotts.com --agree-tos --non-interactive -v
 
 volumes:
   db_data: {}
