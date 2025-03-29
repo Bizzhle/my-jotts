@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --omit-dev=false
+RUN npm install
 RUN npm install -g nodemon
 
 COPY . .
@@ -29,12 +29,9 @@ ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /app
 
-COPY package*.json ./
-
-RUN npm install --omit-dev=true
-
-COPY --from=development /app/dist ./dist
+COPY --from=development /app/package*.json ./
 COPY --from=development /app/node_modules ./node_modules
+COPY --from=development /app/dist ./dist
 
 
 EXPOSE 4000
