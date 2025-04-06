@@ -1,27 +1,29 @@
+import { HighlightOff } from "@mui/icons-material";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   TextField,
   Typography,
-  Box,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import ActivityRating from "./ActivityRating";
-import AutoCompleteElement from "../AutoCompleteElement";
 import { useForm } from "react-hook-form";
+import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
+import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
 import {
   createActivity,
   updateActivity,
 } from "../../../api-service/services/activity-service";
 import { isApiError } from "../../../api-service/services/auth-service";
-import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
-import { useActivities } from "../../utils/contexts/ActivityContext";
-import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
 import { getSubscription } from "../../../api-service/services/subscription-services";
-import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
+import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
+import { useActivities } from "../../utils/contexts/ActivityContext";
+import AutoCompleteElement from "../AutoCompleteElement";
+import ActivityRating from "./ActivityRating";
 
 interface DialogFormProps {
   open: boolean;
@@ -86,11 +88,13 @@ export default function ActivityDialogForm({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const selectedFiles = Array.from(event.target.files);
-      if (selectedFiles.length > 5) {
+      const totalFiles = files.length + selectedFiles.length;
+      if (subscription?.status !== "active" && totalFiles > 1) {
+        setError("You can only upload 1 image");
+      } else if (subscription?.status === "active" && totalFiles > 5) {
         setError("You can only upload up to 5 images");
-        return;
       }
-      setFiles(selectedFiles);
+      setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
     }
   };
 
@@ -115,6 +119,10 @@ export default function ActivityDialogForm({
       const errorMessage = isApiError(err);
       setError(errorMessage || "");
     }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   return (
@@ -180,14 +188,26 @@ export default function ActivityDialogForm({
             <label htmlFor="image-upload">
               <Button variant="outlined" component="span">
                 {subscription?.status === "active"
-                  ? "Upload Images (Max 3)"
-                  : "Upload Images (Max 1)"}
+                  ? "Upload Images"
+                  : "Upload Image"}
               </Button>
             </label>
             {files.length > 0 && (
-              <Typography variant="body2" mt={1}>
-                {files.length} file(s) selected
-              </Typography>
+              <Box mt={1}>
+                {files.map((file, index) => (
+                  <Box
+                    key={index}
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Typography variant="body2">{file.name}</Typography>
+                    <IconButton onClick={() => handleRemoveFile(index)}>
+                      <HighlightOff />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
             )}
           </Box>
         </DialogContent>
