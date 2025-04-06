@@ -89,9 +89,10 @@ export default function ActivityDialogForm({
     if (event.target.files) {
       const selectedFiles = Array.from(event.target.files);
       const totalFiles = files.length + selectedFiles.length;
-      if (totalFiles > 5) {
+      if (subscription?.status !== "active" && totalFiles > 1) {
+        setError("You can only upload 1 image");
+      } else if (subscription?.status === "active" && totalFiles > 5) {
         setError("You can only upload up to 5 images");
-        return;
       }
       setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
     }
