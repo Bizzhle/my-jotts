@@ -11,6 +11,7 @@ async function bootstrap() {
     logger: getLogLevels(process.env.NODE_ENV === 'production'),
   });
 
+  app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
     new ValidationPipe({ stopAtFirstError: true, forbidNonWhitelisted: true, transform: true }),
   );
