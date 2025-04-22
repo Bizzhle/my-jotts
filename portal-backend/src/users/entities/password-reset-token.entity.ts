@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 't
 import { UserAccount } from './user-account.entity';
 
 @Entity({ name: 'pasword-reset-token' })
-export class PaswordResetToken {
+export class PasswordResetToken {
   @PrimaryGeneratedColumn()
   id: number;
 
