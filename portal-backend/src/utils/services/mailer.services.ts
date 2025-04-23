@@ -1,23 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
 import * as nodemailer from 'nodemailer';
 import * as path from 'path';
+import { EnvVars } from 'src/envvars';
 import { EnvGetString } from '../../app/decorators/env-get.decorators';
 
 @Injectable()
 export class MailerService {
   @EnvGetString('FRONTEND_URL')
   frontend_url: string;
+  private smtp_host: string;
+  private smtp_port: number;
+  private smtp_user: string;
+  private smtp_pass: string;
 
   private transporter: nodemailer.Transporter;
-  constructor() {
+  constructor(private configService: ConfigService<EnvVars>) {
+    this.smtp_host = this.configService.get<string>('SMTP_HOST');
+    this.smtp_port = this.configService.get<number>('SMTP_PORT');
+    this.smtp_user = this.configService.get<string>('SMTP_USER');
+    this.smtp_pass = this.configService.get<string>('SMTP_PASS');
+    if (!this.smtp_host || !this.smtp_port || !this.smtp_user || !this.smtp_pass) {
+      throw new Error('SMTP configuration is missing');
+    }
+
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
+      host: this.smtp_host,
+      port: this.smtp_port,
       auth: {
-        user: 'laurianne28@ethereal.email',
-        pass: 'ys1ZdkEU5u55vJH7Km',
+        user: this.smtp_user,
+        pass: this.smtp_pass,
       },
     });
   }
