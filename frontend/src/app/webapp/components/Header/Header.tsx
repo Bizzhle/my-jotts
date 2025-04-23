@@ -1,40 +1,42 @@
 import {
-  AppBar,
-  Box,
-  IconButton,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-  Menu,
-  MenuItem,
-  Popper,
-  Grow,
-  MenuList,
-  Paper,
-  ClickAwayListener,
-  ButtonGroup,
-  Tooltip,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import SearchBar from "../SearchBar";
-import {
   AccountCircle,
   PlaylistAddCheckCircleRounded,
 } from "@mui/icons-material";
-import { useAuth } from "../../utils/contexts/AuthContext";
+import MenuIcon from "@mui/icons-material/Menu";
+import {
+  AppBar,
+  Box,
+  ButtonGroup,
+  ClickAwayListener,
+  Grow,
+  IconButton,
+  Menu,
+  MenuItem,
+  MenuList,
+  Paper,
+  Popper,
+  Toolbar,
+  Tooltip,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useActivities } from "../../utils/contexts/ActivityContext";
+import { useAuth } from "../../utils/contexts/AuthContext";
+import SearchBar from "../SearchBar";
 
 interface HeaderProps {
   setOpenNavigation: (value: boolean) => void;
   openNavigation: boolean;
+  displayNavigation?: boolean;
 }
 
 export default function Header({
   setOpenNavigation,
   openNavigation,
+  displayNavigation,
 }: HeaderProps) {
   const { logoutUser } = useAuth();
   const { categories, searchQuery, findActivity, reloadActivity } =
@@ -98,7 +100,7 @@ export default function Header({
       }}
     >
       <Toolbar>
-        {isMobile ? (
+        {isMobile && displayNavigation ? (
           <IconButton
             size="large"
             edge="start"
@@ -116,17 +118,19 @@ export default function Header({
               style={{ color: "inherit", textDecoration: "none" }}
               onClick={handleReloadActivity}
             >
-              <Typography variant="h6" color="secondary">
-                MyJotts
+              <Typography variant="h6" color="secondary.dark">
+                MYJOTTS
               </Typography>
             </Link>
           </Typography>
         )}
 
-        <SearchBar
-          searchQuery={searchQuery}
-          handleSearchChange={findActivity}
-        />
+        {displayNavigation && (
+          <SearchBar
+            searchQuery={searchQuery}
+            handleSearchChange={findActivity}
+          />
+        )}
 
         {!isMobile && (
           <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
