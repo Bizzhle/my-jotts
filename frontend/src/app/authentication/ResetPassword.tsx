@@ -1,16 +1,29 @@
-import { Box, Button, Link, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Link,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { isApiError, registerUser } from "../api-service/services/auth-service";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  isApiError,
+  resetPassword,
+} from "../api-service/services/auth-service";
 
-export interface RegisterData {
-  emailAddress: string;
+export interface ResetPasswordData {
   password: string;
+  token: string;
   confirmPassword: string;
 }
-export default function RegistrationForm() {
+
+export const ResetPassword = () => {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const token = searchParams.get("token");
   const [error, setError] = useState<string | undefined>("");
   const [successMessage, setSuccessMessage] = useState<string | undefined>("");
   const {
@@ -18,18 +31,15 @@ export default function RegistrationForm() {
     register,
     watch,
     formState: { errors },
-  } = useForm<RegisterData>();
+  } = useForm<ResetPasswordData>();
 
-  const onSubmit = async (data: RegisterData) => {
+  const onSubmit = async (data: ResetPasswordData) => {
     try {
-      await registerUser(data);
-      setSuccessMessage(
-        "Registration successful, check your email to verify your account"
-      );
-      setError("");
-    } catch (err) {
-      const errorMessage = isApiError(err);
-      setError(errorMessage);
+      await resetPassword({ ...data, token: token || "" });
+      setSuccessMessage("Password reset successfully");
+    } catch (error) {
+      const errorMessage = isApiError(error);
+      setError(errorMessage); // Handle error (e.g., show an error message)
     }
   };
 
@@ -38,40 +48,58 @@ export default function RegistrationForm() {
     return value === password || "Passwords do not match";
   };
 
-  const success = () => {
+  if (successMessage) {
     return (
-      <Box
+      <Container
+        maxWidth="lg"
         sx={{
+          height: "100vh",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
           justifyContent: "center",
-          p: { xs: 2, md: 2 },
-          textAlign: "center",
         }}
       >
-        <Typography variant="h6" color="success.main" sx={{ my: 1 }}>
-          {successMessage}
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate("/login")}
+        <Box
           sx={{
-            width: "auto",
-            px: 2,
+            mt: 20,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
-          log in
-        </Button>
-      </Box>
+          <Typography variant="h6" color="success.main" sx={{ my: 1 }}>
+            {successMessage}
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/login")}
+            sx={{
+              width: "auto",
+              px: 2,
+            }}
+          >
+            log in again
+          </Button>
+        </Box>
+      </Container>
     );
-  };
+  }
 
   return (
-    <>
-      {successMessage ? (
-        success()
-      ) : (
+    <Container
+      maxWidth="lg"
+      sx={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Box
+        sx={{
+          width: { xs: "100%", lg: "50%" },
+          maxWidth: 500,
+        }}
+      >
         <Box
           component="form"
           noValidate
@@ -82,19 +110,9 @@ export default function RegistrationForm() {
             p: { xs: 2, md: 2 },
           }}
         >
-          <Typography sx={{ mb: 2 }}>Create a new account</Typography>
-          <TextField
-            fullWidth
-            label="email address"
-            type="email"
-            variant="outlined"
-            {...register("emailAddress", {
-              required: "email must not be empty",
-            })}
-            error={!!errors.emailAddress}
-            helperText={errors.emailAddress?.message}
-            color="secondary"
-          />
+          <Typography variant="h4" sx={{ mb: 2 }}>
+            Reset Password
+          </Typography>
           <TextField
             fullWidth
             label="Password"
@@ -123,7 +141,7 @@ export default function RegistrationForm() {
             color="secondary"
           />
           {error && (
-            <Typography color="error" variant="body2">
+            <Typography color="error" sx={{ mt: 1 }}>
               {error}
             </Typography>
           )}
@@ -133,18 +151,18 @@ export default function RegistrationForm() {
             color="primary"
             fullWidth={true}
             type="submit"
-            sx={{ mt: 1 }}
+            sx={{ textAlign: "center", mt: 1 }}
           >
-            Submit
+            Reset password
           </Button>
           <Typography sx={{ mt: 2 }}>
-            Already have an account?{" "}
+            Do you already have an account?{" "}
             <Link href="/login" color="#108BE3">
               Log in
             </Link>
           </Typography>
         </Box>
-      )}
-    </>
+      </Box>
+    </Container>
   );
-}
+};

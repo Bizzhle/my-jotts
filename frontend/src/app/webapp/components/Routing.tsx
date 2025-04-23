@@ -1,17 +1,21 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import Layout from "./Layout";
-import HomePage from "../pages/HomePage";
-import Register from "../../registration/Register";
-import NotFoundPage from "../pages/NotFoundPage";
+import { ConfirmRegistration } from "../../authentication/ConfirmRegistration";
+import { ForgotPassword } from "../../authentication/ForgotPassword";
 import Login from "../../authentication/Login";
+import { ResetPassword } from "../../authentication/ResetPassword";
 import { ProtectedRoutes } from "../../libs/auth/RequireAuth";
-import ActivityDetail from "./Activity/ActivityDetail";
-import { ActivityProvider } from "../utils/contexts/ActivityContext";
-import CategoryDetail from "./Category/CategoryDetail";
+import Register from "../../registration/Register";
 import Category from "../pages/Category";
+import HomePage from "../pages/HomePage";
+import NotFoundPage from "../pages/NotFoundPage";
+import { ActivityProvider } from "../utils/contexts/ActivityContext";
 import AccountPage from "./AccountInfo/AccountPage";
-import SubscribePage from "./Subscription/SubscribePage";
+import { ChangePassword } from "./AccountInfo/ChangePassword";
+import ActivityDetail from "./Activity/ActivityDetail";
+import CategoryDetail from "./Category/CategoryDetail";
+import Layout from "./Layout";
 import WrappedCheckoutForm from "./Subscription/CheckoutForm";
+import SubscribePage from "./Subscription/SubscribePage";
 
 const router = createBrowserRouter([
   {
@@ -22,7 +26,7 @@ const router = createBrowserRouter([
     },
     Component: () => (
       <ActivityProvider>
-        <Layout />
+        <Layout displayNavigation={true} />
       </ActivityProvider>
     ),
     children: [
@@ -86,6 +90,14 @@ const router = createBrowserRouter([
           </ProtectedRoutes>
         ),
       },
+      {
+        path: "change-password",
+        Component: () => (
+          <ProtectedRoutes>
+            <ChangePassword />
+          </ProtectedRoutes>
+        ),
+      },
     ],
   },
   {
@@ -95,6 +107,22 @@ const router = createBrowserRouter([
   {
     path: "/login",
     Component: Login,
+  },
+  {
+    path: "/forgot-password",
+    Component: ForgotPassword,
+  },
+  {
+    path: "/reset-password",
+    Component: ResetPassword,
+  },
+  {
+    path: "/account-confirmation",
+    Component: () => (
+      <Layout displayNavigation={false}>
+        <ConfirmRegistration />
+      </Layout>
+    ),
   },
 ]);
 

@@ -1,21 +1,21 @@
-import { Link } from "react-router-dom";
-import { useActivities } from "../../utils/contexts/ActivityContext";
 import {
   Box,
-  Paper,
-  Toolbar,
-  Typography,
   Breadcrumbs,
-  Rating,
   Button,
   Container,
+  Paper,
+  Rating,
+  Toolbar,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
 import { useState } from "react";
 import Carousel from "react-material-ui-carousel";
-import ActivityDialogForm from "./ActivityDialogForm";
+import { Link } from "react-router-dom";
+import { useActivities } from "../../utils/contexts/ActivityContext";
 import useS3Image from "../../utils/hooks/useS3Image";
+import ActivityDialogForm from "./ActivityDialogForm";
 
 export default function ActivityDetail() {
   const theme = useTheme();
