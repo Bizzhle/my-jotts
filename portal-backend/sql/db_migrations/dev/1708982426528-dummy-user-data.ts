@@ -8,7 +8,7 @@ export class DummyUserData1708982426528 implements MigrationInterface {
     // Insert sample data into the database
     await queryRunner.query(`
               INSERT INTO user_account VALUES
-                (1, 'emilia@activity.com',  '$2a$10$TcZ6UEvvppQilWqhCwrQSeBTavqBxZUAmvy6HHm9Cfg6ikrYNQx0e', 'Emilia', 'TestUser', true, NOW(), null)
+                (1, 'emilia@activity.com',  '$2a$10$TcZ6UEvvppQilWqhCwrQSeBTavqBxZUAmvy6HHm9Cfg6ikrYNQx0e', 'Emilia', 'TestUser', true, NOW())
           `);
   }
 
