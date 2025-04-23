@@ -110,11 +110,19 @@ const router = createBrowserRouter([
   },
   {
     path: "/forgot-password",
-    Component: ForgotPassword,
+    Component: () => (
+      <Layout displayNavigation={false}>
+        <ForgotPassword />
+      </Layout>
+    ),
   },
   {
     path: "/reset-password",
-    Component: ResetPassword,
+    Component: () => (
+      <Layout displayNavigation={false}>
+        <ResetPassword />
+      </Layout>
+    ),
   },
   {
     path: "/account-confirmation",

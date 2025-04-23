@@ -132,7 +132,7 @@ export default function Header({
           />
         )}
 
-        {!isMobile && (
+        {!isMobile && displayNavigation && (
           <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
             <ButtonGroup variant="text" ref={anchorRef}>
               <Tooltip
@@ -208,7 +208,7 @@ export default function Header({
           </Box>
         )}
 
-        {!isMobile && (
+        {!isMobile && displayNavigation && (
           <Box sx={{ flexGrow: 0, ml: 2 }}>
             <IconButton
               aria-label="account of current user"

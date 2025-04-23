@@ -43,7 +43,6 @@ export const ForgotPassword = () => {
       <Container
         maxWidth="lg"
         sx={{
-          height: "100vh",
           display: "flex",
           justifyContent: "center",
         }}
@@ -71,18 +70,12 @@ export const ForgotPassword = () => {
     <Container
       maxWidth="lg"
       sx={{
-        height: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
       }}
     >
-      <Box
-        sx={{
-          width: { xs: "100%", lg: "50%" },
-          maxWidth: 500,
-        }}
-      >
+      <Box>
         <Box
           component="form"
           noValidate
@@ -128,22 +121,21 @@ export const ForgotPassword = () => {
 
         <Box
           sx={{
-            flexGrow: 1,
-            border: "2px solid orange",
-            p: { xs: 2, md: 2 },
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
             mt: 2,
           }}
         >
-          <Typography>
-            Do you already have an account?{" "}
-            <Link
-              color="primary"
-              href="/login"
-              sx={{ textAlign: "center", mt: 1 }}
-            >
-              Log in
-            </Link>
-          </Typography>
+          <Typography>Do you already have an account? </Typography>
+          <Link
+            color="primary"
+            href="/login"
+            sx={{ textAlign: "center", mt: 1 }}
+          >
+            Log in
+          </Link>
         </Box>
       </Box>
     </Container>

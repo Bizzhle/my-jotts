@@ -133,17 +133,19 @@ export default function LoginForm() {
       <Box
         sx={{
           flexGrow: 1,
-          border: "2px solid orange",
-          p: { xs: 2, md: 2 },
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
           mt: 2,
         }}
       >
         <Typography sx={{ textAlign: "center", mt: 2 }}>
           Do not have an account?{" "}
-          <Link href="/register" color="primary">
-            Create an account
-          </Link>
         </Typography>
+        <Link href="/register" color="primary">
+          Create an account
+        </Link>
       </Box>
     </>
   );
