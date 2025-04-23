@@ -1,12 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserAuthService } from '../userauth.service';
-import { UsersService } from '../../../users/services/user-service/users.service';
-import { PasswordService } from '../password.service';
-import { UserSessionService } from '../../../users/services/user-session/user-session.service';
-import { verify } from 'crypto';
-import { MailerService } from '../../../utils/services/mailer.services';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { PaswordResetToken } from '../../../users/entities/password-reset-token.entity';
+import { PasswordResetToken } from '../../../users/entities/password-reset-token.entity';
+import { UsersService } from '../../../users/services/user-service/users.service';
+import { UserSessionService } from '../../../users/services/user-session/user-session.service';
+import { MailerService } from '../../../utils/services/mailer.services';
+import { PasswordService } from '../password.service';
+import { UserAuthService } from '../userauth.service';
 
 describe('User Authentication', () => {
   let service: UserAuthService;
@@ -44,7 +43,7 @@ describe('User Authentication', () => {
           },
         },
         {
-          provide: getRepositoryToken(PaswordResetToken),
+          provide: getRepositoryToken(PasswordResetToken),
           useValue: {
             create: jest.fn(),
           },
