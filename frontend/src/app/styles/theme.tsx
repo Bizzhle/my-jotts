@@ -102,6 +102,7 @@ export const theme = createTheme({
     MuiLink: {
       styleOverrides: {
         root: {
+          fontFamily: "'Montserrat', 'Poppins', 'sans-serif'",
           color: "#108BE3",
           "&:hover": {
             color: "#0268B0",

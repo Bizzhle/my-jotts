@@ -53,7 +53,6 @@ export const ResetPassword = () => {
       <Container
         maxWidth="lg"
         sx={{
-          height: "100vh",
           display: "flex",
           justifyContent: "center",
         }}
@@ -88,18 +87,12 @@ export const ResetPassword = () => {
     <Container
       maxWidth="lg"
       sx={{
-        height: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
       }}
     >
-      <Box
-        sx={{
-          width: { xs: "100%", lg: "50%" },
-          maxWidth: 500,
-        }}
-      >
+      <Box>
         <Box
           component="form"
           noValidate
@@ -155,12 +148,19 @@ export const ResetPassword = () => {
           >
             Reset password
           </Button>
-          <Typography sx={{ mt: 2 }}>
-            Do you already have an account?{" "}
-            <Link href="/login" color="#108BE3">
-              Log in
-            </Link>
-          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            mt: 2,
+          }}
+        >
+          <Typography>Do you already have an account? </Typography>
+          <Link href="/login">Log in</Link>
         </Box>
       </Box>
     </Container>
