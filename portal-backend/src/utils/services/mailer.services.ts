@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
-import { EnvGetString } from '../../app/decorators/env-get.decorators';
-import * as path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
+import * as nodemailer from 'nodemailer';
+import * as path from 'path';
+import { EnvGetString } from '../../app/decorators/env-get.decorators';
 
 @Injectable()
 export class MailerService {
@@ -33,6 +33,23 @@ export class MailerService {
     return this.transporter.sendMail(mailOptions);
   }
 
+  async sendResetPasswordConfirmation(to: string) {
+    const forgotPasswordLink = `${this.frontend_url}/reset-password-confirmation`;
+
+    const html = await this.loadTemplate('reset-password-confirmation.template', {
+      emailAddress: to,
+      token: forgotPasswordLink,
+    });
+    const mailOptions = {
+      from: 'MyJotts',
+      to,
+      subject: 'Password reset request',
+      html,
+    };
+
+    return await this.transporter.sendMail(mailOptions);
+  }
+
   async sendPasswordResetEmail(to: string, token: string) {
     const resetLink = `${this.frontend_url}/reset-password?token=${token}`;
 
@@ -41,12 +58,27 @@ export class MailerService {
       token: resetLink,
     });
     const mailOptions = {
-      from: 'Jotta',
+      from: 'MyJotts',
       to,
       subject: 'Password reset request',
       html,
     };
 
+    return await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendRegistrationEmail(to: string, token: string) {
+    const confirmationLink = `${this.frontend_url}/account-confirmation?token=${token}&emailAddress=${to}`;
+    const html = await this.loadTemplate('registration.template', {
+      emailAddress: to,
+      token: confirmationLink,
+    });
+    const mailOptions = {
+      from: 'MyJotts',
+      to,
+      subject: 'Registration request',
+      html,
+    };
     return await this.transporter.sendMail(mailOptions);
   }
 
@@ -59,7 +91,6 @@ export class MailerService {
     const template = fs.readFileSync(templatePath, 'utf-8');
 
     const compiledTemplate = handlebars.compile(template);
-    console.log(data);
 
     return compiledTemplate(data);
   }
