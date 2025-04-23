@@ -1,15 +1,15 @@
 import { Box, Button, Link, TextField, Typography } from "@mui/material";
+import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   isApiError,
   login,
   refreshToken,
   registrationData,
 } from "../api-service/services/auth-service";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../webapp/utils/contexts/AuthContext";
 import { SessionState } from "../libs/SessionState";
+import { AuthContext } from "../webapp/utils/contexts/AuthContext";
 
 type LoginData = {
   emailAddress: string;
@@ -73,61 +73,78 @@ export default function LoginForm() {
     if (authenticatedUser) {
       navigate(from, { replace: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticatedUser]);
 
   return (
-    <Box
-      component="form"
-      sx={{
-        flexGrow: 1,
-        border: "2px solid orange",
-        p: { xs: 2, md: 2 },
-      }}
-      onSubmit={handleSubmit(onSubmit)}
-      noValidate
-    >
-      <Typography sx={{ mb: 2 }}>Sign In</Typography>
-      <TextField
-        fullWidth
-        label="email address"
-        type="email"
-        {...register("emailAddress")}
-        color="secondary"
-      />
-      <TextField
-        fullWidth
-        label="Password"
-        type="password"
-        variant="outlined"
-        margin="normal"
-        {...register("password", { required: true })}
-        error={!!errors.password}
-        helperText={errors.password?.message}
-        color="secondary"
-      />
-      {error && (
-        <Typography color="error" variant="body2">
-          Username or password is wrong, please try again
-        </Typography>
-      )}
-
-      <Button
-        variant="contained"
-        size="medium"
-        color="primary"
-        fullWidth={true}
-        type="submit"
-        sx={{ textAlign: "center", mt: 1 }}
+    <>
+      <Box
+        component="form"
+        sx={{
+          flexGrow: 1,
+          border: "2px solid orange",
+          p: { xs: 2, md: 2 },
+        }}
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
       >
-        Submit
-      </Button>
-      <Typography sx={{ textAlign: "center", mt: 2 }}>
-        Register {""}
-        <Link href="/register" color="#108BE3">
-          here
-        </Link>{" "}
-        if you do not have an account
-      </Typography>
-    </Box>
+        <Typography sx={{ mb: 2 }}>Log in</Typography>
+        <TextField
+          fullWidth
+          label="email address"
+          type="email"
+          {...register("emailAddress")}
+          color="secondary"
+        />
+        <TextField
+          fullWidth
+          label="Password"
+          type="password"
+          variant="outlined"
+          margin="normal"
+          {...register("password", { required: true })}
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          color="secondary"
+        />
+        {error && (
+          <Typography color="error" variant="body2">
+            Username or password is wrong, please try again
+          </Typography>
+        )}
+
+        <Button
+          variant="contained"
+          size="medium"
+          color="primary"
+          fullWidth={true}
+          type="submit"
+          sx={{ textAlign: "center", mt: 1 }}
+        >
+          Submit
+        </Button>
+
+        <Typography sx={{ textAlign: "center", mt: 2 }}>
+          <Link href="/forgot-password" color="#108BE3">
+            Forgot password
+          </Link>{" "}
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          flexGrow: 1,
+          border: "2px solid orange",
+          p: { xs: 2, md: 2 },
+          mt: 2,
+        }}
+      >
+        <Typography sx={{ textAlign: "center", mt: 2 }}>
+          Do not have an account?{" "}
+          <Link href="/register" color="primary">
+            Create an account
+          </Link>
+        </Typography>
+      </Box>
+    </>
   );
 }
