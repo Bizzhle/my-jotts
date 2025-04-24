@@ -1,15 +1,20 @@
-import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { LoginDto } from '../../users/dto/initial-login-response.dto';
-import { UsersService } from '../../users/services/user-service/users.service';
-import { PasswordService } from './password.service';
-import { UserSessionService } from '../../users/services/user-session/user-session.service';
-import { randomUUID } from 'crypto';
-import { ChangePasswordDto } from '../dtos/change-password.dto';
-import { MoreThan, Repository } from 'typeorm';
-import { PaswordResetToken } from '../../users/entities/password-reset-token.entity';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { randomUUID } from 'crypto';
+import { MoreThan, Repository } from 'typeorm';
+import { LoginDto } from '../../users/dto/initial-login-response.dto';
+import { PasswordResetToken } from '../../users/entities/password-reset-token.entity';
+import { UsersService } from '../../users/services/user-service/users.service';
+import { UserSessionService } from '../../users/services/user-session/user-session.service';
 import { MailerService } from '../../utils/services/mailer.services';
+import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { ResetPasswordDto } from '../dtos/forgot-password.dto';
+import { PasswordService } from './password.service';
 
 @Injectable()
 export class UserAuthService {
@@ -17,8 +22,8 @@ export class UserAuthService {
     private readonly userService: UsersService,
     private readonly passwordService: PasswordService,
     private readonly userSession: UserSessionService,
-    @InjectRepository(PaswordResetToken)
-    private readonly passwordResetTokenRepository: Repository<PaswordResetToken>,
+    @InjectRepository(PasswordResetToken)
+    private readonly passwordResetTokenRepository: Repository<PasswordResetToken>,
     private readonly mailerService: MailerService,
   ) {}
 
@@ -47,7 +52,7 @@ export class UserAuthService {
   }
 
   async refreshSession(token: string) {
-    const session = await this.userSession.getValidSessionbyRefreshToken(token);
+    const session = await this.userSession.getValidSessionByRefreshToken(token);
     const user = await this.userService.getUserById(session.user_id);
     const sessionId = randomUUID();
 
@@ -64,17 +69,24 @@ export class UserAuthService {
   }
 
   async changeUserPassword(userId: number, dto: ChangePasswordDto) {
-    const user = await this.userService.getUserById(userId);
+    try {
+      const user = await this.userService.getUserById(userId);
 
-    if (!user) {
-      throw new UnauthorizedException('user not found');
+      if (!user) {
+        throw new UnauthorizedException('user not found');
+      }
+
+      await this.passwordService.verifyPassword(dto.oldPassword, user.password);
+
+      const newHashedPassword = await this.passwordService.encryptPassword(dto.newPassword);
+
+      await this.userService.updateUserPassword(user, newHashedPassword);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not change password, try again');
     }
-
-    await this.passwordService.verifyPassword(dto.oldPassword, user.password);
-
-    const newHashedPassword = await this.passwordService.encryptPassword(dto.newPassword);
-
-    await this.userService.updateUserPassword(user, newHashedPassword);
   }
 
   async forgotPassword(emailAddress: string) {
@@ -84,7 +96,7 @@ export class UserAuthService {
     expiryDate.setHours(expiryDate.getHours() + 1);
 
     if (!user) {
-      throw new UnauthorizedException('user not found');
+      throw new NotFoundException('Email address not registered');
     }
 
     const reset = await this.passwordResetTokenRepository.create({
@@ -99,7 +111,7 @@ export class UserAuthService {
     await this.mailerService.sendPasswordResetEmail(emailAddress, resetToken);
 
     return {
-      message: 'If the user exists, they will recieve an email message',
+      message: 'Check your email for password reset link',
     };
   }
 
@@ -112,11 +124,18 @@ export class UserAuthService {
     const user = await this.userService.getUserById(confirmToken.userId);
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('EmailAddress does not exist');
     }
 
-    const hashedpassword = await this.passwordService.encryptPassword(dto.newPassword);
-
-    await this.userService.updateUserPassword(user, hashedpassword);
+    try {
+      const hashedPassword = await this.passwordService.encryptPassword(dto.password);
+      await this.userService.updateUserPassword(user, hashedPassword);
+      await this.mailerService.sendResetPasswordConfirmation(user.email_address);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not reset password, try again');
+    }
   }
 }

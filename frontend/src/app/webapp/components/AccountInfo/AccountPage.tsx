@@ -1,18 +1,19 @@
-import { useAuth } from "../../utils/contexts/AuthContext";
 import {
-  Container,
-  Typography,
-  Button,
   Box,
+  Button,
+  Container,
   Toolbar,
-  useTheme,
+  Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../utils/contexts/AuthContext";
 import ProfileCards from "./utils/ProfileCards";
-import { Link } from "react-router-dom";
 
 export default function AccountPage() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { authenticatedUser } = useAuth();
 
@@ -29,7 +30,7 @@ export default function AccountPage() {
           Manage your account
         </Typography>
 
-        <ProfileCards title="Jotta">
+        <ProfileCards title="MyJotts">
           <Typography variant="body1" gutterBottom>
             {authenticatedUser?.firstName} {authenticatedUser.lastName}
           </Typography>
@@ -40,7 +41,9 @@ export default function AccountPage() {
             password: **********
           </Typography>
           <Box sx={{ mt: 2 }}>
-            <Button>Change Password</Button>
+            <Button onClick={() => navigate("/change-password")}>
+              Change Password
+            </Button>
           </Box>
         </ProfileCards>
         <Toolbar />

@@ -12,8 +12,8 @@ import { Activity } from '../../activity/entities/activity.entity';
 import { Category } from '../../category/entities/category.entity';
 import { ImageFile } from '../../image/entities/image-file.entity';
 import { Role } from '../../permissions/entities/role.entity';
-import { Subscription } from '../../subscription/entities/subscription.entity';
 import { Invoice } from '../../subscription/entities/invoice.entity';
+import { Subscription } from '../../subscription/entities/subscription.entity';
 
 @Entity({ name: 'user_account' })
 @Unique(['email_address'])
@@ -48,6 +48,10 @@ export class UserAccount {
   @Column({ type: 'timestamp', nullable: false })
   @Expose({ name: 'lastLoggedIn' })
   last_logged_in: Date;
+
+  @Column({ type: 'varchar', nullable: true })
+  @Exclude()
+  verification_token: string;
 
   @ManyToMany(() => Role, { onDelete: 'CASCADE' })
   @JoinTable({
