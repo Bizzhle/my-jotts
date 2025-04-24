@@ -1,10 +1,8 @@
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join, resolve } from 'path';
-import { EnvVars } from 'src/envvars';
 import { CustomNamingStrategy } from '../../typeorm/custom-foreign-keys-naming-strategy';
 import { EnvGet, EnvGetBoolean } from '../decorators/env-get.decorators';
-import DatabaseLogger from './databaseLogger';
 
 function cliOptions() {
   return {
@@ -63,7 +61,7 @@ export function TypeOrmRootModule(cli = false) {
         connectTimeoutMS: 60000,
         namingStrategy: new CustomNamingStrategy(),
         migrations: runMigrations ? [migrationPath, devMigration] : [migrationPath],
-        // ssl: useSsl,
+        ssl: useSsl,
         ...environmentOptions,
       };
       return result;

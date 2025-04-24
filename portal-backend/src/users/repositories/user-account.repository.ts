@@ -11,13 +11,18 @@ export class UserAccountRepository extends Repository<UserAccount> {
   constructor(ds: DataSource) {
     super(UserAccount, ds.manager);
   }
-  public async createUserAccount(emailAddress: string, password: string): Promise<UserAccount> {
+  public async createUserAccount(
+    emailAddress: string,
+    password: string,
+    token: string,
+  ): Promise<UserAccount> {
     const userAccount = this.create({
       email_address: emailAddress,
       password: password,
-      enabled: true,
+      enabled: false,
       registration_date: new Date(),
       last_logged_in: new Date(),
+      verification_token: token,
     });
 
     await this.save<UserAccount>(userAccount);

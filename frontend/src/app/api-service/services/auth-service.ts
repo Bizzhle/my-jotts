@@ -1,10 +1,14 @@
+import axios, { AxiosError } from "axios";
+import { ForgotPasswordData } from "../../authentication/ForgotPassword";
+import { ResetPasswordData } from "../../authentication/ResetPassword";
+import apiClient from "../../libs/Configs/axiosConfig";
+import { SessionState } from "../../libs/SessionState";
 import { RegisterData } from "../../registration/RegistrationForm";
 import { UserInfo } from "../../webapp/utils/contexts/AuthContext";
-import { LoginResponseDto, RefreshResponseDto } from "../dtos/sessionInfo.dto";
-import apiClient from "../../libs/Configs/axiosConfig";
-import { LogoutUserDto } from "../dtos/logoutUser.dto";
-import { SessionState } from "../../libs/SessionState";
-import axios, { AxiosError } from "axios";
+import { ChangePasswordDto } from "../dtos/change-password.dto";
+import { ForgotPasswordResponseDto } from "../dtos/forgotpassword.dto";
+import { LogoutUserDto } from "../dtos/logout-user.dto";
+import { LoginResponseDto, RefreshResponseDto } from "../dtos/session-info.dto";
 
 export type registrationData = Omit<RegisterData, "confirmPassword">;
 
@@ -31,6 +35,35 @@ export async function login(
 export async function logout(data: LogoutUserDto): Promise<void> {
   return await apiClient.post(`/users/logout`, data);
 }
+
+export const forgotPassword = async (
+  data: ForgotPasswordData
+): Promise<ForgotPasswordResponseDto> => {
+  const response = await apiClient.post(`/auth/forgot-password`, data);
+  return response.data as ForgotPasswordResponseDto;
+};
+
+export const resetPassword = async (data: ResetPasswordData): Promise<void> => {
+  return await apiClient.put(`/auth/reset-password`, data);
+};
+
+export const changePassword = async (
+  data: ChangePasswordDto
+): Promise<void> => {
+  return await apiClient.put(`/auth/change-password`, data);
+};
+
+export const verifyRegistration = async (
+  emailAddress: string,
+  verificationToken: string
+) => {
+  const response = await apiClient.post(`/auth/verify-registration`, {
+    emailAddress,
+    verificationToken,
+  });
+
+  return response;
+};
 
 export const getUserData = async (): Promise<UserInfo | undefined> => {
   const response = await apiClient.get(`/users/me`);
