@@ -11,6 +11,10 @@ export interface EnvVars {
   DATABASE_URL: string;
   FRONTEND_URL: string;
   NODE_ENV: string;
+  SMTP_HOST: string;
+  SMTP_PASS: string;
+  SMTP_PORT: string;
+  SMTP_USER: string;
   STRIPE_SECRET_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
 }

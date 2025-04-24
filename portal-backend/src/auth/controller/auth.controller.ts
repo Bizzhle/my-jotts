@@ -7,13 +7,13 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { LoginDto } from '../../users/dto/initial-login-response.dto';
-import { UserAuthService } from '../services/userauth.service';
-import { RefreshSessionDto } from '../../users/dto/refresh-session-response.dto';
-import { IsAuthorizedUser } from '../guards/auth.guard';
-import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { GetUidFromJWT } from '../../app/jwt.decorators';
+import { LoginDto } from '../../users/dto/initial-login-response.dto';
+import { RefreshSessionDto } from '../../users/dto/refresh-session-response.dto';
+import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dtos/forgot-password.dto';
+import { IsAuthorizedUser } from '../guards/auth.guard';
+import { UserAuthService } from '../services/userauth.service';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -40,7 +40,7 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'user login failed' })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server error' })
-  public async refreshsession(@Body() refreshSessionDto: RefreshSessionDto) {
+  public async refreshSession(@Body() refreshSessionDto: RefreshSessionDto) {
     return await this.userAuthService.refreshSession(refreshSessionDto.refreshToken);
   }
 
