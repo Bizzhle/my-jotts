@@ -1,29 +1,26 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersController } from './controllers/users.controller';
-import { UserAccount } from './entities/user-account.entity';
-import { UserAccountRepository } from './repositories/user-account.repository';
-import { UsersService } from './services/user-service/users.service';
-import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Activity } from '../activity/entities/activity.entity';
+import { Category } from '../category/entities/category.entity';
+import { CertificateModule } from '../certificates/certificate.module';
+import { SigningSecret } from '../certificates/entities/signing-secret.entity';
+import { SigningSecretService } from '../certificates/services/signing-secret.service';
+import { Permission } from '../permissions/entities/permission.entity';
+import { Role } from '../permissions/entities/role.entity';
+import { UtilsModule } from '../utils/util.module';
 import { UserDetailController } from './controllers/user-detail.controller';
-import { UsersRegistrationController } from '../auth/controller/users-registration.controller';
+import { UsersController } from './controllers/users.controller';
+import { PasswordResetToken } from './entities/password-reset-token.entity';
+import { UserAccount } from './entities/user-account.entity';
 import { UserSession } from './entities/usersession.entity';
 import { JwtAuthGuard } from './guards/jwt.auth.guard';
+import { UserAccountRepository } from './repositories/user-account.repository';
 import { UserSessionRepository } from './repositories/user-session.repository';
 import { UserDetailService } from './services/user-service/user-details.service';
 import { UserLogoutService } from './services/user-service/user-logout.service';
+import { UsersService } from './services/user-service/users.service';
 import { UserSessionService } from './services/user-session/user-session.service';
-import { Activity } from '../activity/entities/activity.entity';
-import { Category } from '../category/entities/category.entity';
-import { Role } from '../permissions/entities/role.entity';
-import { Permission } from '../permissions/entities/permission.entity';
-import { SigningSecret } from '../certificates/entities/signing-secret.entity';
-import { SigningSecretService } from '../certificates/services/signing-secret.service';
-import { JwtSigningService } from '../utils/services/jwt-signing.services';
-import { PaswordResetToken } from './entities/password-reset-token.entity';
-import { UtilsModule } from '../utils/util.module';
-import { CertificateModule } from '../certificates/certificate.module';
 
 @Module({
   imports: [
@@ -35,7 +32,7 @@ import { CertificateModule } from '../certificates/certificate.module';
       Role,
       Permission,
       SigningSecret,
-      PaswordResetToken,
+      PasswordResetToken,
     ]),
     PassportModule,
     UtilsModule,

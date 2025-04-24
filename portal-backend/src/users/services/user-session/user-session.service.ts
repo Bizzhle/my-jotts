@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { generateRandomId } from 'src/app/helpers/id';
+import { randomUUID } from 'crypto';
 import { addHoursToDate, getTimestampInSeconds } from '../../../app/helpers/date';
 import { UserSession } from '../../../users/entities/usersession.entity';
 import { UserSessionRepository } from '../../../users/repositories/user-session.repository';
-import { calSessionExpirationTime } from './session-expiration-time-utils';
-import { randomUUID } from 'crypto';
-import { UserAccount } from '../../entities/user-account.entity';
 import { JwtPayload, JwtSigningService } from '../../../utils/services/jwt-signing.services';
+import { UserAccount } from '../../entities/user-account.entity';
+import { calSessionExpirationTime } from './session-expiration-time-utils';
 
 export interface Token {
   accessToken: string;
@@ -74,7 +73,7 @@ export class UserSessionService {
     }
   }
 
-  public async getValidSessionbyRefreshToken(refreshToken) {
+  public async getValidSessionByRefreshToken(refreshToken) {
     return await this.getValidSessionByCondition({ refresh_token: refreshToken });
   }
 

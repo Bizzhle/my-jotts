@@ -7,7 +7,7 @@ export class UserLogoutService {
 
   async logoutUser(refreshToken: string) {
     try {
-      const userSession = await this.userSessionService.getValidSessionbyRefreshToken(refreshToken);
+      const userSession = await this.userSessionService.getValidSessionByRefreshToken(refreshToken);
 
       if (!userSession) {
         throw new Error('Cannot find userSession with valid refresh token');
