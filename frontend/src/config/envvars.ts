@@ -1,0 +1,8 @@
+export type Envvars = {
+  REACT_APP_API_URL: string;
+  REACT_APP_AWS_REGION: string;
+  REACT_APP_AWS_ACCESS_KEY_ID: string;
+  REACT_APP_AWS_SECRET_ACCESS_KEY: string;
+  REACT_APP_AWS_S3_BUCKET: string;
+  REACT_APP_STRIPE_PUBLISHABLE_KEY: string;
+};
