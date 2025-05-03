@@ -47,12 +47,17 @@ tasks:
     cmds:
       - docker-compose logs -f backend
 
-  ssl:generate:
-    desc: Generate SSL certificates
+  certbot:
+    desc: Run certbot
     cmds:
-      - docker-compose run --rm certbot certonly --webroot -w /var/www/certbot -d myjotts.com --dry-run -d myjotts.com
-      # - docker-compose run certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email -d myjotts.com -d www.myjotts.com
-  ssl:run:
-    desc: Run SSL certificates
-    cmds:
-      - docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /var/www/certbot:/var/www/certbot certbot/certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email -d myjotts.com -d www.myjotts.com
+      - docker-compose --profile certbot-only up certbot
+
+  # ssl:generate:
+  #   desc: Generate SSL certificates
+  #   cmds:
+  #     - docker-compose run --rm certbot certonly --webroot -w /var/www/certbot -d myjotts.com --dry-run -d myjotts.com
+  #     # - docker-compose run certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email -d myjotts.com -d www.myjotts.com
+  # ssl:run:
+  #   desc: Run SSL certificates
+  #   cmds:
+  #     - docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /var/www/certbot:/var/www/certbot certbot/certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email -d myjotts.com -d www.myjotts.com
