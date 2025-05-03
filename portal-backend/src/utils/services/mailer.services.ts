@@ -22,9 +22,6 @@ export class MailerService {
     this.smtp_port = this.configService.get<number>('SMTP_PORT');
     this.smtp_user = this.configService.get<string>('SMTP_USER');
     this.smtp_pass = this.configService.get<string>('SMTP_PASS');
-    if (!this.smtp_host || !this.smtp_port || !this.smtp_user || !this.smtp_pass) {
-      throw new Error('SMTP configuration is missing');
-    }
 
     this.transporter = nodemailer.createTransport({
       host: this.smtp_host,
