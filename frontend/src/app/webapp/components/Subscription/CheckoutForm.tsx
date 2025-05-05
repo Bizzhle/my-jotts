@@ -1,13 +1,14 @@
-import React, { useState } from "react";
-import {
-  useStripe,
-  useElements,
-  PaymentElement,
-  Elements,
-} from "@stripe/react-stripe-js";
-import { useNavigate, useLocation } from "react-router-dom";
 import { Button, Container, Toolbar, Typography } from "@mui/material";
+import {
+  Elements,
+  PaymentElement,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
 import { Appearance, loadStripe } from "@stripe/stripe-js";
+import React, { useContext, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { LayoutContext } from "../../layout/LayoutContext";
 
 const stripeKey = import.meta.env.VITE_API_APP_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = loadStripe(stripeKey);
@@ -86,6 +87,12 @@ const CheckoutForm: React.FC = () => {
 const WrappedCheckoutForm: React.FC = () => {
   const location = useLocation();
   const { clientSecret } = location.state || {};
+  const { hideSearchBar } = useContext(LayoutContext);
+
+  useEffect(() => {
+    hideSearchBar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const appearance: Appearance = {
     theme: "stripe",

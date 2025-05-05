@@ -1,19 +1,28 @@
-import { useActivities } from "../utils/contexts/ActivityContext";
-import { Typography, Divider } from "@mui/material";
+import { ArrowRight } from "@mui/icons-material";
 import {
-  Toolbar,
   Box,
+  Container,
+  Divider,
+  Toolbar,
+  Typography,
   useMediaQuery,
   useTheme,
-  Container,
 } from "@mui/material";
+import { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "@mui/icons-material";
+import { LayoutContext } from "../layout/LayoutContext";
+import { useActivities } from "../utils/contexts/ActivityContext";
 
 export default function Category() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { categories } = useActivities();
+  const { hideSearchBar } = useContext(LayoutContext);
+
+  useEffect(() => {
+    hideSearchBar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Container maxWidth="md">
