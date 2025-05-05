@@ -1,14 +1,14 @@
-import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
 import { createContext, useCallback, useContext, useEffect } from "react";
-import { useObjectReducer } from "../shared/objectReducer";
-import { isApiError } from "../../../api-service/services/auth-service";
+import { useParams } from "react-router-dom";
+import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
 import {
   getActivities,
-  getActivity,
   getActivitiesByCategoryName,
+  getActivity,
   getCategories,
 } from "../../../api-service/services/activity-service";
-import { useParams } from "react-router-dom";
+import { isApiError } from "../../../api-service/services/auth-service";
+import { useObjectReducer } from "../shared/objectReducer";
 import { useDebounce } from "../shared/useDebounce";
 
 interface Activity extends ActivityResponseDto {}
@@ -83,24 +83,26 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     setState({ searchQuery });
   }
 
+  async function loadActivities() {
+    try {
+      setState("loading", true);
+      const response = categoryName
+        ? await getActivitiesByCategoryName(categoryName)
+        : await getActivities(debouncedSearch);
+
+      setState({ activities: response });
+    } catch (err) {
+      setState("error", isApiError(err));
+    } finally {
+      setState("loading", false);
+    }
+  }
+
   useEffect(() => {
     if (!id) {
-      async function loadActivities() {
-        try {
-          setState("loading", true);
-          const response = categoryName
-            ? await getActivitiesByCategoryName(categoryName)
-            : await getActivities(debouncedSearch);
-
-          setState({ activities: response });
-        } catch (err) {
-          setState("error", isApiError(err));
-        } finally {
-          setState("loading", false);
-        }
-      }
       loadActivities();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, categoryName, id, setState]);
 
   const reloadActivity = async () => {
