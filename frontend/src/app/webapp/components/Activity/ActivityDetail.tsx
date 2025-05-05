@@ -10,9 +10,10 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Carousel from "react-material-ui-carousel";
 import { Link } from "react-router-dom";
+import { LayoutContext } from "../../layout/LayoutContext";
 import { useActivities } from "../../utils/contexts/ActivityContext";
 import useS3Image from "../../utils/hooks/useS3Image";
 import ActivityDialogForm from "./ActivityDialogForm";
@@ -24,6 +25,12 @@ export default function ActivityDetail() {
   const [activityFormOpen, setActivityFormOpen] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = useS3Image(activityData?.imageUrls);
+  const { hideSearchBar } = useContext(LayoutContext);
+
+  useEffect(() => {
+    hideSearchBar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleClose() {
     setActivityFormOpen(false);

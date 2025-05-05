@@ -1,28 +1,29 @@
+import { Check } from "@mui/icons-material";
 import {
   Box,
   Button,
   Container,
   Divider,
   List,
+  ListItem,
   Toolbar,
   Typography,
   useMediaQuery,
   useTheme,
-  ListItem,
 } from "@mui/material";
-import { useAuth } from "../../utils/contexts/AuthContext";
-import ProfileCards from "../AccountInfo/utils/ProfileCards";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PaymentPlanDto } from "../../../api-service/dtos/subscription/payment-plan.dto";
+import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
 import {
   createSubscription,
-  getSubscription,
   getPaymentPlans,
+  getSubscription,
 } from "../../../api-service/services/subscription-services";
-import { Check } from "@mui/icons-material";
-import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
-import { CancelSubscription } from "./CancelSubscription";
 import { formatDateString } from "../../../libs/utils/Date";
+import { LayoutContext } from "../../layout/LayoutContext";
+import { useAuth } from "../../utils/contexts/AuthContext";
+import ProfileCards from "../AccountInfo/utils/ProfileCards";
+import { CancelSubscription } from "./CancelSubscription";
 
 export default function SubscribePage() {
   const theme = useTheme();
@@ -30,6 +31,12 @@ export default function SubscribePage() {
   const { authenticatedUser } = useAuth();
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlanDto[]>();
   const [subscription, setSubscription] = useState<SubscriptionDto>();
+  const { hideSearchBar } = useContext(LayoutContext);
+
+  useEffect(() => {
+    hideSearchBar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetchPlans();
