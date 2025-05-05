@@ -1,6 +1,7 @@
 import {
   AccountCircle,
   PlaylistAddCheckCircleRounded,
+  Search,
 } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -31,12 +32,20 @@ interface HeaderProps {
   setOpenNavigation: (value: boolean) => void;
   openNavigation: boolean;
   displayNavigation?: boolean;
+  displaySearchBar?: boolean;
+  displayHeader?: boolean;
+  openSearchBar?: boolean;
+  handleSearchBar: () => void;
 }
 
 export default function Header({
   setOpenNavigation,
   openNavigation,
   displayNavigation,
+  displaySearchBar,
+  displayHeader,
+  openSearchBar,
+  handleSearchBar,
 }: HeaderProps) {
   const { logoutUser } = useAuth();
   const { categories, searchQuery, findActivity, reloadActivity } =
@@ -99,165 +108,203 @@ export default function Header({
         borderBottom: "1px solid black",
       }}
     >
-      <Toolbar>
-        {isMobile && displayNavigation ? (
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            onClick={handleMenuOpen}
-            sx={{ borderRadius: 1 }}
-          >
-            <MenuIcon />
-          </IconButton>
-        ) : (
-          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-            <Link
-              to="/"
-              style={{ color: "inherit", textDecoration: "none" }}
-              onClick={handleReloadActivity}
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Box>
+          {isMobile && displayNavigation ? (
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              onClick={handleMenuOpen}
+              sx={{ borderRadius: 1 }}
             >
-              <Typography variant="h6" color="secondary.dark">
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            <Typography
+              variant="h6"
+              color="secondary.dark"
+              noWrap
+              sx={{ flexGrow: { sm: 1 } }}
+            >
+              <Link
+                to="/"
+                style={{ color: "inherit", textDecoration: "none" }}
+                onClick={handleReloadActivity}
+              >
                 MYJOTTS
-              </Typography>
-            </Link>
-          </Typography>
-        )}
+              </Link>
+            </Typography>
+          )}
+        </Box>
+        <Box>
+          {displayHeader && isMobile ? (
+            <Typography variant="h6" color="secondary.dark">
+              <Link
+                to="/"
+                style={{ color: "inherit", textDecoration: "none" }}
+                onClick={handleReloadActivity}
+              >
+                MYJOTTS
+              </Link>
+            </Typography>
+          ) : displaySearchBar ? (
+            <SearchBar
+              searchQuery={searchQuery}
+              handleSearchChange={findActivity}
+            />
+          ) : null}
+        </Box>
 
-        {displayNavigation && (
+        <Box
+          sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
+        >
+          {displaySearchBar && isMobile && (
+            <IconButton
+              color="inherit"
+              aria-label="search"
+              onClick={handleSearchBar}
+              sx={{ borderRadius: 1 }}
+            >
+              <Search fontSize="medium" />
+            </IconButton>
+          )}
+          {!isMobile && displayNavigation && (
+            <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
+              <ButtonGroup variant="text" ref={anchorRef}>
+                <Tooltip
+                  title="categories"
+                  slotProps={{
+                    popper: {
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [0, -14],
+                          },
+                        },
+                      ],
+                    },
+                  }}
+                >
+                  <IconButton
+                    color="inherit"
+                    aria-label="categories"
+                    onClick={handleToggle}
+                    sx={{ borderRadius: 1 }}
+                  >
+                    <PlaylistAddCheckCircleRounded fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
+              </ButtonGroup>
+              <Popper
+                sx={{ zIndex: 1, mt: "45px", minWidth: 150 }}
+                open={open}
+                anchorEl={anchorRef.current}
+                role={undefined}
+                transition
+                disablePortal
+              >
+                {({ TransitionProps, placement }) => (
+                  <Grow
+                    {...TransitionProps}
+                    style={{
+                      transformOrigin:
+                        placement === "bottom" ? "center top" : "center bottom",
+                    }}
+                  >
+                    <Paper>
+                      <ClickAwayListener onClickAway={handleClose}>
+                        <MenuList id="split-button-menu" autoFocusItem>
+                          {categories.map((category, index) => (
+                            <Link
+                              to={`/categories/${category.categoryName}`}
+                              key={index}
+                              style={{
+                                textDecoration: "none",
+                                color: "inherit",
+                              }}
+                            >
+                              <MenuItem
+                                disabled={index === 2}
+                                selected={index === selectedIndex}
+                                onClick={(event) =>
+                                  handleMenuItemClick(event, index)
+                                }
+                              >
+                                {category.categoryName}
+                              </MenuItem>
+                            </Link>
+                          ))}
+                        </MenuList>
+                      </ClickAwayListener>
+                    </Paper>
+                  </Grow>
+                )}
+              </Popper>
+            </Box>
+          )}
+
+          {!isMobile && displayNavigation && (
+            <Box sx={{ flexGrow: 0, ml: 2 }}>
+              <IconButton
+                aria-label="account of current user"
+                onClick={handleMenu}
+                color="inherit"
+                sx={{ borderRadius: 1 }}
+              >
+                <AccountCircle fontSize="medium" />
+              </IconButton>
+              <Menu
+                sx={{
+                  mt: "45px",
+                  "& .MuiMenuItem-root": { minWidth: 200 },
+                }}
+                id="menu-appbar"
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                open={Boolean(anchorEl)}
+                onClose={handleAcountMenuClose}
+              >
+                <MenuItem onClick={handleAcountMenuClose}>
+                  <Link
+                    to="/myaccount"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    Account
+                  </Link>
+                </MenuItem>
+                <MenuItem onClick={handleAcountMenuClose}>
+                  <Link
+                    to="/subscription"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    Subscription
+                  </Link>
+                </MenuItem>
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              </Menu>
+            </Box>
+          )}
+        </Box>
+      </Toolbar>
+      {openSearchBar && displaySearchBar && (
+        <Toolbar>
           <SearchBar
             searchQuery={searchQuery}
             handleSearchChange={findActivity}
           />
-        )}
-
-        {!isMobile && displayNavigation && (
-          <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
-            <ButtonGroup variant="text" ref={anchorRef}>
-              <Tooltip
-                title="categories"
-                slotProps={{
-                  popper: {
-                    modifiers: [
-                      {
-                        name: "offset",
-                        options: {
-                          offset: [0, -14],
-                        },
-                      },
-                    ],
-                  },
-                }}
-              >
-                <IconButton
-                  color="inherit"
-                  aria-label="categories"
-                  onClick={handleToggle}
-                  sx={{ borderRadius: 1 }}
-                >
-                  <PlaylistAddCheckCircleRounded fontSize="medium" />
-                </IconButton>
-              </Tooltip>
-            </ButtonGroup>
-            <Popper
-              sx={{ zIndex: 1, mt: "45px", minWidth: 150 }}
-              open={open}
-              anchorEl={anchorRef.current}
-              role={undefined}
-              transition
-              disablePortal
-            >
-              {({ TransitionProps, placement }) => (
-                <Grow
-                  {...TransitionProps}
-                  style={{
-                    transformOrigin:
-                      placement === "bottom" ? "center top" : "center bottom",
-                  }}
-                >
-                  <Paper>
-                    <ClickAwayListener onClickAway={handleClose}>
-                      <MenuList id="split-button-menu" autoFocusItem>
-                        {categories.map((category, index) => (
-                          <Link
-                            to={`/categories/${category.categoryName}`}
-                            key={index}
-                            style={{
-                              textDecoration: "none",
-                              color: "inherit",
-                            }}
-                          >
-                            <MenuItem
-                              disabled={index === 2}
-                              selected={index === selectedIndex}
-                              onClick={(event) =>
-                                handleMenuItemClick(event, index)
-                              }
-                            >
-                              {category.categoryName}
-                            </MenuItem>
-                          </Link>
-                        ))}
-                      </MenuList>
-                    </ClickAwayListener>
-                  </Paper>
-                </Grow>
-              )}
-            </Popper>
-          </Box>
-        )}
-
-        {!isMobile && displayNavigation && (
-          <Box sx={{ flexGrow: 0, ml: 2 }}>
-            <IconButton
-              aria-label="account of current user"
-              onClick={handleMenu}
-              color="inherit"
-              sx={{ borderRadius: 1 }}
-            >
-              <AccountCircle fontSize="medium" />
-            </IconButton>
-            <Menu
-              sx={{
-                mt: "45px",
-                "& .MuiMenuItem-root": { minWidth: 200 },
-              }}
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleAcountMenuClose}
-            >
-              <MenuItem onClick={handleAcountMenuClose}>
-                <Link
-                  to="/myaccount"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  Account
-                </Link>
-              </MenuItem>
-              <MenuItem onClick={handleAcountMenuClose}>
-                <Link
-                  to="/subscription"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  Subscription
-                </Link>
-              </MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
-            </Menu>
-          </Box>
-        )}
-      </Toolbar>
+        </Toolbar>
+      )}
     </AppBar>
   );
 }

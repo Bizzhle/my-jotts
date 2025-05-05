@@ -5,6 +5,8 @@ import Login from "../../authentication/Login";
 import { ResetPassword } from "../../authentication/ResetPassword";
 import { ProtectedRoutes } from "../../libs/auth/RequireAuth";
 import Register from "../../registration/Register";
+import Layout from "../layout/Layout";
+import { LayoutProvider } from "../layout/LayoutContext";
 import Category from "../pages/Category";
 import HomePage from "../pages/HomePage";
 import NotFoundPage from "../pages/NotFoundPage";
@@ -13,20 +15,20 @@ import AccountPage from "./AccountInfo/AccountPage";
 import { ChangePassword } from "./AccountInfo/ChangePassword";
 import ActivityDetail from "./Activity/ActivityDetail";
 import CategoryDetail from "./Category/CategoryDetail";
-import Layout from "./Layout";
 import WrappedCheckoutForm from "./Subscription/CheckoutForm";
 import SubscribePage from "./Subscription/SubscribePage";
 
 const router = createBrowserRouter([
   {
-    id: "root",
     path: "/",
     loader() {
       return "";
     },
     Component: () => (
       <ActivityProvider>
-        <Layout displayNavigation={true} />
+        <LayoutProvider>
+          <Layout />
+        </LayoutProvider>
       </ActivityProvider>
     ),
     children: [
@@ -111,25 +113,31 @@ const router = createBrowserRouter([
   {
     path: "/forgot-password",
     Component: () => (
-      <Layout displayNavigation={false}>
-        <ForgotPassword />
-      </Layout>
+      <LayoutProvider>
+        <Layout>
+          <ForgotPassword />
+        </Layout>
+      </LayoutProvider>
     ),
   },
   {
     path: "/reset-password",
     Component: () => (
-      <Layout displayNavigation={false}>
-        <ResetPassword />
-      </Layout>
+      <LayoutProvider>
+        <Layout>
+          <ResetPassword />
+        </Layout>
+      </LayoutProvider>
     ),
   },
   {
     path: "/account-confirmation",
     Component: () => (
-      <Layout displayNavigation={false}>
-        <ConfirmRegistration />
-      </Layout>
+      <LayoutProvider>
+        <Layout>
+          <ConfirmRegistration />
+        </Layout>
+      </LayoutProvider>
     ),
   },
 ]);

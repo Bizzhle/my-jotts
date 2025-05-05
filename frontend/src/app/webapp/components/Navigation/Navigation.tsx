@@ -17,7 +17,7 @@ export default function Navigation({
   return (
     <Drawer open={openNavigation} onClose={toggleDrawer(false)} sx={{}}>
       <Toolbar />
-      <Box sx={{ marginTop: 3 }}>
+      <Box sx={{ marginTop: 4 }}>
         <NavigationList toggle={toggleDrawer(false)} />
       </Box>
     </Drawer>

@@ -7,7 +7,9 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import { useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { LayoutContext } from "../../layout/LayoutContext";
 import { useAuth } from "../../utils/contexts/AuthContext";
 import ProfileCards from "./utils/ProfileCards";
 
@@ -16,6 +18,12 @@ export default function AccountPage() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { authenticatedUser } = useAuth();
+  const { hideSearchBar } = useContext(LayoutContext);
+
+  useEffect(() => {
+    hideSearchBar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!authenticatedUser) {
     return <Typography>Loading...</Typography>;
