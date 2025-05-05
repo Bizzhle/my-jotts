@@ -1,14 +1,16 @@
 import {
   Box,
-  Toolbar,
   Breadcrumbs,
-  Typography,
   Container,
   Grid,
-  useTheme,
+  Toolbar,
+  Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
+import { useContext, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import { LayoutContext } from "../../layout/LayoutContext";
 import { useActivities } from "../../utils/contexts/ActivityContext";
 import ActivityCard from "../Card";
 
@@ -17,6 +19,12 @@ export default function CategoryDetail() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { categoryName } = useParams<{ categoryName: string }>();
   const { activities } = useActivities();
+  const { hideSearchBar } = useContext(LayoutContext);
+
+  useEffect(() => {
+    hideSearchBar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Container>

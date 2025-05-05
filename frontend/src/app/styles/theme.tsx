@@ -74,6 +74,9 @@ export const theme = createTheme({
           "&:hover": {
             backgroundColor: "#0268B0",
           },
+          ":focus": {
+            outline: "none",
+          },
         },
       },
     },
@@ -82,8 +85,8 @@ export const theme = createTheme({
         root: {
           // backgroundColor: "#108BE3",
           color: "#108BE3",
-          "&:hover": {
-            BorderColor: "#0268B0",
+          ":focus": {
+            outline: "none",
           },
         },
       },
@@ -95,6 +98,9 @@ export const theme = createTheme({
           color: "#fff",
           "&:hover": {
             backgroundColor: "#0268B0",
+          },
+          ":focus": {
+            outline: "none",
           },
         },
       },

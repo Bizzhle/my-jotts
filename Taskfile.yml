@@ -42,6 +42,11 @@ tasks:
       - docker system prune -f
       - docker volume prune -f
 
+  clean:volumes:
+    desc: Remove all unused Docker volumes
+    cmds:
+      - docker volume prune -f
+
   logs:
     desc: Show logs of all containers
     cmds:
@@ -51,6 +56,11 @@ tasks:
     desc: Run certbot
     cmds:
       - docker-compose --profile certbot-only up certbot
+
+  docker:space:
+    desc: Check how much space Docker is consuming
+    cmds:
+      - docker system df
 
   # ssl:generate:
   #   desc: Generate SSL certificates

@@ -1,10 +1,11 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   changePassword,
   isApiError,
 } from "../../../api-service/services/auth-service";
+import { LayoutContext } from "../../layout/LayoutContext";
 
 export interface ResetPasswordData {
   oldPassword: string;
@@ -22,6 +23,12 @@ export const ChangePassword = () => {
     reset,
     formState: { errors },
   } = useForm<ResetPasswordData>();
+  const { hideSearchBar } = useContext(LayoutContext);
+
+  useEffect(() => {
+    hideSearchBar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = async (data: ResetPasswordData) => {
     try {
@@ -61,7 +68,7 @@ export const ChangePassword = () => {
           }}
         >
           <Typography variant="h5" sx={{ mb: 2 }}>
-            Reset Password
+            Change Password
           </Typography>
           {successMessage && (
             <Typography variant="body1" color="success" sx={{ mt: 1 }}>
@@ -121,7 +128,7 @@ export const ChangePassword = () => {
             type="submit"
             sx={{ textAlign: "center", mt: 1 }}
           >
-            Reset password
+            Change password
           </Button>
         </Box>
       </Box>
