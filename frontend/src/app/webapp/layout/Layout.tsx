@@ -28,6 +28,7 @@ function Layout({ children }: LayoutProps) {
 
   const handleSearchBar = () => {
     setOpenSearchBar((prevOpen) => !prevOpen);
+    setOpenNavigation(false);
   };
 
   return (
