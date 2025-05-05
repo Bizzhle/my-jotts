@@ -6,13 +6,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   isApiError,
   resetPassword,
 } from "../api-service/services/auth-service";
+import { LayoutContext } from "../webapp/layout/LayoutContext";
 
 export interface ResetPasswordData {
   password: string;
@@ -32,6 +33,15 @@ export const ResetPassword = () => {
     watch,
     formState: { errors },
   } = useForm<ResetPasswordData>();
+  const { hideNavigation, hideSearchBar, hideHeader } =
+    useContext(LayoutContext);
+
+  useEffect(() => {
+    hideNavigation();
+    hideSearchBar();
+    hideHeader();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = async (data: ResetPasswordData) => {
     try {

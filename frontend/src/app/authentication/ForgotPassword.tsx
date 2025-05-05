@@ -6,13 +6,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import {
   forgotPassword,
   isApiError,
 } from "../api-service/services/auth-service";
+import { LayoutContext } from "../webapp/layout/LayoutContext";
 
 export interface ForgotPasswordData {
   emailAddress: string;
@@ -23,6 +24,15 @@ export const ForgotPassword = () => {
   const [error, setError] = useState<string | undefined>("");
   const [successMessage, setSuccessMessage] = useState<string | undefined>("");
   const { handleSubmit, register, reset } = useForm<ForgotPasswordData>();
+  const { hideNavigation, hideSearchBar, hideHeader } =
+    useContext(LayoutContext);
+
+  useEffect(() => {
+    hideNavigation();
+    hideHeader();
+    hideSearchBar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = async (data: ForgotPasswordData) => {
     try {

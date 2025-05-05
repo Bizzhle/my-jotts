@@ -1,9 +1,10 @@
-import { useState } from "react";
-import HomeBanner from "../components/HomeBanner";
 import { Box, Grid, Toolbar, useMediaQuery, useTheme } from "@mui/material";
-import ActivityCard from "../components/Card";
+import { useContext, useEffect, useState } from "react";
 import ActivityDialogForm from "../components/Activity/ActivityDialogForm";
+import ActivityCard from "../components/Card";
 import CategoryForm from "../components/Category/CategoryForm";
+import HomeBanner from "../components/HomeBanner";
+import { LayoutContext } from "../layout/LayoutContext";
 import { useActivities } from "../utils/contexts/ActivityContext";
 
 export default function HomePage() {
@@ -12,11 +13,17 @@ export default function HomePage() {
   const [activityFormOpen, setActivityFormOpen] = useState<boolean>(false);
   const [categoryFormOpen, setCategoryFormOpen] = useState<boolean>(false);
   const { activities } = useActivities();
+  const { showSearchBar } = useContext(LayoutContext);
 
   function handleClose() {
     setActivityFormOpen(false);
     setCategoryFormOpen(false);
   }
+
+  useEffect(() => {
+    showSearchBar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
