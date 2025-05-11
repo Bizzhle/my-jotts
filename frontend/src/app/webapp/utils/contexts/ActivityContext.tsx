@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
 import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
 import { CategoryDto } from "../../../api-service/dtos/category.dto";
-import { getActivitiesByCategoryName } from "../../../api-service/services/activity-service";
 import { useObjectReducer } from "../shared/objectReducer";
 import { useDebounce } from "../shared/useDebounce";
 
@@ -70,7 +69,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     try {
       setState("loading", true);
       const response = categoryName
-        ? await getActivitiesByCategoryName(categoryName)
+        ? await ApiHandler.getActivitiesByCategoryName(categoryName)
         : await ApiHandler.getActivities(debouncedSearch);
 
       setState({ activities: response });
