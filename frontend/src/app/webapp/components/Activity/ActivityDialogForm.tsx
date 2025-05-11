@@ -12,16 +12,11 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
 import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
-import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
-import {
-  createActivity,
-  updateActivity,
-} from "../../../api-service/services/activity-service";
-import { isApiError } from "../../../api-service/services/auth-service";
-import { getSubscription } from "../../../api-service/services/subscription-services";
 import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
-import { useActivities } from "../../utils/contexts/ActivityContext";
+import { useActivities } from "../../utils/contexts/hooks/useActivities";
+import { useSubscription } from "../../utils/contexts/hooks/useSubscription";
 import AutoCompleteElement from "../AutoCompleteElement";
 import ActivityRating from "./ActivityRating";
 
@@ -51,18 +46,11 @@ export default function ActivityDialogForm({
   const [files, setFiles] = useState<File[]>([]);
   const [rating, setRating] = useState<number>(activityToEdit?.rating || 0);
   const { handleSubmit, register, reset } = useForm<ActivityData>();
-  const [subscription, setSubscription] = useState<SubscriptionDto>();
+  const { subscription } = useSubscription();
 
   useEffect(() => {
     if (activityToEdit) {
-      reset({
-        activityTitle: activityToEdit.activityTitle,
-        categoryName: activityToEdit.categoryName,
-        price: activityToEdit.price,
-        location: activityToEdit.location,
-        rating: activityToEdit.rating,
-        description: activityToEdit.description,
-      });
+      reset(activityToEdit);
     } else {
       reset({
         activityTitle: "",
@@ -73,17 +61,7 @@ export default function ActivityDialogForm({
         description: "",
       });
     }
-    fetchSubscription();
   }, [activityToEdit, reset]);
-
-  const fetchSubscription = async () => {
-    try {
-      const subscription = await getSubscription();
-      setSubscription(subscription);
-    } catch (error) {
-      console.error("Error fetching subscription", error);
-    }
-  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -108,10 +86,12 @@ export default function ActivityDialogForm({
 
     try {
       if (activityToEdit) {
-        await updateActivity(activityToEdit.id, activityData, files);
+        console.info(activityToEdit, activityData);
+
+        await ApiHandler.updateActivity(activityToEdit.id, activityData, files);
         await fetchActivity();
       } else {
-        await createActivity(activityData, files);
+        await ApiHandler.createActivity(activityData, files);
       }
       await reloadActivity();
       handleClose();

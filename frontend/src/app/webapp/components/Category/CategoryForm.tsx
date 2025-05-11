@@ -9,21 +9,15 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import AutoCompleteElement from "../AutoCompleteElement";
-import { createCategory } from "../../../api-service/services/category-services";
-import { isApiError } from "../../../api-service/services/auth-service";
-import { useActivities } from "../../utils/contexts/ActivityContext";
+import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
+import { CategoryData } from "../../../api-service/dtos/category.dto";
 import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
+import { useActivities } from "../../utils/contexts/hooks/useActivities";
+import AutoCompleteElement from "../AutoCompleteElement";
 
 interface DialogFormProps {
   open: boolean;
   handleClose: () => void;
-}
-
-export interface CategoryData {
-  id: number;
-  categoryName: string;
-  description?: string;
 }
 
 export default function CategoryForm({ open, handleClose }: DialogFormProps) {
@@ -51,7 +45,7 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
       categoryName: value,
     };
     try {
-      await createCategory(categoryData);
+      await ApiHandler.createCategory(categoryData);
       await reloadCategory();
       onClose();
     } catch (err) {

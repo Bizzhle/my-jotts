@@ -1,22 +1,12 @@
-import {
-  Box,
-  Button,
-  Container,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { Box, Button, Container, Toolbar, Typography } from "@mui/material";
 import { useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LayoutContext } from "../../layout/LayoutContext";
-import { useAuth } from "../../utils/contexts/AuthContext";
+import { useAuth } from "../../utils/contexts/hooks/useAuth";
 import ProfileCards from "./utils/ProfileCards";
 
 export default function AccountPage() {
-  const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { authenticatedUser } = useAuth();
   const { hideSearchBar } = useContext(LayoutContext);
 
@@ -31,8 +21,6 @@ export default function AccountPage() {
 
   return (
     <Container maxWidth="md">
-      {!isMobile && <Toolbar />}
-
       <Box>
         <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
           Manage your account
