@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { env } from "../../../config/env";
-import { refreshToken } from "../../api-service/services/auth-service";
+import { ApiHandler } from "../../api-service/ApiRequestManager";
 import { SessionState } from "../SessionState";
 
 const API_URL = env.REACT_APP_API_URL;
@@ -42,7 +42,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const response = await refreshToken();
+        const response = await ApiHandler.refreshToken();
         const newAccessToken = response?.accessToken;
         apiClient.defaults.headers.common[
           "Authorization"

@@ -11,6 +11,7 @@ import Category from "../pages/Category";
 import HomePage from "../pages/HomePage";
 import NotFoundPage from "../pages/NotFoundPage";
 import { ActivityProvider } from "../utils/contexts/ActivityContext";
+import { SubscriptionProvider } from "../utils/contexts/SubscriptionContext";
 import AccountPage from "./AccountInfo/AccountPage";
 import { ChangePassword } from "./AccountInfo/ChangePassword";
 import ActivityDetail from "./Activity/ActivityDetail";
@@ -25,11 +26,13 @@ const router = createBrowserRouter([
       return "";
     },
     Component: () => (
-      <ActivityProvider>
-        <LayoutProvider>
-          <Layout />
-        </LayoutProvider>
-      </ActivityProvider>
+      <SubscriptionProvider>
+        <ActivityProvider>
+          <LayoutProvider>
+            <Layout />
+          </LayoutProvider>
+        </ActivityProvider>
+      </SubscriptionProvider>
     ),
     children: [
       {
@@ -69,7 +72,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "myaccount",
+        path: "myAccount",
         Component: () => (
           <ProtectedRoutes>
             <AccountPage />

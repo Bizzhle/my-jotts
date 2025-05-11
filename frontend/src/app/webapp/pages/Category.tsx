@@ -1,21 +1,11 @@
 import { ArrowRight } from "@mui/icons-material";
-import {
-  Box,
-  Container,
-  Divider,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { Box, Container, Divider, Typography } from "@mui/material";
 import { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { LayoutContext } from "../layout/LayoutContext";
-import { useActivities } from "../utils/contexts/ActivityContext";
+import { useActivities } from "../utils/contexts/hooks/useActivities";
 
 export default function Category() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { categories } = useActivities();
   const { hideSearchBar } = useContext(LayoutContext);
 
@@ -26,9 +16,10 @@ export default function Category() {
 
   return (
     <Container maxWidth="md">
-      {!isMobile && <Toolbar />}
-      <Box mb={2}>
-        <Typography variant="h6">Categories</Typography>
+      <Box>
+        <Typography variant="h6" sx={{ mb: 3 }}>
+          Categories
+        </Typography>
       </Box>
       {categories.length === 0 ? (
         <Typography>No activities found for this category.</Typography>

@@ -2,13 +2,9 @@ import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { isApiError, registerUser } from "../api-service/services/auth-service";
+import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
+import { RegisterData } from "../api-service/dtos/registration.dto";
 
-export interface RegisterData {
-  emailAddress: string;
-  password: string;
-  confirmPassword: string;
-}
 export default function RegistrationForm() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | undefined>("");
@@ -22,7 +18,7 @@ export default function RegistrationForm() {
 
   const onSubmit = async (data: RegisterData) => {
     try {
-      await registerUser(data);
+      await ApiHandler.registerUser(data);
       setSuccessMessage(
         "Registration successful, check your email to verify your account"
       );

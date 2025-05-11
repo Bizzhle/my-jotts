@@ -1,8 +1,8 @@
 import {
-  Home,
-  PlaylistAddCheckCircleRounded,
   AccountCircleRounded,
   CardMembership,
+  Home,
+  PlaylistAddCheckCircleRounded,
 } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 
@@ -33,7 +33,7 @@ export const NavigationData: NavigationDataList[] = [
   },
   {
     title: "Account",
-    path: "/myaccount",
+    path: "/myAccount",
     icon: (
       <IconButton color="secondary" size="large">
         <AccountCircleRounded />

@@ -5,7 +5,7 @@ import ActivityCard from "../components/Card";
 import CategoryForm from "../components/Category/CategoryForm";
 import HomeBanner from "../components/HomeBanner";
 import { LayoutContext } from "../layout/LayoutContext";
-import { useActivities } from "../utils/contexts/ActivityContext";
+import { useActivities } from "../utils/contexts/hooks/useActivities";
 
 export default function HomePage() {
   const theme = useTheme();
