@@ -1,22 +1,13 @@
-import axios, { AxiosError } from "axios";
 import { ForgotPasswordData } from "../../authentication/ForgotPassword";
 import { ResetPasswordData } from "../../authentication/ResetPassword";
 import apiClient from "../../libs/Configs/axiosConfig";
 import { SessionState } from "../../libs/SessionState";
-import { RegisterData } from "../../registration/RegistrationForm";
 import { UserInfo } from "../../webapp/utils/contexts/AuthContext";
 import { ChangePasswordDto } from "../dtos/change-password.dto";
 import { ForgotPasswordResponseDto } from "../dtos/forgotpassword.dto";
 import { LogoutUserDto } from "../dtos/logout-user.dto";
+import { registrationData } from "../dtos/registration.dto";
 import { LoginResponseDto, RefreshResponseDto } from "../dtos/session-info.dto";
-
-export type registrationData = Omit<RegisterData, "confirmPassword">;
-
-interface ApiError {
-  status: number;
-  message?: string;
-  error?: string;
-}
 
 export const registerUser = async (
   userData: registrationData
@@ -80,17 +71,4 @@ export async function refreshToken(): Promise<RefreshResponseDto | undefined> {
   const response = await apiClient.post(`/auth/refresh`, { refreshToken });
 
   return response.data;
-}
-
-export function isApiError(error: unknown): string | undefined {
-  let errorMessage;
-  if (axios.isAxiosError(error)) {
-    const axiosError = error as AxiosError<ApiError>;
-
-    if (axiosError.response?.data) {
-      const apiError = axiosError.response.data;
-      return apiError.message || apiError.error;
-    }
-  }
-  return errorMessage;
 }

@@ -8,54 +8,25 @@ import {
   ListItem,
   Toolbar,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
-import { useContext, useEffect, useState } from "react";
-import { PaymentPlanDto } from "../../../api-service/dtos/subscription/payment-plan.dto";
-import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
-import {
-  createSubscription,
-  getPaymentPlans,
-  getSubscription,
-} from "../../../api-service/services/subscription-services";
+import { useContext, useEffect } from "react";
+import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { formatDateString } from "../../../libs/utils/Date";
 import { LayoutContext } from "../../layout/LayoutContext";
-import { useAuth } from "../../utils/contexts/AuthContext";
+import { useAuth } from "../../utils/contexts/hooks/useAuth";
+import { useSubscription } from "../../utils/contexts/hooks/useSubscription";
 import ProfileCards from "../AccountInfo/utils/ProfileCards";
 import { CancelSubscription } from "./CancelSubscription";
 
 export default function SubscribePage() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { authenticatedUser } = useAuth();
-  const [paymentPlans, setPaymentPlans] = useState<PaymentPlanDto[]>();
-  const [subscription, setSubscription] = useState<SubscriptionDto>();
   const { hideSearchBar } = useContext(LayoutContext);
+  const { subscription, paymentPlans } = useSubscription();
 
   useEffect(() => {
     hideSearchBar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    fetchPlans();
-    fetchSubscription();
-  }, []);
-
-  const fetchPlans = async () => {
-    const plans = await getPaymentPlans();
-    setPaymentPlans(plans);
-  };
-
-  const fetchSubscription = async () => {
-    try {
-      const subscription = await getSubscription();
-      setSubscription(subscription);
-    } catch (error) {
-      console.error("Error fetching subscription", error);
-    }
-  };
 
   const handleCreateSubscription = async (
     priceId: string,
@@ -63,7 +34,7 @@ export default function SubscribePage() {
     paymentPlanId: number
   ) => {
     try {
-      await createSubscription(priceId, paymentPlanId);
+      await ApiHandler.createSubscription(priceId, paymentPlanId);
 
       const basePaymentLinkUrl = link;
       const successUrl = "http://localhost/5173/";
@@ -82,8 +53,6 @@ export default function SubscribePage() {
 
   return (
     <Container maxWidth="md">
-      {!isMobile && <Toolbar />}
-
       <Box>
         <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
           Manage your Subscription
