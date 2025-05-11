@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import { cancelSubscription } from "../../../api-service/services/subscription-services";
+import { ApiHandler } from "../../../api-service/ApiRequestManager";
 
 interface CancelSubscriptionProps {
   subscriptionId: string | undefined;
@@ -9,7 +9,7 @@ export const CancelSubscription = ({
 }: CancelSubscriptionProps) => {
   const handleCancelSubscription = async () => {
     if (!subscriptionId) return;
-    await cancelSubscription(subscriptionId);
+    await ApiHandler.cancelSubscription(subscriptionId);
   };
 
   return (

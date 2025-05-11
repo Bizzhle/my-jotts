@@ -9,10 +9,7 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import {
-  forgotPassword,
-  isApiError,
-} from "../api-service/services/auth-service";
+import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
 import { LayoutContext } from "../webapp/layout/LayoutContext";
 
 export interface ForgotPasswordData {
@@ -36,7 +33,7 @@ export const ForgotPassword = () => {
 
   const onSubmit = async (data: ForgotPasswordData) => {
     try {
-      const response = await forgotPassword(data);
+      const response = await ApiHandler.forgotPassword(data);
       reset({
         emailAddress: "",
       });

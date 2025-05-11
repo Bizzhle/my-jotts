@@ -1,10 +1,7 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-  changePassword,
-  isApiError,
-} from "../../../api-service/services/auth-service";
+import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
 import { LayoutContext } from "../../layout/LayoutContext";
 
 export interface ResetPasswordData {
@@ -32,7 +29,7 @@ export const ChangePassword = () => {
 
   const onSubmit = async (data: ResetPasswordData) => {
     try {
-      await changePassword(data);
+      await ApiHandler.changePassword(data);
       setSuccessMessage("Password changed successfully");
       reset({
         oldPassword: "",
