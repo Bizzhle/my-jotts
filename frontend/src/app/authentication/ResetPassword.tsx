@@ -9,10 +9,7 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  isApiError,
-  resetPassword,
-} from "../api-service/services/auth-service";
+import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
 import { LayoutContext } from "../webapp/layout/LayoutContext";
 
 export interface ResetPasswordData {
@@ -45,7 +42,7 @@ export const ResetPassword = () => {
 
   const onSubmit = async (data: ResetPasswordData) => {
     try {
-      await resetPassword({ ...data, token: token || "" });
+      await ApiHandler.resetPassword({ ...data, token: token || "" });
       setSuccessMessage("Password reset successfully");
     } catch (error) {
       const errorMessage = isApiError(error);

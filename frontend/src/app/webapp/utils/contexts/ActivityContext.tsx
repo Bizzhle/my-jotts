@@ -1,22 +1,12 @@
-import { createContext, useCallback, useContext, useEffect } from "react";
+import { createContext, useCallback, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
 import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
-import {
-  getActivities,
-  getActivitiesByCategoryName,
-  getActivity,
-  getCategories,
-} from "../../../api-service/services/activity-service";
-import { isApiError } from "../../../api-service/services/auth-service";
+import { CategoryDto } from "../../../api-service/dtos/category.dto";
 import { useObjectReducer } from "../shared/objectReducer";
 import { useDebounce } from "../shared/useDebounce";
 
 interface Activity extends ActivityResponseDto {}
-interface Category {
-  id: number;
-  categoryName: string;
-  description?: string;
-}
 
 interface ActivityProviderProps {
   children?: React.ReactNode;
@@ -24,7 +14,7 @@ interface ActivityProviderProps {
 
 interface ActivityContextState {
   activities: Activity[];
-  categories: Category[];
+  categories: CategoryDto[];
   searchQuery: string;
   error?: string;
   loading: boolean;
@@ -53,14 +43,6 @@ export const ActivityContext = createContext<ActivityContextValue>(
   {} as ActivityContextValue
 );
 
-export function useActivities(): ActivityContextValue {
-  const context = useContext(ActivityContext);
-  if (!context) {
-    throw new Error("useActivities must be used within an ActivityProvider");
-  }
-  return context;
-}
-
 export function ActivityProvider({ children }: ActivityProviderProps) {
   const { id, categoryName } = useParams<{
     id?: string;
@@ -87,8 +69,8 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     try {
       setState("loading", true);
       const response = categoryName
-        ? await getActivitiesByCategoryName(categoryName)
-        : await getActivities(debouncedSearch);
+        ? await ApiHandler.getActivitiesByCategoryName(categoryName)
+        : await ApiHandler.getActivities(debouncedSearch);
 
       setState({ activities: response });
     } catch (err) {
@@ -108,7 +90,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   const reloadActivity = async () => {
     try {
       setState("loading", true);
-      const activity = await getActivities();
+      const activity = await ApiHandler.getActivities();
       setState({ activities: activity });
     } catch (err) {
       setState("error", isApiError(err));
@@ -124,7 +106,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     }
     try {
       setState("activityDataLoading", true);
-      const activity = await getActivity(id);
+      const activity = await ApiHandler.getActivity(id);
       setState("activityData", activity);
     } catch (err) {
       setState("activityDataError", isApiError(err));
@@ -133,7 +115,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
 
   const reloadCategory = useCallback(async () => {
     try {
-      const response = await getCategories();
+      const response = await ApiHandler.getCategories();
       setState("categories", response);
     } catch (err) {
       setState("error", isApiError(err));
@@ -142,7 +124,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await getCategories();
+      const response = await ApiHandler.getCategories();
       setState("categories", response);
     } catch (err) {
       setState("error", isApiError(err));

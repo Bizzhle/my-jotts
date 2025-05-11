@@ -1,10 +1,7 @@
 import { Box, Container, Link, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  isApiError,
-  verifyRegistration,
-} from "../api-service/services/auth-service";
+import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
 
 export const ConfirmRegistration = () => {
   const [searchParams] = useSearchParams();
@@ -19,11 +16,11 @@ export const ConfirmRegistration = () => {
   ) => {
     try {
       // Call the API to confirm registration
-      const response = await verifyRegistration(
+      const response = await ApiHandler.verifyRegistration(
         emailAddress,
         verificationToken
       );
-      setMessage(response.data.message); // Handle success (e.g., show a success message)
+      setMessage(response?.message); // Handle success (e.g., show a success message)
     } catch (error) {
       const errorMessage = isApiError(error);
       setErrorMessage(errorMessage); // Handle error (e.g., show an error message)

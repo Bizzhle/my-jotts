@@ -1,22 +1,11 @@
-import {
-  Box,
-  Breadcrumbs,
-  Container,
-  Grid,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { Box, Breadcrumbs, Grid, Typography } from "@mui/material";
 import { useContext, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { LayoutContext } from "../../layout/LayoutContext";
-import { useActivities } from "../../utils/contexts/ActivityContext";
+import { useActivities } from "../../utils/contexts/hooks/useActivities";
 import ActivityCard from "../Card";
 
 export default function CategoryDetail() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { categoryName } = useParams<{ categoryName: string }>();
   const { activities } = useActivities();
   const { hideSearchBar } = useContext(LayoutContext);
@@ -27,9 +16,8 @@ export default function CategoryDetail() {
   }, []);
 
   return (
-    <Container>
-      {!isMobile && <Toolbar />}
-      <Box mb={2}>
+    <>
+      <Box sx={{ mb: 2, py: 2 }}>
         <Breadcrumbs aria-label="breadcrumb">
           <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
             Activities
@@ -47,9 +35,11 @@ export default function CategoryDetail() {
       </Box>
 
       {activities.length === 0 ? (
-        <Typography>No activities found for this category.</Typography>
+        <Box mb={2}>
+          <Typography>No activities found for this category.</Typography>
+        </Box>
       ) : (
-        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+        <Grid container sx={{ mb: 2 }} spacing={{ xs: 1, sm: 2, md: 2 }}>
           {activities.map((activity, index) => (
             <Grid item xs={12} sm={12} key={index}>
               <ActivityCard value={activity} />
@@ -57,6 +47,6 @@ export default function CategoryDetail() {
           ))}
         </Grid>
       )}
-    </Container>
+    </>
   );
 }

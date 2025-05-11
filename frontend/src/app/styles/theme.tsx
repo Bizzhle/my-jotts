@@ -109,6 +109,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           fontFamily: "'Montserrat', 'Poppins', 'sans-serif'",
+          fontSize: "1rem",
           color: "#108BE3",
           "&:hover": {
             color: "#0268B0",

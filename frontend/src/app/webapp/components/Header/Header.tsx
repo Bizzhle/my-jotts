@@ -23,9 +23,9 @@ import {
   useTheme,
 } from "@mui/material";
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { useActivities } from "../../utils/contexts/ActivityContext";
-import { useAuth } from "../../utils/contexts/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import { useActivities } from "../../utils/contexts/hooks/useActivities";
+import { useAuth } from "../../utils/contexts/hooks/useAuth";
 import SearchBar from "../SearchBar";
 
 interface HeaderProps {
@@ -56,6 +56,7 @@ export default function Header({
   const [selectedIndex, setSelectedIndex] = useState(1);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const navigate = useNavigate();
 
   const handleMenuItemClick = (
     _event: React.MouseEvent<HTMLLIElement, MouseEvent>,
@@ -91,8 +92,11 @@ export default function Header({
     setOpen(false);
   };
 
-  const handleAcountMenuClose = () => {
+  const handleAccountMenuClose = (url?: string) => {
     setAnchorEl(null);
+    if (url) {
+      navigate(url);
+    }
   };
 
   const handleReloadActivity = async () => {
@@ -273,23 +277,15 @@ export default function Header({
                   horizontal: "right",
                 }}
                 open={Boolean(anchorEl)}
-                onClose={handleAcountMenuClose}
+                onClose={() => handleAccountMenuClose()}
               >
-                <MenuItem onClick={handleAcountMenuClose}>
-                  <Link
-                    to="/myaccount"
-                    style={{ textDecoration: "none", color: "inherit" }}
-                  >
-                    Account
-                  </Link>
+                <MenuItem onClick={() => handleAccountMenuClose("/myAccount")}>
+                  Account
                 </MenuItem>
-                <MenuItem onClick={handleAcountMenuClose}>
-                  <Link
-                    to="/subscription"
-                    style={{ textDecoration: "none", color: "inherit" }}
-                  >
-                    Subscription
-                  </Link>
+                <MenuItem
+                  onClick={() => handleAccountMenuClose("/subscription")}
+                >
+                  Subscription
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>

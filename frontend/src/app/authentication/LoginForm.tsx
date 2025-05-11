@@ -2,12 +2,8 @@ import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  isApiError,
-  login,
-  refreshToken,
-  registrationData,
-} from "../api-service/services/auth-service";
+import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
+import { registrationData } from "../api-service/dtos/registration.dto";
 import { SessionState } from "../libs/SessionState";
 import { AuthContext } from "../webapp/utils/contexts/AuthContext";
 
@@ -32,7 +28,7 @@ export default function LoginForm() {
 
   const onSubmit = async (data: registrationData) => {
     try {
-      const response = await login(data);
+      const response = await ApiHandler.login(data);
       SessionState.accessToken = response?.accessToken;
       SessionState.refreshToken = response?.refreshToken;
 
@@ -54,7 +50,7 @@ export default function LoginForm() {
     const session = SessionState.refreshToken;
 
     if (session) {
-      const response = await refreshToken();
+      const response = await ApiHandler.refreshToken();
 
       SessionState.accessToken = response?.accessToken;
       SessionState.refreshToken = response?.refreshToken;

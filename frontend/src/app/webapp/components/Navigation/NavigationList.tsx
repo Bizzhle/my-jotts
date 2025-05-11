@@ -1,4 +1,3 @@
-import { NavigationData } from "./NavigationData";
 import {
   Box,
   Button,
@@ -10,7 +9,8 @@ import {
   ListItemText,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../utils/contexts/AuthContext";
+import { useAuth } from "../../utils/contexts/hooks/useAuth";
+import { NavigationData } from "./NavigationData";
 
 interface NavigationListProps {
   toggle: () => void;
