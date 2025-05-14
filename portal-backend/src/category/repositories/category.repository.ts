@@ -24,6 +24,7 @@ export class CategoryRepository extends Repository<Category> {
   public async findAllCategoriesForUser(userId: number): Promise<Category[]> {
     return this.find({
       where: { user_id: userId },
+      order: { updatedAt: 'DESC' },
     });
   }
 

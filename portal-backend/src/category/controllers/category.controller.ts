@@ -1,8 +1,4 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
-import { CreateCategoryDto } from '../dto/create-category.dto';
-import { UpdateCategoryDto } from '../dto/update-category.dto';
-import { CategoryService } from '../services/category.service';
 import {
   ApiBearerAuth,
   ApiInternalServerErrorResponse,
@@ -13,7 +9,11 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
+import { CreateCategoryDto } from '../dto/create-category.dto';
+import { UpdateCategoryDto } from '../dto/update-category.dto';
+import { CategoryService } from '../services/category.service';
 @ApiTags('Category')
 @Controller('category')
 export class CategoryController {
@@ -57,8 +57,11 @@ export class CategoryController {
   }
 
   @IsAuthorizedUser()
-  @Delete(':id')
+  @Delete(':id/delete')
   @ApiBearerAuth()
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
+  @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async remove(@Param('id') id: number) {
     return this.categoryService.deleteCategory(id);
   }
