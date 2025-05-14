@@ -1,6 +1,6 @@
 import { Search } from "@mui/icons-material";
 import { Box, IconButton, InputBase } from "@mui/material";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useEffect, useRef } from "react";
 
 interface SearchBarProps {
   searchQuery: string;
@@ -11,6 +11,14 @@ export default function SearchBar({
   searchQuery,
   handleSearchChange,
 }: SearchBarProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     e.preventDefault();
     handleSearchChange(e.target.value);
@@ -49,6 +57,7 @@ export default function SearchBar({
             inputProps={{ "aria-label": "search activities" }}
             value={searchQuery}
             onChange={handleChange}
+            inputRef={inputRef}
             sx={{ flexGrow: 1 }}
             fullWidth
           />
