@@ -1,7 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { UserAccount } from '../../users/entities/user-account.entity';
 import { Activity } from '../../activity/entities/activity.entity';
+import { UserAccount } from '../../users/entities/user-account.entity';
 
 @Entity()
 export class ImageFile {
@@ -23,12 +23,9 @@ export class ImageFile {
   user_id: number;
 
   @ManyToOne(() => Activity, (activity) => activity)
-  @JoinColumn({ name: 'activity_id' })
-  @Exclude()
   activity: Activity;
 
   @ManyToOne(() => UserAccount, (user) => user.imageFiles)
   @JoinColumn({ name: 'user_id' })
-  @Exclude()
   userAccount: UserAccount;
 }
