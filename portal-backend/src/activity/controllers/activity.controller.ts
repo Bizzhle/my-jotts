@@ -10,6 +10,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiInternalServerErrorResponse,
@@ -20,14 +21,12 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
+import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateActivityDto } from '../dto/create-activity.dto';
+import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
 import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { ActivityService } from '../service/activity.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
-import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { OptionalFileValidationPipe } from '../validator/optional-parse-file';
-import { Express } from 'express';
 @ApiTags('Activities')
 @Controller('activities')
 export class ActivityController {
@@ -156,7 +155,7 @@ export class ActivityController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
-  removeUserActivity(
+  async removeUserActivity(
     @Param('id') activityId: number,
     @GetCurrentUserFromJwt() emailAddress: string,
   ) {
