@@ -21,8 +21,14 @@ export const ENDPOINTS = {
     `/activities/${categoryName}/activity`,
   UPDATE_ACTIVITY: (activityId: number): string =>
     `/activities/${activityId}/update`,
+  DELETE_ACTIVITY: (activityId: number): string =>
+    `/activities/${activityId}/delete`,
   GET_CATEGORIES: (): string => `/category/categories`,
   CREATE_CATEGORY: (): string => `/category`,
+  DELETE_CATEGORY: (categoryId: number): string =>
+    `category/${categoryId}/delete`,
+  UPDATE_CATEGORY: (categoryId: number): string =>
+    `/category/${categoryId}/update`,
   CREATE_SUBSCRIPTION: (): string => `/subscription`,
   GET_SUBSCRIPTION: (): string => `/subscription`,
   CANCEL_SUBSCRIPTION: (subscriptionId: string): string =>
