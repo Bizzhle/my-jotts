@@ -28,6 +28,7 @@ interface ActivityContextValue extends ActivityContextState {
   findActivity: (value: string) => void;
   reloadCategory: () => void;
   fetchActivity: () => void;
+  fetchCategories: () => void;
 }
 
 const initialState: ActivityContextState = {
@@ -152,6 +153,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
         activityData,
         reloadCategory,
         fetchActivity,
+        fetchCategories,
       }}
     >
       {children}
