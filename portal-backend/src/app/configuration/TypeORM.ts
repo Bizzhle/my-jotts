@@ -1,8 +1,8 @@
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join, resolve } from 'path';
 import { CustomNamingStrategy } from '../../typeorm/custom-foreign-keys-naming-strategy';
 import { EnvGet, EnvGetBoolean } from '../decorators/env-get.decorators';
+import { EnvironmentConfigRootModule } from './Environment';
 
 function cliOptions() {
   return {
@@ -35,7 +35,7 @@ class DatabaseConfig {
 
 export function TypeOrmRootModule(cli = false) {
   return TypeOrmModule.forRootAsync({
-    imports: [ConfigModule],
+    imports: [EnvironmentConfigRootModule()],
     extraProviders: [DatabaseConfig],
     inject: [DatabaseConfig],
     useFactory: (config: DatabaseConfig) => {

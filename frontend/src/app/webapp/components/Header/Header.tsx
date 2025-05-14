@@ -1,12 +1,9 @@
-import {
-  AccountCircle,
-  PlaylistAddCheckCircleRounded,
-  Search,
-} from "@mui/icons-material";
+import { AccountCircle, Search } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
   AppBar,
   Box,
+  Button,
   ButtonGroup,
   ClickAwayListener,
   Grow,
@@ -17,7 +14,6 @@ import {
   Paper,
   Popper,
   Toolbar,
-  Tooltip,
   Typography,
   useMediaQuery,
   useTheme,
@@ -177,30 +173,19 @@ export default function Header({
           {!isMobile && displayNavigation && (
             <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
               <ButtonGroup variant="text" ref={anchorRef}>
-                <Tooltip
-                  title="categories"
-                  slotProps={{
-                    popper: {
-                      modifiers: [
-                        {
-                          name: "offset",
-                          options: {
-                            offset: [0, -14],
-                          },
-                        },
-                      ],
+                <Button
+                  sx={{
+                    backgroundColor: "primary.main",
+                    color: "secondary.dark",
+                    "&:hover": {
+                      backgroundColor: "primary.dark",
+                      color: "secondary.dark",
                     },
                   }}
+                  onClick={handleToggle}
                 >
-                  <IconButton
-                    color="inherit"
-                    aria-label="categories"
-                    onClick={handleToggle}
-                    sx={{ borderRadius: 1 }}
-                  >
-                    <PlaylistAddCheckCircleRounded fontSize="medium" />
-                  </IconButton>
-                </Tooltip>
+                  Categories
+                </Button>
               </ButtonGroup>
               <Popper
                 sx={{ zIndex: 1, mt: "45px", minWidth: 150 }}
@@ -221,6 +206,9 @@ export default function Header({
                     <Paper>
                       <ClickAwayListener onClickAway={handleClose}>
                         <MenuList id="split-button-menu" autoFocusItem>
+                          <MenuItem onClick={() => navigate("/categories")}>
+                            All Categories
+                          </MenuItem>
                           {categories.map((category, index) => (
                             <Link
                               to={`/categories/${category.categoryName}`}
@@ -231,7 +219,7 @@ export default function Header({
                               }}
                             >
                               <MenuItem
-                                disabled={index === 2}
+                                disabled={index === selectedIndex}
                                 selected={index === selectedIndex}
                                 onClick={(event) =>
                                   handleMenuItemClick(event, index)

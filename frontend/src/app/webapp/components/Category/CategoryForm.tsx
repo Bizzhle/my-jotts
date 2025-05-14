@@ -7,45 +7,56 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
 import { CategoryData } from "../../../api-service/dtos/category.dto";
 import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
-import AutoCompleteElement from "../AutoCompleteElement";
 
 interface DialogFormProps {
   open: boolean;
   handleClose: () => void;
+  categoryToEdit?: CategoryData;
 }
 
-export default function CategoryForm({ open, handleClose }: DialogFormProps) {
-  const [value, setValue] = useState("");
+export default function CategoryForm({
+  open,
+  handleClose,
+  categoryToEdit,
+}: DialogFormProps) {
   const [error, setError] = useState<string | undefined>("");
   const { reloadCategory } = useActivities();
-
-  const {
-    handleSubmit,
-    register,
-    reset,
-    // formState: { errors },
-  } = useForm<CategoryData>();
+  const { handleSubmit, register, reset } = useForm<CategoryData>();
 
   function onClose() {
     reset();
-    setValue("");
     setError("");
     handleClose();
   }
 
+  useEffect(() => {
+    if (categoryToEdit) {
+      reset(categoryToEdit);
+    } else {
+      reset({
+        categoryName: "",
+        description: "",
+      });
+    }
+  }, [categoryToEdit, reset]);
+
   const onSubmit = async (data: CategoryData) => {
     const categoryData = {
       ...data,
-      categoryName: value,
     };
+
     try {
-      await ApiHandler.createCategory(categoryData);
+      if (categoryToEdit) {
+        await ApiHandler.updateCategory(categoryToEdit.id, categoryData);
+      } else {
+        await ApiHandler.createCategory(categoryData);
+      }
       await reloadCategory();
       onClose();
     } catch (err) {
@@ -57,15 +68,27 @@ export default function CategoryForm({ open, handleClose }: DialogFormProps) {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ mb: -2 }}>Add Category</DialogTitle>
-      {error && getErrorMessage(error)}
       <Box sx={{ mt: -2 }} component="form" onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
-          <AutoCompleteElement
+          {error && getErrorMessage(error)}
+
+          <TextField
+            autoFocus
+            required
+            id="category"
+            label="Category"
+            type="text"
+            fullWidth
+            margin="normal"
+            {...register("categoryName")}
+            color="secondary"
+          />
+          {/* <AutoCompleteElement
             value={value}
             setValue={setValue}
             label="Category"
             options={[]}
-          />
+          /> */}
 
           <TextField
             id="description"
