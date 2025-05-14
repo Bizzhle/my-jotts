@@ -86,8 +86,6 @@ export default function ActivityDialogForm({
 
     try {
       if (activityToEdit) {
-        console.info(activityToEdit, activityData);
-
         await ApiHandler.updateActivity(activityToEdit.id, activityData, files);
         await fetchActivity();
       } else {
