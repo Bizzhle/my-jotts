@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import {
   Column,
@@ -27,6 +28,14 @@ export class Category {
 
   @Column({ nullable: true })
   description: string;
+
+  @ApiProperty({ description: 'Date of category creation', example: '2023-01-19 13:09:51' })
+  @Column({ type: 'date', nullable: true })
+  createdAt: Date;
+
+  @ApiProperty({ description: 'Date of category update', example: '2023-01-19 13:09:51' })
+  @Column({ type: 'date', nullable: true })
+  updatedAt: Date;
 
   @ManyToOne(() => UserAccount, (user) => user.categories)
   @JoinColumn({ name: 'user_id' })

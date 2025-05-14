@@ -122,6 +122,10 @@ export class ApiHandler {
 
     return ApiMethods.patchFormData(url, formData);
   };
+  static deleteActivity = (activityId: number): Promise<void> => {
+    const url = ENDPOINTS.DELETE_ACTIVITY(activityId);
+    return ApiMethods.delete(url);
+  };
   static getCategories = (): Promise<CategoryDto[]> => {
     const url = ENDPOINTS.GET_CATEGORIES();
     return ApiMethods.get(url);
@@ -129,6 +133,17 @@ export class ApiHandler {
   static createCategory = (params: CategoryData): Promise<void> => {
     const url = ENDPOINTS.CREATE_CATEGORY();
     return ApiMethods.post(url, params);
+  };
+  static deleteCategory = (categoryId: number): Promise<void> => {
+    const url = ENDPOINTS.DELETE_CATEGORY(categoryId);
+    return ApiMethods.delete(url);
+  };
+  static updateCategory = (
+    categoryId: number,
+    params: CategoryData
+  ): Promise<void> => {
+    const url = ENDPOINTS.UPDATE_CATEGORY(categoryId);
+    return ApiMethods.patch(url, params);
   };
   static createSubscription = (
     priceId: string,

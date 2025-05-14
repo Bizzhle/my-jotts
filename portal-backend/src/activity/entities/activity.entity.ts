@@ -76,4 +76,7 @@ export class Activity {
   @JoinColumn({ name: 'user_id' })
   @Exclude()
   userAccount: UserAccount;
+
+  @OneToMany(() => ImageFile, (imageFile) => imageFile.activity)
+  imageFiles: ImageFile[];
 }

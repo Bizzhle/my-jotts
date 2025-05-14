@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   ConflictException,
   ForbiddenException,
@@ -8,16 +7,16 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { EntityManager } from 'typeorm';
 import { ActivityRepository } from '../../activity/repositories/activity.repository';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
+import { SubscriptionStatus } from '../../subscription/enum/subscrition.enum';
+import { SubscriptionService } from '../../subscription/services/subscription.service';
 import { UsersService } from '../../users/services/user-service/users.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { Category } from '../entities/category.entity';
 import { CategoryRepository } from '../repositories/category.repository';
-import { DataSource, EntityManager } from 'typeorm';
-import { SubscriptionStatus } from '../../subscription/enum/subscrition.enum';
-import { SubscriptionService } from '../../subscription/services/subscription.service';
 
 @Injectable()
 export class CategoryService {
@@ -109,11 +108,11 @@ export class CategoryService {
       throw new NotFoundException('Category not found');
     }
 
-    // check if categories has associated entries
+    // check if categories have associated entries
     const countEntries = await this.activityRepository.count({ where: { category } });
 
     if (countEntries > 0) {
-      throw new Error('Cannot delete category with associated entries');
+      throw new ConflictException('Cannot delete category with associated entries');
     }
 
     await this.categoryRepository.deleteCategory(category);

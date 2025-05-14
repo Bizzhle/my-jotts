@@ -1,5 +1,13 @@
-import { Box, Grid, Toolbar, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Toolbar,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { useContext, useEffect, useState } from "react";
+import { ApiHandler } from "../../api-service/ApiRequestManager";
 import ActivityDialogForm from "../components/Activity/ActivityDialogForm";
 import ActivityCard from "../components/Card";
 import CategoryForm from "../components/Category/CategoryForm";
@@ -12,13 +20,22 @@ export default function HomePage() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [activityFormOpen, setActivityFormOpen] = useState<boolean>(false);
   const [categoryFormOpen, setCategoryFormOpen] = useState<boolean>(false);
-  const { activities } = useActivities();
+  const { activities, reloadActivity, searchQuery } = useActivities();
   const { showSearchBar } = useContext(LayoutContext);
 
   function handleClose() {
     setActivityFormOpen(false);
     setCategoryFormOpen(false);
   }
+
+  const handleDeleteClick = async (activityId: number) => {
+    try {
+      await ApiHandler.deleteActivity(activityId);
+      await reloadActivity();
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+    }
+  };
 
   useEffect(() => {
     showSearchBar();
@@ -34,12 +51,20 @@ export default function HomePage() {
           setCategoryFormOpen={setCategoryFormOpen}
         />
       </Box>
-      <Grid container spacing={{ xs: 1, sm: 2, md: 2 }}>
-        {activities.map((activity, index) => (
-          <Grid item xs={12} key={index}>
-            <ActivityCard value={activity} />
-          </Grid>
-        ))}
+      <Grid container spacing={{ xs: 2 }}>
+        {activities?.length > 0 ? (
+          activities.map((activity, index) => (
+            <Grid item xs={12} key={index}>
+              <ActivityCard value={activity} onDELETE={handleDeleteClick} />
+            </Grid>
+          ))
+        ) : (
+          <Typography>
+            {searchQuery
+              ? `There are no activities with this ${searchQuery}`
+              : "There are no activities"}
+          </Typography>
+        )}
       </Grid>
       <ActivityDialogForm open={activityFormOpen} handleClose={handleClose} />
       <CategoryForm open={categoryFormOpen} handleClose={handleClose} />
