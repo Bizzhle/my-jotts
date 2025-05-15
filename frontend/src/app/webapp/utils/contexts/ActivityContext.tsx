@@ -91,7 +91,9 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   const reloadActivity = async () => {
     try {
       setState("loading", true);
-      const activity = await ApiHandler.getActivities();
+      const activity = categoryName
+        ? await ApiHandler.getActivitiesByCategoryName(categoryName)
+        : await ApiHandler.getActivities();
       setState({ activities: activity });
     } catch (err) {
       setState("error", isApiError(err));
@@ -114,14 +116,17 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     }
   }, [setState, id]);
 
-  const reloadCategory = useCallback(async () => {
+  const reloadCategory = async () => {
+    console.log(categoryName);
+
     try {
       const response = await ApiHandler.getCategories();
+
       setState("categories", response);
     } catch (err) {
       setState("error", isApiError(err));
     }
-  }, [setState]);
+  };
 
   const fetchCategories = useCallback(async () => {
     try {
