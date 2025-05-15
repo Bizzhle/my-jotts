@@ -1,19 +1,42 @@
 import { Box, Breadcrumbs, Grid, Typography } from "@mui/material";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { LayoutContext } from "../../layout/LayoutContext";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
 import ActivityCard from "../Card";
 
+export interface responseError {
+  [key: number]: string | null | undefined;
+}
+
 export default function CategoryDetail() {
   const { categoryName } = useParams<{ categoryName: string }>();
-  const { activities } = useActivities();
+  const { activities, reloadActivity } = useActivities();
   const { hideSearchBar } = useContext(LayoutContext);
+  const [error, setError] = useState<responseError>({});
 
   useEffect(() => {
     hideSearchBar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleDeleteClick = async (activityId: number) => {
+    setError({});
+    try {
+      await ApiHandler.deleteActivity(activityId);
+      await reloadActivity(); // Reload category whenever the page is rendered
+      setError((prevErrors) => ({
+        ...prevErrors,
+        [activityId]: null,
+      }));
+    } catch (error) {
+      setError((prevErrors) => ({
+        ...prevErrors,
+        [activityId]: "Error deleting activity",
+      }));
+    }
+  };
 
   return (
     <>
@@ -42,7 +65,11 @@ export default function CategoryDetail() {
         <Grid container sx={{ mb: 2 }} spacing={{ xs: 1, sm: 2, md: 2 }}>
           {activities.map((activity, index) => (
             <Grid item xs={12} sm={12} key={index}>
-              <ActivityCard value={activity} />
+              <ActivityCard
+                value={activity}
+                onDelete={handleDeleteClick}
+                error={error}
+              />
             </Grid>
           ))}
         </Grid>
