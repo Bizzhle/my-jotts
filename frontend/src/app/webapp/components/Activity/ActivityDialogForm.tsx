@@ -51,17 +51,23 @@ export default function ActivityDialogForm({
   useEffect(() => {
     if (activityToEdit) {
       reset(activityToEdit);
-    } else {
-      reset({
-        activityTitle: "",
-        categoryName: "",
-        price: 0,
-        location: "",
-        rating: 0,
-        description: "",
-      });
     }
   }, [activityToEdit, reset]);
+
+  const handleCloseDialog = () => {
+    setError("");
+    setFiles([]);
+    setRating(0);
+    setValue("");
+    reset({
+      activityTitle: "",
+      categoryName: "",
+      price: 0,
+      location: "",
+      description: "",
+    });
+    handleClose();
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -92,7 +98,7 @@ export default function ActivityDialogForm({
         await ApiHandler.createActivity(activityData, files);
       }
       await reloadActivity();
-      handleClose();
+      handleCloseDialog();
     } catch (err) {
       const errorMessage = isApiError(err);
       setError(errorMessage || "");
@@ -104,7 +110,7 @@ export default function ActivityDialogForm({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog open={open} onClose={handleCloseDialog} fullWidth>
       <DialogTitle sx={{ mb: -2 }}>Add Activity</DialogTitle>
       <Box sx={{ mt: -2 }} component="form" onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
@@ -190,7 +196,7 @@ export default function ActivityDialogForm({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button type="submit">{activityToEdit ? "Update" : "Submit"}</Button>
         </DialogActions>
       </Box>
