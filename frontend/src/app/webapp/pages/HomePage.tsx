@@ -10,6 +10,7 @@ import { useContext, useEffect, useState } from "react";
 import { ApiHandler } from "../../api-service/ApiRequestManager";
 import ActivityDialogForm from "../components/Activity/ActivityDialogForm";
 import ActivityCard from "../components/Card";
+import { responseError } from "../components/Category/CategoryDetail";
 import CategoryForm from "../components/Category/CategoryForm";
 import HomeBanner from "../components/HomeBanner";
 import { LayoutContext } from "../layout/LayoutContext";
@@ -21,6 +22,7 @@ export default function HomePage() {
   const [activityFormOpen, setActivityFormOpen] = useState<boolean>(false);
   const [categoryFormOpen, setCategoryFormOpen] = useState<boolean>(false);
   const { activities, reloadActivity, searchQuery } = useActivities();
+  const [error, setError] = useState<responseError>({});
   const { showSearchBar } = useContext(LayoutContext);
 
   function handleClose() {
@@ -29,11 +31,19 @@ export default function HomePage() {
   }
 
   const handleDeleteClick = async (activityId: number) => {
+    setError({});
     try {
       await ApiHandler.deleteActivity(activityId);
       await reloadActivity();
+      setError((prevErrors) => ({
+        ...prevErrors,
+        [activityId]: null,
+      }));
     } catch (error) {
-      console.error("Error deleting activity:", error);
+      setError((prevErrors) => ({
+        ...prevErrors,
+        [activityId]: "Error deleting activity",
+      }));
     }
   };
 
@@ -55,7 +65,11 @@ export default function HomePage() {
         {activities?.length > 0 ? (
           activities.map((activity, index) => (
             <Grid item xs={12} key={index}>
-              <ActivityCard value={activity} onDELETE={handleDeleteClick} />
+              <ActivityCard
+                value={activity}
+                onDelete={handleDeleteClick}
+                error={error}
+              />
             </Grid>
           ))
         ) : (
