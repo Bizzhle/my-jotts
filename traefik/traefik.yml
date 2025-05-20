@@ -1,0 +1,21 @@
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+api:
+  dashboard: true
+  insecure: false
+
+providers:
+  docker:
+    exposedByDefault: false
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "gabrieluche2@gmail.com"
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: web

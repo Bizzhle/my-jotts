@@ -1,4 +1,4 @@
-FROM node:18-alpine as development
+FROM node:23-alpine as development
 
 LABEL description="Development image for portal backend"
 
@@ -22,7 +22,7 @@ EXPOSE 4000
 
 CMD ["npm", "run", "start:dev"]
 
-FROM node:18-alpine as production
+FROM node:23-alpine as production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
