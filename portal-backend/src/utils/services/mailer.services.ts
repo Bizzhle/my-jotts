@@ -45,52 +45,64 @@ export class MailerService {
   }
 
   async sendResetPasswordConfirmation(to: string) {
-    const forgotPasswordLink = `${this.frontend_url}/reset-password-confirmation`;
+    try {
+      const forgotPasswordLink = `${this.frontend_url}/reset-password-confirmation`;
 
-    const html = await this.loadTemplate('reset-password-confirmation.template', {
-      emailAddress: to,
-      token: forgotPasswordLink,
-    });
-    const mailOptions = {
-      from: 'MyJotts',
-      to,
-      subject: 'Password reset request',
-      html,
-    };
+      const html = await this.loadTemplate('reset-password-confirmation.template', {
+        emailAddress: to,
+        token: forgotPasswordLink,
+      });
+      const mailOptions = {
+        from: 'MyJotts',
+        to,
+        subject: 'Password reset request',
+        html,
+      };
 
-    return await this.transporter.sendMail(mailOptions);
+      return await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      throw new Error(`Failed to send registration email: ${error.message}`);
+    }
   }
 
   async sendPasswordResetEmail(to: string, token: string) {
-    const resetLink = `${this.frontend_url}/reset-password?token=${token}`;
+    try {
+      const resetLink = `${this.frontend_url}/reset-password?token=${token}`;
 
-    const html = await this.loadTemplate('reset-password.template', {
-      emailAddress: to,
-      token: resetLink,
-    });
-    const mailOptions = {
-      from: 'MyJotts',
-      to,
-      subject: 'Password reset request',
-      html,
-    };
+      const html = await this.loadTemplate('reset-password.template', {
+        emailAddress: to,
+        token: resetLink,
+      });
+      const mailOptions = {
+        from: 'MyJotts',
+        to,
+        subject: 'Password reset request',
+        html,
+      };
 
-    return await this.transporter.sendMail(mailOptions);
+      return await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      throw new Error(`Failed to send registration email: ${error.message}`);
+    }
   }
 
   async sendRegistrationEmail(to: string, token: string) {
-    const confirmationLink = `${this.frontend_url}/account-confirmation?token=${token}&emailAddress=${to}`;
-    const html = await this.loadTemplate('registration.template', {
-      emailAddress: to,
-      token: confirmationLink,
-    });
-    const mailOptions = {
-      from: 'MyJotts',
-      to,
-      subject: 'Registration request',
-      html,
-    };
-    return await this.transporter.sendMail(mailOptions);
+    try {
+      const confirmationLink = `${this.frontend_url}/account-confirmation?token=${token}&emailAddress=${to}`;
+      const html = await this.loadTemplate('registration.template', {
+        emailAddress: to,
+        token: confirmationLink,
+      });
+      const mailOptions = {
+        from: 'MyJotts',
+        to,
+        subject: 'Registration request',
+        html,
+      };
+      return await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      throw new Error(`Failed to send registration email: ${error.message}`);
+    }
   }
 
   private async loadTemplate(templateName: string, data: { emailAddress: string; token: string }) {
