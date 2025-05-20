@@ -1,19 +1,23 @@
 services:
-  nginx:
-    restart: unless-stopped
-    image: nginx:alpine
-    container_name: nginx
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: always
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${DOMAIN_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
       - "443:443"
-    depends_on:
-      - frontend
-      - backend
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/traefik.yml:/traefik.yml:ro"
+      - "./traefik/acme.json:/letsencrypt/acme.json"
 
   frontend:
     restart: always
@@ -21,6 +25,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${FRONTEND_URL}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     env_file:
       - .env
     depends_on:
@@ -32,6 +42,12 @@ services:
       context: ./portal-backend
       target: production
     container_name: backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=4000"
     env_file:
       - .env
     environment:
@@ -55,16 +71,6 @@ services:
       PGDATA: /var/lib/postgresql/data
     ports:
       - "5432:5432"
-
-  certbot:
-    image: certbot/certbot:latest
-    container_name: certbot
-    profiles:
-      - certbot-only
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email gabrieluche2@gmail.com -d myjotts.com -d www.myjotts.com --agree-tos --non-interactive -v
 
 volumes:
   db_data: {}
