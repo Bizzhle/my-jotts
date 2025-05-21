@@ -3,12 +3,13 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { useEffect, useState } from "react";
 
 const s3Client = new S3Client({
-  region: import.meta.env.VITE_API_APP_AWS_REGION,
-  credentials: {
-    accessKeyId: import.meta.env.VITE_API_APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: import.meta.env.VITE_API_APP_AWS_SECRET_ACCESS_KEY,
-  },
+  // region: env.AWS_REGION,
+  // credentials: {
+  //   accessKeyId: env.AWS_ACCESS_KEY_ID,
+  //   secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+  // },
 });
+const bucketName = "";
 
 // Cache object to store signed urls
 const urlCache: { [key: string]: { url: string; expiry: number } } = {};
@@ -22,7 +23,7 @@ async function getSignedUrlWithCache(key: string): Promise<string> {
   }
 
   const command = new GetObjectCommand({
-    Bucket: import.meta.env.VITE_API_APP_AWS_BUCKET_NAME,
+    Bucket: bucketName,
     Key: key,
   });
   const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });

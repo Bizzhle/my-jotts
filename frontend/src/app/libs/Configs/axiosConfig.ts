@@ -1,9 +1,8 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
-import { env } from "../../../config/env";
 import { ApiHandler } from "../../api-service/ApiRequestManager";
 import { SessionState } from "../SessionState";
 
-const API_URL = env.REACT_APP_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const apiClient = axios.create({
   baseURL: API_URL,
