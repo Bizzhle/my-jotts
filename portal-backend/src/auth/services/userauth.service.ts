@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -6,7 +7,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { MoreThan, Repository } from 'typeorm';
+import { WithTransactionService } from 'src/app/services/with-transaction.services';
+import { DataSource, MoreThan, Repository } from 'typeorm';
 import { LoginDto } from '../../users/dto/initial-login-response.dto';
 import { PasswordResetToken } from '../../users/entities/password-reset-token.entity';
 import { UsersService } from '../../users/services/user-service/users.service';
@@ -17,7 +19,7 @@ import { ResetPasswordDto } from '../dtos/forgot-password.dto';
 import { PasswordService } from './password.service';
 
 @Injectable()
-export class UserAuthService {
+export class UserAuthService extends WithTransactionService {
   constructor(
     private readonly userService: UsersService,
     private readonly passwordService: PasswordService,
@@ -25,7 +27,10 @@ export class UserAuthService {
     @InjectRepository(PasswordResetToken)
     private readonly passwordResetTokenRepository: Repository<PasswordResetToken>,
     private readonly mailerService: MailerService,
-  ) {}
+    private readonly datasource: DataSource,
+  ) {
+    super();
+  }
 
   async login({ emailAddress, password }: LoginDto) {
     try {
@@ -90,32 +95,43 @@ export class UserAuthService {
   }
 
   async forgotPassword(emailAddress: string) {
-    const user = await this.userService.getUserByEmail(emailAddress);
-    const resetToken = randomUUID();
-    const expiryDate = new Date();
-    expiryDate.setHours(expiryDate.getHours() + 1);
+    const transaction = await this.createTransaction(this.datasource);
+    try {
+      const user = await this.userService.getUserByEmail(emailAddress);
+      const resetToken = randomUUID();
+      const expiryDate = new Date();
+      expiryDate.setHours(expiryDate.getHours() + 1);
 
-    if (!user) {
-      throw new NotFoundException('Email address not registered');
+      if (!user) {
+        throw new NotFoundException('Email address not registered');
+      }
+
+      const reset = await this.passwordResetTokenRepository.create({
+        userId: user.id,
+        token: resetToken,
+        createdAt: new Date(),
+        expiryDate: expiryDate,
+      });
+
+      await this.passwordResetTokenRepository.save(reset);
+
+      await this.mailerService.sendPasswordResetEmail(emailAddress, resetToken);
+      await transaction.commitTransaction();
+
+      return {
+        message: 'Check your email for password reset link',
+      };
+    } catch (error) {
+      await transaction.rollbackTransaction();
+      throw new BadRequestException(error, 'Cannot reset password');
+    } finally {
+      await this.closeTransaction(transaction);
     }
-
-    const reset = await this.passwordResetTokenRepository.create({
-      userId: user.id,
-      token: resetToken,
-      createdAt: new Date(),
-      expiryDate: expiryDate,
-    });
-
-    await this.passwordResetTokenRepository.save(reset);
-
-    await this.mailerService.sendPasswordResetEmail(emailAddress, resetToken);
-
-    return {
-      message: 'Check your email for password reset link',
-    };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
+    const transaction = await this.createTransaction(this.datasource);
+
     const confirmToken = await this.passwordResetTokenRepository.findOneByOrFail({
       token: dto.token,
       expiryDate: MoreThan(new Date()),
@@ -131,11 +147,14 @@ export class UserAuthService {
       const hashedPassword = await this.passwordService.encryptPassword(dto.password);
       await this.userService.updateUserPassword(user, hashedPassword);
       await this.mailerService.sendResetPasswordConfirmation(user.email_address);
+      await transaction.commitTransaction();
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
       throw new InternalServerErrorException('Could not reset password, try again');
+    } finally {
+      await this.closeTransaction(transaction);
     }
   }
 }

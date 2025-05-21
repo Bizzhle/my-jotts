@@ -9,7 +9,7 @@ tasks:
   dev:start:
     desc: starts all docker containers as background services to enable local dev
     cmds:
-      - docker-compose -f docker-compose.dev.yml up -d
+      - docker-compose -f docker-compose.dev.yml up --build -d
 
   dev:stop:
     desc: Stops dev docker container
@@ -24,17 +24,17 @@ tasks:
   prod:build:
     desc: Builds docker container for production
     cmds:
-      - docker-compose build
+      - docker-compose -f docker-compose.prod.yml build
 
   prod:start:
     desc: starts production docker container
     cmds:
-      - docker-compose up -d
+      - docker-compose -f docker-compose.prod.yml up --build -d
 
   prod:stop:
     desc: Stops production container
     cmds:
-      - docker-compose down
+      - docker-compose -f docker-compose.prod.yml down
 
   clean:
     desc: Clean up by removing all stopped containers and unused volumes
@@ -45,29 +45,26 @@ tasks:
   clean:volumes:
     desc: Remove all unused Docker volumes
     cmds:
-      - docker volume prune -f
+      - docker volume rm $(docker volume ls -q)
+      - docker volume rm $(docker volume ls -q -f dangling=true)
+
+  clean:images:
+    desc: Remove images
+    cmds:
+      - docker rmi <imageid>
+      - docker image prune -a -f
+
+  clean:cache:
+    desc: Remove cache
+    cmds:
+      - docker builder prune -a -f
 
   logs:
     desc: Show logs of all containers
     cmds:
       - docker-compose logs -f backend
 
-  certbot:
-    desc: Run certbot
-    cmds:
-      - docker-compose --profile certbot-only up certbot
-
   docker:space:
     desc: Check how much space Docker is consuming
     cmds:
       - docker system df
-
-  # ssl:generate:
-  #   desc: Generate SSL certificates
-  #   cmds:
-  #     - docker-compose run --rm certbot certonly --webroot -w /var/www/certbot -d myjotts.com --dry-run -d myjotts.com
-  #     # - docker-compose run certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email -d myjotts.com -d www.myjotts.com
-  # ssl:run:
-  #   desc: Run SSL certificates
-  #   cmds:
-  #     - docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /var/www/certbot:/var/www/certbot certbot/certbot certonly --webroot --webroot-path=/var/www/certbot --email gabrieluche2@gmail.com --agree-tos --no-eff-email -d myjotts.com -d www.myjotts.com

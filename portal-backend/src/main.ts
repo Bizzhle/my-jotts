@@ -16,8 +16,11 @@ async function bootstrap() {
     new ValidationPipe({ stopAtFirstError: true, forbidNonWhitelisted: true, transform: true }),
   );
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production' ? 'https://www.myjotts.com' : '*',
-    // methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? ['https://www.myjotts.com', 'https://myjotts.com']
+        : ['http://localhost:5173', 'http://myjotts.local'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
     optionsSuccessStatus: 204,
@@ -30,6 +33,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  await app.listen(4000);
+  await app.listen(4000, '0.0.0.0');
 }
 bootstrap();
