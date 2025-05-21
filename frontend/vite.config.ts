@@ -1,11 +1,25 @@
 import react from "@vitejs/plugin-react";
+import { config } from "dotenv";
 import { defineConfig } from "vite";
 
+config({ path: `./.env.${process.env.NODE_ENV}` });
+config();
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
+  const baseConfig = {
+    plugins: [react()],
+    publicDir: "public",
+    build: {
+      outDir: "build",
+    },
+    define: {
+      "process.env": "{}",
+    },
+  };
+
   if (mode === "development") {
     return {
-      plugins: [react()],
+      ...baseConfig,
       server: {
         host: "0.0.0.0", // ✅ Allow connections from Docker
         port: 5173,
@@ -24,7 +38,5 @@ export default defineConfig(({ mode }) => {
     };
   }
 
-  return {
-    plugins: [react()],
-  };
+  return baseConfig;
 });
