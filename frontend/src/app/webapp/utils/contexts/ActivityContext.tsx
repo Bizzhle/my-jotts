@@ -1,10 +1,14 @@
 import { createContext, useCallback, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
-import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
+import {
+  ActivitiesResponseDto,
+  ActivityResponseDto,
+} from "../../../api-service/dtos/activity.dto";
 import { CategoryDto } from "../../../api-service/dtos/category.dto";
 import { useObjectReducer } from "../shared/objectReducer";
 import { useDebounce } from "../shared/useDebounce";
+import { useAuth } from "./hooks/useAuth";
 
 interface Activity extends ActivityResponseDto {}
 
@@ -13,12 +17,12 @@ interface ActivityProviderProps {
 }
 
 interface ActivityContextState {
-  activities: Activity[];
+  activities: ActivitiesResponseDto[];
   categories: CategoryDto[];
   searchQuery: string;
   error?: string;
   loading: boolean;
-  activityData?: Activity;
+  activityData: Activity | null;
   activityDataLoading: boolean;
   activityDataError?: string;
 }
@@ -34,6 +38,7 @@ interface ActivityContextValue extends ActivityContextState {
 const initialState: ActivityContextState = {
   activities: [],
   categories: [],
+  activityData: null,
   searchQuery: "",
   error: undefined,
   loading: false,
@@ -61,6 +66,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     setState,
   ] = useObjectReducer(initialState);
   const debouncedSearch = useDebounce(searchQuery);
+  const { authenticatedUser } = useAuth(); // get user or auth state
 
   function findActivity(searchQuery: string) {
     setState({ searchQuery });
@@ -86,7 +92,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
       loadActivities();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, categoryName, id, setState]);
+  }, [debouncedSearch, categoryName, id, setState, authenticatedUser]);
 
   const reloadActivity = async () => {
     try {
@@ -104,7 +110,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
 
   const fetchActivity = useCallback(async () => {
     if (!id) {
-      setState("activityData", undefined);
+      setState("activityData", null);
       return;
     }
     try {
@@ -117,8 +123,6 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   }, [setState, id]);
 
   const reloadCategory = async () => {
-    console.log(categoryName);
-
     try {
       const response = await ApiHandler.getCategories();
 

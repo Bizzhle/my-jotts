@@ -78,3 +78,12 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+img.activity-image {
+  max-height: 100%;
+  object-fit: cover;
+}
+
+input {
+  display: none;
+}
