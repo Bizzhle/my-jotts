@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -79,7 +80,7 @@ export class ActivityService extends WithTransactionService {
           file.map(async (file) => await this.imageUploadService.upload(file)),
         );
 
-        const imageFiles = await Promise.all(
+        await Promise.all(
           uploadedFiles.map(
             async (uploadedFile) =>
               await this.imageFileService.storeImageFile(
@@ -104,39 +105,88 @@ export class ActivityService extends WithTransactionService {
   }
 
   async getAllUserActivities(emailAddress: string, search: string): Promise<ActivityResponseDto[]> {
-    const user = await this.userAccountRepository.findOne({
-      where: {
-        email_address: emailAddress,
-      },
-    });
-
-    if (!user) {
-      throw new BadRequestException('User not logged in');
-    }
-
-    const subscription = await this.subscriptionService.getUserSubscriptionInformation(
-      emailAddress,
-    );
-    const isSubscriptionActive = subscription && subscription.status === 'active';
-
-    let activities;
-    if (isSubscriptionActive) {
-      activities = await this.activityRepository.getAllUserActivities(user.id, search);
-    } else {
-      activities = await this.activityRepository.getAllUserActivities(user.id, search, {
-        take: 5,
-        order: { date_created: 'DESC' },
+    try {
+      const user = await this.userAccountRepository.findOne({
+        where: {
+          email_address: emailAddress,
+        },
       });
+
+      if (!user) {
+        throw new BadRequestException('User not logged in');
+      }
+
+      const subscription = await this.subscriptionService.getUserSubscriptionInformation(
+        emailAddress,
+      );
+      const isSubscriptionActive = subscription && subscription.status === 'active';
+
+      let activities;
+      if (isSubscriptionActive) {
+        activities = await this.activityRepository.getAllUserActivities(user.id, search);
+      } else {
+        activities = await this.activityRepository.getAllUserActivities(user.id, search, {
+          take: 5,
+          order: { date_created: 'DESC' },
+        });
+      }
+
+      let activityResponse: ActivityResponseDto[] = [];
+
+      for (const activity of activities) {
+        const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
+        const imageUrl = imageFile
+          ? await this.imageUploadService.getImageStreamFromS3(imageFile.key)
+          : '';
+
+        activityResponse.push({
+          id: activity.id,
+          activityTitle: activity.activity_title,
+          categoryName: activity.category.category_name,
+          location: activity.location,
+          price: activity.price,
+          rating: activity.rating,
+          description: activity.description,
+          dateCreated: activity.date_created,
+          dateUpdated: activity.date_updated,
+          imageUrls: imageUrl,
+        });
+      }
+
+      return activityResponse;
+    } catch (err) {
+      await this.logService.debug(err);
+      if (err instanceof BadRequestException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('Could not fetch activities');
     }
+  }
 
-    let activityResponse: ActivityResponseDto[] = [];
+  async getUserActivity(activityId: number, emailAddress: string): Promise<ActivityResponseDto> {
+    try {
+      const user = await this.userAccountRepository.findOne({
+        where: {
+          email_address: emailAddress,
+        },
+      });
+      const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
+        activityId,
+        user.id,
+      );
 
-    for (const activity of activities) {
-      let imageUrls;
-      const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
-      if (imageFile) imageUrls = imageFile.map((image) => image.url);
+      if (!activity) {
+        throw new NotFoundException('Activity not found.');
+      }
 
-      activityResponse.push({
+      const imageUrls: string[] | null = [];
+      const imageFile = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
+      for (const image of imageFile) {
+        const url = await this.imageUploadService.getImageStreamFromS3(image.key);
+        imageUrls.push(url);
+      }
+
+      return {
         id: activity.id,
         activityTitle: activity.activity_title,
         categoryName: activity.category.category_name,
@@ -147,45 +197,14 @@ export class ActivityService extends WithTransactionService {
         dateCreated: activity.date_created,
         dateUpdated: activity.date_updated,
         imageUrls: imageUrls,
-      });
+      };
+    } catch (err) {
+      await this.logService.debug(err);
+      if (err instanceof NotFoundException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('Could not fetch activity');
     }
-
-    return activityResponse;
-  }
-
-  async getUserActivity(activityId: number, emailAddress: string): Promise<ActivityResponseDto> {
-    let imageUrls: string[] | null;
-    const user = await this.userAccountRepository.findOne({
-      where: {
-        email_address: emailAddress,
-      },
-    });
-    const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
-      activityId,
-      user.id,
-    );
-
-    if (!activity) {
-      throw new NotFoundException('Activity not found.');
-    }
-
-    const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
-    if (imageFile) imageUrls = imageFile.map((image) => image.url);
-
-    //imageFile = await this.imageUploadService.getImageStreamFromS3(key);
-
-    return {
-      id: activity.id,
-      activityTitle: activity.activity_title,
-      categoryName: activity.category.category_name,
-      location: activity.location,
-      price: activity.price,
-      rating: activity.rating,
-      description: activity.description,
-      dateCreated: activity.date_created,
-      dateUpdated: activity.date_updated,
-      imageUrls: imageUrls,
-    };
   }
 
   async getUserActivitiesByCategory(categoryId: number, emailAddress: string) {
@@ -202,49 +221,57 @@ export class ActivityService extends WithTransactionService {
     categoryName: string,
     emailAddress: string,
   ): Promise<ActivityResponseDto[]> {
-    const user = await this.userAccountRepository.findOne({
-      where: { email_address: emailAddress },
-    });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const category = await this.categoryService.getCategoryByName(categoryName, user.id);
-
-    //const category = await this.categoryRepository.findOne({ where: { name: categoryName } });
-    if (!category) {
-      throw new NotFoundException(`Category with name ${categoryName} not found`);
-    }
-
-    const activities = await this.activityRepository.find({
-      where: {
-        user_id: user.id,
-        category: { id: category.id },
-      },
-      relations: ['category'],
-    });
-
-    let activityResponse: ActivityResponseDto[] = [];
-
-    for (const activity of activities) {
-      const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
-      const imageUrls = imageFile.map((image) => image.url);
-
-      activityResponse.push({
-        id: activity.id,
-        activityTitle: activity.activity_title,
-        categoryName: activity.category.category_name,
-        location: activity.location,
-        price: activity.price,
-        rating: activity.rating,
-        description: activity.description,
-        dateCreated: activity.date_created,
-        dateUpdated: activity.date_updated,
-        imageUrls: imageUrls,
+    try {
+      const user = await this.userAccountRepository.findOne({
+        where: { email_address: emailAddress },
       });
-    }
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
-    return activityResponse;
+      const category = await this.categoryService.getCategoryByName(categoryName, user.id);
+
+      //const category = await this.categoryRepository.findOne({ where: { name: categoryName } });
+      if (!category) {
+        throw new NotFoundException(`Category with name ${categoryName} not found`);
+      }
+
+      const activities = await this.activityRepository.find({
+        where: {
+          user_id: user.id,
+          category: { id: category.id },
+        },
+        relations: ['category'],
+      });
+
+      let activityResponse: ActivityResponseDto[] = [];
+
+      for (const activity of activities) {
+        const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
+        const imageUrl = await this.imageUploadService.getImageStreamFromS3(imageFile.key);
+
+        activityResponse.push({
+          id: activity.id,
+          activityTitle: activity.activity_title,
+          categoryName: activity.category.category_name,
+          location: activity.location,
+          price: activity.price,
+          rating: activity.rating,
+          description: activity.description,
+          dateCreated: activity.date_created,
+          dateUpdated: activity.date_updated,
+          imageUrls: imageUrl,
+        });
+      }
+
+      return activityResponse;
+    } catch (err) {
+      await this.logService.debug(err);
+      if (err instanceof NotFoundException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('Could not fetch activities');
+    }
   }
 
   async updateActivity(
@@ -308,48 +335,54 @@ export class ActivityService extends WithTransactionService {
 
       return updatedActivity;
     } catch (err) {
-      throw new BadRequestException('Could not update activity', err);
+      await this.logService.debug(err);
+      throw new InternalServerErrorException('Could not update activity');
     }
   }
 
   async deleteActivity(activityId: number, emailAddress: string) {
-    const user = await this.userAccountRepository.findOne({
-      where: {
-        email_address: emailAddress,
-      },
-    });
+    try {
+      const user = await this.userAccountRepository.findOne({
+        where: {
+          email_address: emailAddress,
+        },
+      });
 
-    if (!user) {
-      throw new UnauthorizedException('User not logged in');
+      if (!user) {
+        throw new UnauthorizedException('User not logged in');
+      }
+
+      const activity = await this.activityRepository.findOne({
+        where: {
+          id: activityId,
+          user_id: user.id,
+        },
+        relations: ['imageFiles'], // Load related image files
+      });
+
+      if (!activity) {
+        throw new NotFoundException('Activity not found.');
+      }
+
+      const activityImage = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
+
+      if (activityImage) {
+        await Promise.all(
+          activityImage.map(async (image) => {
+            await this.imageUploadService.deleteUploadFile(image.key);
+          }),
+        );
+      }
+
+      await this.imageFileService.deleteImageFile(user.id, activity.id);
+
+      await this.activityRepository.remove(activity);
+
+      return { message: 'Activity deleted successfully' };
+    } catch (err) {
+      this.logService.error('Error deleting activity', err);
+      throw new InternalServerErrorException('Could not delete activity');
     }
-
-    const activity = await this.activityRepository.findOne({
-      where: {
-        id: activityId,
-        user_id: user.id,
-      },
-      relations: ['imageFiles'], // Load related image files
-    });
-
-    if (!activity) {
-      throw new NotFoundException('Activity not found.');
-    }
-
-    const activityImage = await this.imageFileService.getImageFileById(activity.id, user.id);
-
-    if (activityImage) {
-      await Promise.all(
-        activityImage.map(async (image) => {
-          await this.imageUploadService.deleteUploadFile(image.key);
-        }),
-      );
-    }
-
-    await this.imageFileService.deleteImageFile(user.id, activity.id);
-
-    await this.activityRepository.remove(activity);
-
-    return { message: 'Activity deleted successfully' };
   }
 
   private async validateActivityCreation(
