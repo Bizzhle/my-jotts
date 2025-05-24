@@ -7,6 +7,7 @@ import { CategoryData } from "../../api-service/dtos/category.dto";
 import CategoryForm from "../components/Category/CategoryForm";
 import { LayoutContext } from "../layout/LayoutContext";
 import { useActivities } from "../utils/contexts/hooks/useActivities";
+import { ConfirmDeletionDialog } from "../utils/Dialog/confirmDeletion";
 
 export default function Category() {
   const { categories, fetchCategories } = useActivities();
@@ -15,6 +16,8 @@ export default function Category() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryData | null>(
     null
   );
+  const [open, setOpen] = useState(false);
+
   const [errors, setErrors] = useState<
     Record<number, string | null | undefined>
   >({});
@@ -98,10 +101,17 @@ export default function Category() {
                 </IconButton>
                 <IconButton
                   aria-label="delete category"
-                  onClick={() => handleDeleteCategory(category.id)}
+                  onClick={() => setOpen(true)}
                 >
                   <Delete />
                 </IconButton>
+                <ConfirmDeletionDialog
+                  open={open}
+                  setOpen={setOpen}
+                  value={category.id}
+                  onDelete={handleDeleteCategory}
+                  section="category"
+                />
               </Box>
               {errors[category.id] && (
                 <Typography variant="body2" color="error.main">

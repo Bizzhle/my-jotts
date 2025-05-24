@@ -1,7 +1,7 @@
-import { HttpException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ImageFile } from '../entities/image-file.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ImageFileService {
@@ -29,8 +29,6 @@ export class ImageFileService {
       },
     });
 
-    if (!imageFile) throw new NotFoundException('Image file not found for given user and activity');
-
     await Promise.all(
       imageFile.map(async (image) => {
         await this.imageFileRepository.remove(image);
@@ -39,16 +37,21 @@ export class ImageFileService {
   }
 
   async getImageFileById(activityId: number, userId: number) {
+    const file = await this.imageFileRepository.findOneBy({
+      activity_id: activityId,
+      user_id: userId,
+    });
+
+    return file;
+  }
+
+  async fetchImageFilesById(activityId: number, userId: number) {
     const file = await this.imageFileRepository.find({
       where: {
         activity_id: activityId,
         user_id: userId,
       },
     });
-
-    if (!file) {
-      throw new NotFoundException('Image file does not exist');
-    }
 
     return file;
   }
