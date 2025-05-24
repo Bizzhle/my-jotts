@@ -1,3 +1,4 @@
+import { DeleteOutline } from "@mui/icons-material";
 import {
   Box,
   Card,
@@ -8,21 +9,21 @@ import {
   Rating,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ActivityResponseDto } from "../../api-service/dtos/activity.dto";
-
-import { DeleteOutline } from "@mui/icons-material";
-import useS3Image from "../utils/hooks/useS3Image";
+import { ActivitiesResponseDto } from "../../api-service/dtos/activity.dto";
+import { ConfirmDeletionDialog } from "../utils/Dialog/confirmDeletion";
 
 interface CardProps {
-  value: ActivityResponseDto;
+  value: ActivitiesResponseDto;
   onDelete: (activityId: number) => void;
   error: Record<number, string | null | undefined>;
 }
 
 export default function ActivityCard({ value, onDelete, error }: CardProps) {
   const navigate = useNavigate();
-  const imageUrl = useS3Image(value.imageUrls?.[0]);
+  const imageUrl = value.imageUrls;
+  const [open, setOpen] = useState(false);
 
   const handleCardClick = () => {
     navigate(`/activity/${value.id}`);
@@ -47,15 +48,16 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
           }}
           onClick={handleCardClick}
         >
-          {imageUrl.length > 0 && (
+          {imageUrl && (
             <CardMedia
               component="img"
-              image={imageUrl[0]}
+              image={imageUrl}
+              src={imageUrl}
               alt={value.activityTitle}
               sx={{
-                maxWidth: 120,
-                height: 120,
-                objectFit: "cover",
+                maxWidth: 140,
+                height: 140,
+                objectFit: "fit",
                 typography: "body2",
               }}
             />
@@ -91,9 +93,25 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
             </Box>
           </CardContent>
         </Card>
-        <IconButton sx={{ p: 1 }} onClick={() => onDelete(value.id)}>
-          <DeleteOutline /> <Typography>Delete from Activities</Typography>
-        </IconButton>
+        <Box
+          onClick={() => setOpen(true)}
+          sx={{
+            ":hover": { backgroundColor: "#f5f5f5" },
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <IconButton disableRipple>
+            <DeleteOutline />
+          </IconButton>
+          <Typography>Delete from Activities</Typography>
+          <ConfirmDeletionDialog
+            open={open}
+            setOpen={setOpen}
+            value={value.id}
+            onDelete={onDelete}
+          />
+        </Box>
       </Box>
       {error[value.id] && (
         <Typography variant="body2" color="error.main">
