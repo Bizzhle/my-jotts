@@ -1,13 +1,11 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as AWS from 'aws-sdk';
 import { EnvVars } from '../../envvars';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
-import { Readable } from 'stream';
 
 @Injectable()
 export class UploadService {
-  private region: string;
   private bucket: string;
   private s3: AWS.S3;
 
@@ -15,7 +13,6 @@ export class UploadService {
     private configService: ConfigService<EnvVars>,
     private readonly logger: AppLoggerService,
   ) {
-    this.region = this.configService.get<string>('AWS_S3_REGION');
     this.bucket = this.configService.get<string>('AWS_S3_BUCKET_NAME');
     this.s3 = new AWS.S3({
       region: this.configService.get<string>('AWS_S3_REGION'),
@@ -55,17 +52,18 @@ export class UploadService {
     }
   }
 
-  async getImageStreamFromS3(key: string): Promise<string> {
+  async getImageStreamFromS3(key: string): Promise<string | null> {
     const params = {
       Bucket: this.bucket,
       Key: key,
     };
 
     try {
-      const data = await this.s3.getObject(params).promise();
-      return data.Body.toString();
+      const signedUrl = await this.s3.getSignedUrl('getObject', params); // 1 hour
+      return signedUrl;
     } catch (err) {
-      throw new NotFoundException('Could not fetch image', err);
+      await this.logger.error('Error getting image stream from S3', err);
+      return null;
     }
   }
 }

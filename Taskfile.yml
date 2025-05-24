@@ -4,12 +4,12 @@ tasks:
   dev:build:
     desc: Builds docker container
     cmds:
-      - docker-compose -f docker-compose.dev.yml build
+      - docker-compose -f docker-compose.dev.yml build --no-cache
 
   dev:start:
     desc: starts all docker containers as background services to enable local dev
     cmds:
-      - docker-compose -f docker-compose.dev.yml up --build -d
+      - docker-compose -f docker-compose.dev.yml up -d
 
   dev:stop:
     desc: Stops dev docker container
