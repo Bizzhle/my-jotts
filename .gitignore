@@ -1,2 +1,4 @@
 .env
 .sh
+.env.development
+.env.production
