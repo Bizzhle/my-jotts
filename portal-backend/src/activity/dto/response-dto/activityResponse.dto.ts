@@ -28,6 +28,11 @@ export class ActivityResponseDto {
   @ApiProperty({ description: 'Last update of activity' })
   dateUpdated?: Date;
 
-  @ApiProperty({ description: 'image of activity ' })
-  imageUrls?: string[];
+  @ApiProperty({
+    description: 'image of activity',
+    type: [String],
+    isArray: true,
+    oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+  })
+  imageUrls?: string | string[];
 }

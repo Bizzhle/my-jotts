@@ -5,7 +5,10 @@ import { SessionState } from "../libs/SessionState";
 import { ActivityData } from "../webapp/components/Activity/ActivityDialogForm";
 import { UserInfo } from "../webapp/utils/contexts/AuthContext";
 import { ApiMethods } from "./ApiMethods";
-import { ActivityResponseDto } from "./dtos/activity.dto";
+import {
+  ActivitiesResponseDto,
+  ActivityResponseDto,
+} from "./dtos/activity.dto";
 import { CategoryData, CategoryDto } from "./dtos/category.dto";
 import { ChangePasswordDto } from "./dtos/change-password.dto";
 import { ForgotPasswordResponseDto } from "./dtos/forgotpassword.dto";
@@ -92,15 +95,17 @@ export class ApiHandler {
     const url = ENDPOINTS.GET_ACTIVITY(id);
     return ApiMethods.get<ActivityResponseDto>(url);
   };
-  static getActivities = (search?: string): Promise<ActivityResponseDto[]> => {
+  static getActivities = (
+    search?: string
+  ): Promise<ActivitiesResponseDto[]> => {
     const url = ENDPOINTS.GET_ACTIVITIES(search);
-    return ApiMethods.get<ActivityResponseDto[]>(url);
+    return ApiMethods.get<ActivitiesResponseDto[]>(url);
   };
   static getActivitiesByCategoryName = (
     categoryName: string
-  ): Promise<ActivityResponseDto[]> => {
+  ): Promise<ActivitiesResponseDto[]> => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_NAME(categoryName);
-    return ApiMethods.get<ActivityResponseDto[]>(url);
+    return ApiMethods.get<ActivitiesResponseDto[]>(url);
   };
   static updateActivity = (
     activityId: number,

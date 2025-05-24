@@ -17,6 +17,7 @@ import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
 import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
 import { useSubscription } from "../../utils/contexts/hooks/useSubscription";
+import { handleFileCompression } from "../../utils/shared/compressImage";
 import AutoCompleteElement from "../AutoCompleteElement";
 import ActivityRating from "./ActivityRating";
 
@@ -69,16 +70,28 @@ export default function ActivityDialogForm({
     handleClose();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files) {
       const selectedFiles = Array.from(event.target.files);
+
       const totalFiles = files.length + selectedFiles.length;
-      if (subscription?.status !== "active" && totalFiles > 1) {
+      if (subscription?.status !== "active" && totalFiles > 2) {
         setError("You can only upload 1 image");
+        return;
       } else if (subscription?.status === "active" && totalFiles > 5) {
         setError("You can only upload up to 5 images");
+        return;
       }
-      setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+      const compressedFiles = await Promise.all(
+        selectedFiles.map((element) => handleFileCompression(element))
+      );
+
+      setFiles((prevFiles) => [
+        ...prevFiles,
+        ...compressedFiles.filter((file): file is File => !!file),
+      ]);
     }
   };
 
@@ -167,7 +180,6 @@ export default function ActivityDialogForm({
               type="file"
               multiple
               onChange={handleFileChange}
-              style={{ display: "none" }}
             />
             <label htmlFor="image-upload">
               <Button variant="outlined" component="span">

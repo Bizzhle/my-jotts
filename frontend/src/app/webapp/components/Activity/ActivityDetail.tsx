@@ -12,14 +12,13 @@ import Carousel from "react-material-ui-carousel";
 import { Link } from "react-router-dom";
 import { LayoutContext } from "../../layout/LayoutContext";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
-import useS3Image from "../../utils/hooks/useS3Image";
 import ActivityDialogForm from "./ActivityDialogForm";
 
 export default function ActivityDetail() {
   const { activityData } = useActivities();
   const [activityFormOpen, setActivityFormOpen] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const images = useS3Image(activityData?.imageUrls);
+  const images = activityData?.imageUrls;
   const { hideSearchBar } = useContext(LayoutContext);
 
   useEffect(() => {
@@ -48,7 +47,7 @@ export default function ActivityDetail() {
           </Link>
         </Breadcrumbs>
       </Box>
-      {images.length > 0 && (
+      {images && images?.length > 0 && (
         <Box
           mb={2}
           position="relative"
@@ -90,11 +89,7 @@ export default function ActivityDetail() {
                 <img
                   src={image}
                   alt={`Activity image ${index + 1}`}
-                  style={{
-                    maxHeight: "100%",
-                    maxWidth: "100%",
-                    objectFit: "contain",
-                  }}
+                  className="activity-image"
                 />
               </Box>
             ))}
