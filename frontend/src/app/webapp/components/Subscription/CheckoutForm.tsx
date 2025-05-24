@@ -8,17 +8,16 @@ import {
 import { Appearance, loadStripe } from "@stripe/stripe-js";
 import React, { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { env } from "../../../../config/env";
 import { LayoutContext } from "../../layout/LayoutContext";
 
-const stripeKey = env.REACT_APP_API_STRIPE_PUBLISHABLE_KEY;
+const stripeKey = import.meta.env.VITE_API_STRIPE_PUBLISHABLE_KEY;
+const domain = import.meta.env.VITE_API_DOMAIN;
 const stripePromise = loadStripe(stripeKey);
 
 const CheckoutForm: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
-  // const location = useLocation();
   const [name] = useState("");
   const [messages, setMessages] = useState<string>("");
 
@@ -38,7 +37,7 @@ const CheckoutForm: React.FC = () => {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: "http://localhost:4000/account",
+        return_url: `${domain}/account`,
         payment_method_data: {
           billing_details: {
             name: name,
@@ -53,7 +52,6 @@ const CheckoutForm: React.FC = () => {
     } else {
       alert("Success! Check your email for the invoice.");
     }
-
     navigate("/account", { replace: false });
   };
 
