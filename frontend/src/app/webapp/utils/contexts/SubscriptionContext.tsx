@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from "react";
 import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { PaymentPlanDto } from "../../../api-service/dtos/subscription/payment-plan.dto";
 import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
+import { useAuth } from "./hooks/useAuth";
 
 interface SubscriptionContextType {
   subscription?: SubscriptionDto;
@@ -21,6 +22,7 @@ export const SubscriptionContext = createContext<
 export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const [subscription, setSubscription] = useState<SubscriptionDto>();
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlanDto[]>();
+  const { authenticatedUser } = useAuth();
 
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -44,7 +46,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   useEffect(() => {
     fetchSubscriptionStatus();
     fetchPlans();
-  }, []);
+  }, [authenticatedUser]);
 
   return (
     <SubscriptionContext.Provider

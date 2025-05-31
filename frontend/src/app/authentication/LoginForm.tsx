@@ -1,11 +1,11 @@
 import { Box, Button, Link, TextField, Typography } from "@mui/material";
-import { useContext, useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
 import { registrationData } from "../api-service/dtos/registration.dto";
 import { SessionState } from "../libs/SessionState";
-import { AuthContext } from "../webapp/utils/contexts/AuthContext";
+import { useAuth } from "../webapp/utils/contexts/hooks/useAuth";
 
 type LoginData = {
   emailAddress: string;
@@ -16,8 +16,7 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState<string | undefined>("");
-  const { getUserInfo, startSession, authenticatedUser } =
-    useContext(AuthContext);
+  const { getUserInfo, startSession } = useAuth();
   const {
     handleSubmit,
     register,
@@ -45,32 +44,6 @@ export default function LoginForm() {
       setError(errorMessage);
     }
   };
-
-  const handleReload = async () => {
-    const session = SessionState.refreshToken;
-
-    if (session) {
-      const response = await ApiHandler.refreshToken();
-
-      SessionState.accessToken = response?.accessToken;
-      SessionState.refreshToken = response?.refreshToken;
-
-      await startSession({
-        accessToken: response?.accessToken,
-        refreshToken: response?.refreshToken,
-      });
-
-      await getUserInfo();
-    }
-  };
-
-  useEffect(() => {
-    handleReload();
-    if (authenticatedUser) {
-      navigate(from, { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticatedUser]);
 
   return (
     <>

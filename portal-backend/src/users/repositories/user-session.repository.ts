@@ -1,17 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import {
-  DataSource,
-  DeepPartial,
-  IsNull,
-  LessThanOrEqual,
-  MoreThanOrEqual,
-  RemoveOptions,
-  Repository,
-} from 'typeorm';
-import { UserSession } from '../entities/usersession.entity';
-import { userSessionDataDto } from '../dto/user-session-data.dto';
-import { createDateFromUnixTime } from '../../app/helpers/date';
 import { randomUUID } from 'crypto';
+import { DataSource, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import { userSessionDataDto } from '../dto/user-session-data.dto';
+import { UserSession } from '../entities/usersession.entity';
 
 interface SessionRefresh {
   accessToken: string;
@@ -52,7 +43,9 @@ export class UserSessionRepository extends Repository<UserSession> {
   }): Promise<UserSession | null> {
     return await this.findOne({
       where: {
-        ...condition,
+        access_token: condition.access_token,
+        refresh_token: condition.refreshToken,
+        refresh_token_expiration_time: MoreThanOrEqual(new Date()),
         session_start: LessThanOrEqual(new Date()),
         session_end: MoreThanOrEqual(new Date()),
       },
