@@ -11,6 +11,7 @@ import Category from "../pages/Category";
 import HomePage from "../pages/HomePage";
 import NotFoundPage from "../pages/NotFoundPage";
 import { ActivityProvider } from "../utils/contexts/ActivityContext";
+import { AuthRedirect } from "../utils/contexts/AuthRedirect";
 import { SubscriptionProvider } from "../utils/contexts/SubscriptionContext";
 import AccountPage from "./AccountInfo/AccountPage";
 import { ChangePassword } from "./AccountInfo/ChangePassword";
@@ -111,7 +112,12 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
-    Component: Login,
+    Component: () => (
+      <>
+        <Login />
+        <AuthRedirect />
+      </>
+    ),
   },
   {
     path: "/forgot-password",
