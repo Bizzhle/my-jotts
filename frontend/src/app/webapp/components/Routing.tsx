@@ -57,7 +57,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "categories/:categoryName",
+        path: "categories/:categoryId",
         Component: () => (
           <ProtectedRoutes>
             <CategoryDetail />

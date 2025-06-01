@@ -2,6 +2,7 @@ export interface ActivitiesResponseDto {
   id: number;
   activityTitle: string;
   categoryName: string;
+  categoryId: number;
   price?: number;
   location?: string;
   rating: number;
@@ -15,6 +16,7 @@ export interface ActivityResponseDto {
   id: number;
   activityTitle: string;
   categoryName: string;
+  categoryId: number;
   price: number;
   location: string;
   rating: number;
