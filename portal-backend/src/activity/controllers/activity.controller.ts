@@ -84,7 +84,7 @@ export class ActivityController {
   async getAllUserActivitiesByCategory(
     @Param('categoryId') categoryId: number,
     @GetCurrentUserFromJwt() emailAddress: string,
-  ) {
+  ): Promise<ActivityResponseDto[]> {
     return this.activityService.getUserActivitiesByCategory(categoryId, emailAddress);
   }
 

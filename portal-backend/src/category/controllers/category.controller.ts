@@ -27,6 +27,24 @@ export class CategoryController {
   }
 
   @IsAuthorizedUser()
+  @Get(':categoryId')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get a category by ID',
+    description: 'Fetches a category by its ID for the authorized user',
+  })
+  @ApiOkResponse({ status: 200, description: 'Category found successfully.' })
+  @ApiNotFoundResponse({ description: 'Category not found' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
+  @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
+  async getCategoryById(
+    @Param('categoryId') categoryId: number,
+    @GetCurrentUserFromJwt() emailAddress: string,
+  ) {
+    return this.categoryService.getCategoryById(categoryId, emailAddress);
+  }
+
+  @IsAuthorizedUser()
   @Post()
   @ApiBearerAuth()
   @ApiOperation({
