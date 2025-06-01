@@ -79,9 +79,13 @@ export class ApiHandler {
     }
 
     const url = ENDPOINTS.REFRESH_TOKEN();
-    return ApiMethods.post<LoginResponseDto>(url, {
-      refreshToken,
-    });
+    return ApiMethods.post<LoginResponseDto>(
+      url,
+      {
+        refreshToken,
+      },
+      { withCredentials: true }
+    );
   };
   static createActivity = (
     dto: ActivityData,
@@ -105,6 +109,12 @@ export class ApiHandler {
     categoryName: string
   ): Promise<ActivitiesResponseDto[]> => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_NAME(categoryName);
+    return ApiMethods.get<ActivitiesResponseDto[]>(url);
+  };
+  static getActivitiesByCategory = (
+    categoryId: number
+  ): Promise<ActivitiesResponseDto[]> => {
+    const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_ID(categoryId);
     return ApiMethods.get<ActivitiesResponseDto[]>(url);
   };
   static updateActivity = (
@@ -133,6 +143,10 @@ export class ApiHandler {
   };
   static getCategories = (): Promise<CategoryDto[]> => {
     const url = ENDPOINTS.GET_CATEGORIES();
+    return ApiMethods.get(url);
+  };
+  static getCategory = (categoryId: number): Promise<CategoryDto> => {
+    const url = ENDPOINTS.GET_CATEGORY(categoryId);
     return ApiMethods.get(url);
   };
   static createCategory = (params: CategoryData): Promise<void> => {

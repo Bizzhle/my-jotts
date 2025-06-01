@@ -79,7 +79,7 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
               <Rating name="rating" value={value.rating} readOnly />
             </Box>
             <Box onClick={(e) => e.stopPropagation()}>
-              <Link to={`/categories/${value.categoryName}`}>
+              <Link to={`/categories/${value.categoryId}`}>
                 <Chip
                   sx={{
                     maxWidth: "fit-content",
