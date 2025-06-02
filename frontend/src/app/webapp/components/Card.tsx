@@ -69,7 +69,6 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
               flexDirection: "column",
               justifyContent: "space-between",
               width: "100%",
-              p: 1,
             }}
           >
             <Typography sx={{ typography: { xs: "body2", sm: "body1" } }}>
@@ -91,6 +90,11 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
                 />
               </Link>
             </Box>
+            <Typography
+              sx={{ mt: 1, fontSize: "0.8rem", color: "text.secondary" }}
+            >
+              {value?.dateCreated?.toString()}
+            </Typography>{" "}
           </CardContent>
         </Card>
         <Box
