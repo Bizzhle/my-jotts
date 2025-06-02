@@ -41,7 +41,9 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server error' })
   public async refreshSession(@Body() refreshSessionDto: RefreshSessionDto) {
-    return await this.userAuthService.refreshSession(refreshSessionDto.refreshToken);
+    // Ensure refreshToken is defined in RefreshSessionDto and accessed correctly
+    const { refreshToken } = refreshSessionDto;
+    return await this.userAuthService.refreshSession(refreshToken);
   }
 
   @IsAuthorizedUser()

@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import { createContext, useEffect } from "react";
 import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { SessionState } from "../../../libs/SessionState";
 import { useObjectReducer } from "../shared/objectReducer";
@@ -25,6 +25,7 @@ export interface SessionInfo {
 export interface AuthUserContextState {
   readonly authenticatedUser?: UserInfo;
   readonly sessionInfo?: SessionInfo;
+  loading?: boolean;
 }
 
 export interface AuthContextValue extends AuthUserContextState {
@@ -33,6 +34,7 @@ export interface AuthContextValue extends AuthUserContextState {
   getUserInfo: () => void;
   logoutUser: () => void;
   startSession: (data: SessionInfo) => void;
+  setLoading: (loading: boolean) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue>({} as never);
@@ -47,15 +49,19 @@ export function AuthProvider(props: AuthUserProviderProps) {
   async function getUserInfo() {
     const user = await ApiHandler.getUserData();
     setState("authenticatedUser", user);
+    setState("loading", false);
   }
 
   async function startSession(data: SessionInfo) {
     setState("sessionInfo", data);
   }
 
+  async function setLoading(loading: boolean) {
+    setState("loading", loading);
+  }
+
   async function logoutUser() {
     const refreshToken = SessionState.refreshToken;
-
     if (refreshToken) {
       await ApiHandler.logout({ refreshToken: refreshToken });
       setState("authenticatedUser", undefined);
@@ -64,12 +70,32 @@ export function AuthProvider(props: AuthUserProviderProps) {
     }
   }
 
+  const handleReload = async () => {
+    const session = SessionState.refreshToken;
+    if (session) {
+      const response = await ApiHandler.refreshToken();
+      SessionState.accessToken = response?.accessToken;
+      SessionState.refreshToken = response?.refreshToken;
+      await startSession({
+        accessToken: response?.accessToken,
+        refreshToken: response?.refreshToken,
+      });
+      await getUserInfo();
+    }
+  };
+
+  useEffect(() => {
+    handleReload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
         getUserInfo,
         logoutUser,
         startSession,
+        setLoading,
         get isLoggedIn() {
           return !!state.authenticatedUser;
         },
@@ -78,6 +104,9 @@ export function AuthProvider(props: AuthUserProviderProps) {
         },
         get authenticatedUser() {
           return state.authenticatedUser;
+        },
+        get loading() {
+          return state.loading ?? true;
         },
       }}
       {...props}

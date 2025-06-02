@@ -1,6 +1,6 @@
 import { Box, Breadcrumbs, Grid, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { LayoutContext } from "../../layout/LayoutContext";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
@@ -11,8 +11,7 @@ export interface responseError {
 }
 
 export default function CategoryDetail() {
-  const { categoryName } = useParams<{ categoryName: string }>();
-  const { activities, reloadActivity } = useActivities();
+  const { activities, reloadActivity, category } = useActivities();
   const { hideSearchBar } = useContext(LayoutContext);
   const [error, setError] = useState<responseError>({});
 
@@ -52,7 +51,7 @@ export default function CategoryDetail() {
             Categories
           </Link>
           <Typography variant="body1" color="secondary.main">
-            {categoryName}
+            {category?.categoryName}
           </Typography>
         </Breadcrumbs>
       </Box>

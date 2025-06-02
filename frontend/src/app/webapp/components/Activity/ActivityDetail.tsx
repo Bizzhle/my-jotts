@@ -99,14 +99,14 @@ export default function ActivityDetail() {
       <Paper variant="outlined" sx={{ maxWidth: 600, p: 2, mb: 2 }}>
         <Typography>{activityData?.activityTitle}</Typography>
         <Rating
-          sx={{ mb: 1 }}
+          sx={{ my: 1 }}
           name="rating"
           value={activityData.rating}
           readOnly
         />
         <Typography>{activityData?.price} euros</Typography>
         <Typography variant="body2">{activityData?.location}</Typography>
-        <Typography variant="body2">
+        <Typography sx={{ my: 1, fontSize: "0.8rem", color: "text.secondary" }}>
           {activityData?.dateCreated?.toString()}
         </Typography>
       </Paper>
