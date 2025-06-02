@@ -81,7 +81,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
       setState("loading", true);
 
       const response = categoryId
-        ? await ApiHandler.getActivitiesByCategory(Number(categoryId))
+        ? await ApiHandler.getActivitiesByCategory(categoryId)
         : await ApiHandler.getActivities(debouncedSearch);
 
       setState({ activities: response });
@@ -103,7 +103,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     try {
       setState("loading", true);
       const activity = categoryId
-        ? await ApiHandler.getActivitiesByCategory(Number(categoryId))
+        ? await ApiHandler.getActivitiesByCategory(categoryId)
         : await ApiHandler.getActivities();
       setState({ activities: activity });
     } catch (err) {
@@ -152,7 +152,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
       return;
     }
     try {
-      const category = await ApiHandler.getCategory(Number(categoryId));
+      const category = await ApiHandler.getCategory(categoryId);
       setState("category", category);
     } catch (err) {
       setState("activityDataError", isApiError(err));
