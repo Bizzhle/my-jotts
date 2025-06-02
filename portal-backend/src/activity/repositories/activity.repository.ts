@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { pick, pickBy } from 'lodash';
+import { pick } from 'lodash';
 import { DataSource, Repository } from 'typeorm';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { Activity } from '../entities/activity.entity';
@@ -16,14 +16,10 @@ export class ActivityRepository extends Repository<Activity> {
     super(Activity, ds.manager);
   }
 
-  async getAllUserActivities(
-    userId: number,
-    search: string,
-    options?: activityOptions,
-  ): Promise<Activity[]> {
+  async getAllUserActivities(userId: number, search: string, options?: activityOptions) {
     const query = await this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
-      .select(['activity', 'category.category_name'])
+      .select(['activity', 'category.category_name', 'category.id'])
       .where('activity.user_id = :userId', { userId });
 
     if (search) {
@@ -47,7 +43,7 @@ export class ActivityRepository extends Repository<Activity> {
       .getOne();
   }
 
-  async getUserActivitiesByCategory(categoryId: number, userId: number): Promise<Activity[]> {
+  async getUserActivitiesByCategory(categoryId: number, userId: number) {
     return this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])
@@ -56,7 +52,7 @@ export class ActivityRepository extends Repository<Activity> {
       .getMany();
   }
 
-  async getUserActivitiesByCategoryName(categoryName: string, userId: number): Promise<Activity[]> {
+  async getUserActivitiesByCategoryName(categoryName: string, userId: number) {
     return this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])

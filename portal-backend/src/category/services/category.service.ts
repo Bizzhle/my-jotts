@@ -87,6 +87,14 @@ export class CategoryService {
     return this.categoryRepository.findAllCategoriesForUser(user.id);
   }
 
+  async getCategoryById(id: number, emailAddress: string): Promise<Category> {
+    const user = await this.usersService.getUserByEmail(emailAddress);
+    if (!user) {
+      throw new UnauthorizedException('User not logged in');
+    }
+    return this.categoryRepository.findUserCategoryById(id, user.id);
+  }
+
   public async getCategoryByName(name: string, userId: number) {
     return await this.categoryRepository.findCategoryByName(name, userId);
   }

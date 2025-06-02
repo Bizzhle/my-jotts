@@ -69,7 +69,6 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
               flexDirection: "column",
               justifyContent: "space-between",
               width: "100%",
-              p: 1,
             }}
           >
             <Typography sx={{ typography: { xs: "body2", sm: "body1" } }}>
@@ -79,7 +78,7 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
               <Rating name="rating" value={value.rating} readOnly />
             </Box>
             <Box onClick={(e) => e.stopPropagation()}>
-              <Link to={`/categories/${value.categoryName}`}>
+              <Link to={`/categories/${value.categoryId}`}>
                 <Chip
                   sx={{
                     maxWidth: "fit-content",
@@ -91,6 +90,11 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
                 />
               </Link>
             </Box>
+            <Typography
+              sx={{ mt: 1, fontSize: "0.8rem", color: "text.secondary" }}
+            >
+              {value?.dateCreated?.toString()}
+            </Typography>{" "}
           </CardContent>
         </Card>
         <Box
