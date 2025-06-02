@@ -19,14 +19,15 @@ export const ENDPOINTS = {
   },
   GET_ACTIVITIES_BY_CATEGORY_NAME: (categoryName: string): string =>
     `/activities/${categoryName}/activity`,
-  GET_ACTIVITIES_BY_CATEGORY_ID: (categoryId: number): string =>
+  GET_ACTIVITIES_BY_CATEGORY_ID: (categoryId: string | number): string =>
     `/activities/${categoryId}/category`,
   UPDATE_ACTIVITY: (activityId: number): string =>
     `/activities/${activityId}/update`,
   DELETE_ACTIVITY: (activityId: number): string =>
     `/activities/${activityId}/delete`,
   GET_CATEGORIES: (): string => `/category/categories`,
-  GET_CATEGORY: (categoryId: number): string => `/category/${categoryId}`,
+  GET_CATEGORY: (categoryId: string | number): string =>
+    `/category/${categoryId}`,
   CREATE_CATEGORY: (): string => `/category`,
   DELETE_CATEGORY: (categoryId: number): string =>
     `category/${categoryId}/delete`,

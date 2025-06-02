@@ -112,7 +112,7 @@ export class ApiHandler {
     return ApiMethods.get<ActivitiesResponseDto[]>(url);
   };
   static getActivitiesByCategory = (
-    categoryId: number
+    categoryId: string | number
   ): Promise<ActivitiesResponseDto[]> => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_ID(categoryId);
     return ApiMethods.get<ActivitiesResponseDto[]>(url);
@@ -145,7 +145,7 @@ export class ApiHandler {
     const url = ENDPOINTS.GET_CATEGORIES();
     return ApiMethods.get(url);
   };
-  static getCategory = (categoryId: number): Promise<CategoryDto> => {
+  static getCategory = (categoryId: number | string): Promise<CategoryDto> => {
     const url = ENDPOINTS.GET_CATEGORY(categoryId);
     return ApiMethods.get(url);
   };
