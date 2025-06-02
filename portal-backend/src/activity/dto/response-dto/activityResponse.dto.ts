@@ -10,6 +10,9 @@ export class ActivityResponseDto {
   @ApiProperty({ description: 'name of category activity is assigned to' })
   categoryName: string;
 
+  @ApiProperty({ description: 'id of activity category' })
+  categoryId?: number;
+
   @ApiProperty({ description: 'Price of activity or item' })
   price?: number;
 

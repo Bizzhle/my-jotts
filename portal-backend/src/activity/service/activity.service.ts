@@ -143,6 +143,7 @@ export class ActivityService extends WithTransactionService {
           id: activity.id,
           activityTitle: activity.activity_title,
           categoryName: activity.category.category_name,
+          categoryId: activity.category.id,
           location: activity.location,
           price: activity.price,
           rating: activity.rating,
@@ -190,6 +191,7 @@ export class ActivityService extends WithTransactionService {
         id: activity.id,
         activityTitle: activity.activity_title,
         categoryName: activity.category.category_name,
+        categoryId: activity.category.id,
         location: activity.location,
         price: activity.price,
         rating: activity.rating,
@@ -207,14 +209,64 @@ export class ActivityService extends WithTransactionService {
     }
   }
 
-  async getUserActivitiesByCategory(categoryId: number, emailAddress: string) {
-    const user = await this.userAccountRepository.findOne({
-      where: {
-        email_address: emailAddress,
-      },
-    });
+  async getUserActivitiesByCategory(
+    categoryId: number,
+    emailAddress: string,
+  ): Promise<ActivityResponseDto[]> {
+    try {
+      const user = await this.userAccountRepository.findOne({
+        where: {
+          email_address: emailAddress,
+        },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
-    return await this.activityRepository.getUserActivitiesByCategory(categoryId, user.id);
+      const activities = await this.activityRepository.getUserActivitiesByCategory(
+        categoryId,
+        user.id,
+      );
+
+      // const activities = await this.activityRepository.find({
+      //   where: {
+      //     user_id: user.id,
+      //     category: { id: categoryId },
+      //   },
+      //   relations: ['category'],
+      // });
+
+      let activityResponse: ActivityResponseDto[] = [];
+
+      for (const activity of activities) {
+        const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
+        const imageUrl = imageFile
+          ? await this.imageUploadService.getImageStreamFromS3(imageFile.key)
+          : null;
+
+        activityResponse.push({
+          id: activity.id,
+          activityTitle: activity.activity_title,
+          categoryName: activity.category.category_name,
+          categoryId: activity.category.id,
+          location: activity.location,
+          price: activity.price,
+          rating: activity.rating,
+          description: activity.description,
+          dateCreated: activity.date_created,
+          dateUpdated: activity.date_updated,
+          imageUrls: imageUrl,
+        });
+      }
+
+      return activityResponse;
+    } catch (err) {
+      await this.logService.debug(err);
+      if (err instanceof NotFoundException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('Could not fetch activities by category');
+    }
   }
 
   async getUserActivitiesByCategoryName(
@@ -254,6 +306,7 @@ export class ActivityService extends WithTransactionService {
           id: activity.id,
           activityTitle: activity.activity_title,
           categoryName: activity.category.category_name,
+          categoryId: activity.category.id,
           location: activity.location,
           price: activity.price,
           rating: activity.rating,

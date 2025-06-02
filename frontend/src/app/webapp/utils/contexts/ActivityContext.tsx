@@ -25,14 +25,16 @@ interface ActivityContextState {
   activityData: Activity | null;
   activityDataLoading: boolean;
   activityDataError?: string;
+  category: CategoryDto | null;
 }
 
 interface ActivityContextValue extends ActivityContextState {
   reloadActivity: () => void;
   findActivity: (value: string) => void;
-  reloadCategory: () => void;
+  reloadCategories: () => void;
   fetchActivity: () => void;
   fetchCategories: () => void;
+  fetchCategory: () => void;
 }
 
 const initialState: ActivityContextState = {
@@ -44,15 +46,16 @@ const initialState: ActivityContextState = {
   loading: false,
   activityDataLoading: false,
   activityDataError: "",
+  category: null,
 };
 export const ActivityContext = createContext<ActivityContextValue>(
   {} as ActivityContextValue
 );
 
 export function ActivityProvider({ children }: ActivityProviderProps) {
-  const { id, categoryName } = useParams<{
+  const { id, categoryId } = useParams<{
     id?: string;
-    categoryName?: string;
+    categoryId?: string;
   }>();
   const [
     {
@@ -62,6 +65,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
       categories,
       loading,
       activityDataLoading,
+      category,
     },
     setState,
   ] = useObjectReducer(initialState);
@@ -75,8 +79,9 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   async function loadActivities() {
     try {
       setState("loading", true);
-      const response = categoryName
-        ? await ApiHandler.getActivitiesByCategoryName(categoryName)
+
+      const response = categoryId
+        ? await ApiHandler.getActivitiesByCategory(categoryId)
         : await ApiHandler.getActivities(debouncedSearch);
 
       setState({ activities: response });
@@ -92,13 +97,13 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
       loadActivities();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, categoryName, id, setState, authenticatedUser]);
+  }, [debouncedSearch, categoryId, id, setState, authenticatedUser]);
 
   const reloadActivity = async () => {
     try {
       setState("loading", true);
-      const activity = categoryName
-        ? await ApiHandler.getActivitiesByCategoryName(categoryName)
+      const activity = categoryId
+        ? await ApiHandler.getActivitiesByCategory(categoryId)
         : await ApiHandler.getActivities();
       setState({ activities: activity });
     } catch (err) {
@@ -122,7 +127,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     }
   }, [setState, id]);
 
-  const reloadCategory = async () => {
+  const reloadCategories = async () => {
     try {
       const response = await ApiHandler.getCategories();
 
@@ -141,13 +146,28 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     }
   }, [setState]);
 
+  const fetchCategory = useCallback(async () => {
+    if (!categoryId) {
+      setState("category", null);
+      return;
+    }
+    try {
+      const category = await ApiHandler.getCategory(categoryId);
+      setState("category", category);
+    } catch (err) {
+      setState("activityDataError", isApiError(err));
+    }
+  }, [setState, categoryId]);
+
   useEffect(() => {
     fetchActivity();
   }, [fetchActivity]);
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+    fetchCategory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryId]);
 
   return (
     <ActivityContext.Provider
@@ -160,9 +180,11 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
         loading,
         activityDataLoading,
         activityData,
-        reloadCategory,
+        reloadCategories,
         fetchActivity,
         fetchCategories,
+        fetchCategory,
+        category,
       }}
     >
       {children}

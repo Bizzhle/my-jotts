@@ -8,9 +8,10 @@ export class ApiMethods {
 
   static async post<TResponse = unknown, TBody extends object = object>(
     url: string,
-    data?: TBody
+    data?: TBody,
+    options?: { withCredentials?: boolean }
   ): Promise<TResponse> {
-    const response = await apiClient.post<TResponse>(url, data);
+    const response = await apiClient.post<TResponse>(url, data, options);
     return response.data;
   }
 

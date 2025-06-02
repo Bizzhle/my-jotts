@@ -40,6 +40,10 @@ export class CategoryRepository extends Repository<Category> {
     return await this.findOneBy({ id: categoryId });
   }
 
+  public async findUserCategoryById(categoryId: number, userId: number): Promise<Category> {
+    return await this.findOneBy({ user_id: userId, id: categoryId });
+  }
+
   public async updateCategory(id: number, dto: UpdateCategoryDto, userId: number) {
     await this.update(
       { id: id, user_id: userId },

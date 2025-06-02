@@ -26,7 +26,7 @@ export default function CategoryForm({
   categoryToEdit,
 }: DialogFormProps) {
   const [error, setError] = useState<string | undefined>("");
-  const { reloadCategory } = useActivities();
+  const { reloadCategories } = useActivities();
   const { handleSubmit, register, reset } = useForm<CategoryData>();
 
   function onClose() {
@@ -57,7 +57,7 @@ export default function CategoryForm({
       } else {
         await ApiHandler.createCategory(categoryData);
       }
-      await reloadCategory();
+      await reloadCategories();
       onClose();
     } catch (err) {
       const errorMessage = isApiError(err);

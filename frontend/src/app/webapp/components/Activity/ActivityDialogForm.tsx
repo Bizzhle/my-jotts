@@ -41,7 +41,8 @@ export default function ActivityDialogForm({
   handleClose,
   activityToEdit,
 }: DialogFormProps) {
-  const { categories, reloadActivity, fetchActivity } = useActivities();
+  const { categories, reloadActivity, fetchActivity, reloadCategories } =
+    useActivities();
   const [value, setValue] = useState(activityToEdit?.categoryName || "");
   const [error, setError] = useState<string | undefined>("");
   const [files, setFiles] = useState<File[]>([]);
@@ -111,6 +112,7 @@ export default function ActivityDialogForm({
         await ApiHandler.createActivity(activityData, files);
       }
       await reloadActivity();
+      await reloadCategories();
       handleCloseDialog();
     } catch (err) {
       const errorMessage = isApiError(err);
