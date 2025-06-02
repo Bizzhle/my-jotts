@@ -53,7 +53,7 @@ apiClient.interceptors.response.use(
       } catch (err) {
         SessionState.removeAccessToken();
         SessionState.removeRefreshToken();
-        window.location.reload();
+        setTimeout(() => (window.location.href = "/login"), 100);
         return Promise.reject(err);
       }
     }

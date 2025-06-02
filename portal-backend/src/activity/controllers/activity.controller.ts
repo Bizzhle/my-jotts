@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -82,9 +83,9 @@ export class ActivityController {
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getAllUserActivitiesByCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('categoryId', ParseIntPipe) categoryId: number,
     @GetCurrentUserFromJwt() emailAddress: string,
-  ) {
+  ): Promise<ActivityResponseDto[]> {
     return this.activityService.getUserActivitiesByCategory(categoryId, emailAddress);
   }
 
@@ -118,7 +119,7 @@ export class ActivityController {
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getOneUserActivity(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @GetCurrentUserFromJwt() emailAddress: string,
   ): Promise<ActivityResponseDto> {
     return this.activityService.getUserActivity(id, emailAddress);

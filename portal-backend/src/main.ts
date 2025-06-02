@@ -13,7 +13,13 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
-    new ValidationPipe({ stopAtFirstError: true, forbidNonWhitelisted: true, transform: true }),
+    new ValidationPipe({
+      stopAtFirstError: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      whitelist: true,
+      disableErrorMessages: process.env.NODE_ENV === 'production',
+    }),
   );
   app.enableCors({
     origin:

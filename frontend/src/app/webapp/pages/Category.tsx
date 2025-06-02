@@ -85,7 +85,7 @@ export default function Category() {
                   }}
                 >
                   <Link
-                    to={`/categories/${category.categoryName}`}
+                    to={`/categories/${category.id}`}
                     style={{ textDecoration: "none", color: "inherit" }}
                   >
                     <Typography gutterBottom>
