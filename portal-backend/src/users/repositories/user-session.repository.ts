@@ -33,15 +33,24 @@ export class UserSessionRepository extends Repository<UserSession> {
     return userSession;
   }
 
-  // public async getSessionByToken(refreshToken: string) {
-  //   5;
-  // }
+  public async getSessionByRefreshToken(refreshToken: string) {
+    return this.findOne({
+      where: {
+        refresh_token: refreshToken,
+        // Ensure the refresh token is still valid by checking its expiration time.
+        refresh_token_expiration_time: MoreThanOrEqual(new Date()),
+        session_start: LessThanOrEqual(new Date()),
+        session_end: MoreThanOrEqual(new Date()),
+      },
+      relations: ['userAccount'],
+    });
+  }
 
   public async getValidSession(condition: {
     access_token?: string;
     refreshToken?: string;
   }): Promise<UserSession | null> {
-    return await this.findOne({
+    return this.findOne({
       where: {
         access_token: condition.access_token,
         refresh_token: condition.refreshToken,
@@ -53,12 +62,12 @@ export class UserSessionRepository extends Repository<UserSession> {
     });
   }
 
-  public async getSessionByRefreshToken(refreshToken: string): Promise<UserSession | null> {
-    return await this.findOne({
-      where: {
-        refresh_token: refreshToken,
-      },
-      relations: ['userAccount'],
-    });
-  }
+  // public async getSessionByRefreshToken(refreshToken: string): Promise<UserSession | null> {
+  //   return await this.findOne({
+  //     where: {
+  //       refresh_token: refreshToken,
+  //     },
+  //     relations: ['userAccount'],
+  //   });
+  // }
 }
