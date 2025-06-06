@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect } from "react";
+import { createContext, useCallback, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
 import {
@@ -57,49 +57,32 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     id?: string;
     categoryId?: string;
   }>();
-  const [
-    {
-      activities,
-      activityData,
-      searchQuery,
-      categories,
-      loading,
-      activityDataLoading,
-      category,
-    },
-    setState,
-  ] = useObjectReducer(initialState);
-  const debouncedSearch = useDebounce(searchQuery);
+  const [state, setState] = useObjectReducer(initialState);
+  const debouncedSearch = useDebounce(state.searchQuery);
   const { authenticatedUser } = useAuth(); // get user or auth state
 
-  function findActivity(searchQuery: string) {
-    setState({ searchQuery });
-  }
+  const findActivity = useCallback(
+    (searchQuery: string) => {
+      setState({ searchQuery });
+    },
+    [setState]
+  );
 
-  async function loadActivities() {
+  const loadActivities = useCallback(async () => {
     try {
       setState("loading", true);
-
       const response = categoryId
         ? await ApiHandler.getActivitiesByCategory(categoryId)
         : await ApiHandler.getActivities(debouncedSearch);
-
       setState({ activities: response });
     } catch (err) {
       setState("error", isApiError(err));
     } finally {
       setState("loading", false);
     }
-  }
+  }, [categoryId, debouncedSearch, setState]);
 
-  useEffect(() => {
-    if (!id) {
-      loadActivities();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, categoryId, id, setState, authenticatedUser]);
-
-  const reloadActivity = async () => {
+  const reloadActivity = useCallback(async () => {
     try {
       setState("loading", true);
       const activity = categoryId
@@ -111,7 +94,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     } finally {
       setState("loading", false);
     }
-  };
+  }, [categoryId, setState]);
 
   const fetchActivity = useCallback(async () => {
     if (!id) {
@@ -127,15 +110,14 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     }
   }, [setState, id]);
 
-  const reloadCategories = async () => {
+  const reloadCategories = useCallback(async () => {
     try {
       const response = await ApiHandler.getCategories();
-
       setState("categories", response);
     } catch (err) {
       setState("error", isApiError(err));
     }
-  };
+  }, [setState]);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -160,8 +142,17 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   }, [setState, categoryId]);
 
   useEffect(() => {
-    fetchActivity();
-  }, [fetchActivity]);
+    if (authenticatedUser && !id) {
+      loadActivities();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, categoryId, id, authenticatedUser]);
+
+  useEffect(() => {
+    if (authenticatedUser) {
+      fetchActivity();
+    }
+  }, [fetchActivity, authenticatedUser]);
 
   useEffect(() => {
     fetchCategories();
@@ -169,24 +160,30 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId]);
 
+  //Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      ...state,
+      reloadActivity,
+      findActivity,
+      reloadCategories,
+      fetchActivity,
+      fetchCategories,
+      fetchCategory,
+    }),
+    [
+      state,
+      reloadActivity,
+      findActivity,
+      reloadCategories,
+      fetchActivity,
+      fetchCategories,
+      fetchCategory,
+    ]
+  );
+
   return (
-    <ActivityContext.Provider
-      value={{
-        reloadActivity,
-        findActivity,
-        activities,
-        categories,
-        searchQuery,
-        loading,
-        activityDataLoading,
-        activityData,
-        reloadCategories,
-        fetchActivity,
-        fetchCategories,
-        fetchCategory,
-        category,
-      }}
-    >
+    <ActivityContext.Provider value={contextValue}>
       {children}
     </ActivityContext.Provider>
   );

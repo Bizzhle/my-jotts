@@ -2,9 +2,10 @@ import { DeleteOutline } from "@mui/icons-material";
 import {
   Box,
   Card,
+  CardActionArea,
+  CardActions,
   CardContent,
   CardMedia,
-  Chip,
   IconButton,
   Rating,
   Typography,
@@ -30,98 +31,87 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
   };
 
   return (
-    <>
-      <Box
+    <Card
+      sx={{
+        border: "0.5px solid black",
+      }}
+    >
+      <CardActionArea
+        onClick={handleCardClick}
         sx={{
-          border: "0.2px solid black",
-          borderBottomLeftRadius: 5,
-          borderBottomRightRadius: 5,
+          borderBottomLeftRadius: 0,
+          borderBottomRightRadius: 0,
+          borderBottom: "1px solid black",
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
         }}
       >
-        <Card
+        {imageUrl && (
+          <CardMedia
+            component="img"
+            image={imageUrl}
+            src={imageUrl}
+            alt={value.activityTitle}
+            sx={{
+              maxWidth: { sm: 140 },
+              height: 140,
+              objectFit: "cover",
+              typography: "body2",
+            }}
+          />
+        )}
+
+        <CardContent
           sx={{
             width: "100%",
-            display: "flex",
-            flexDirection: { xs: "row", md: "row" },
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
           }}
-          onClick={handleCardClick}
         >
-          {imageUrl && (
-            <CardMedia
-              component="img"
-              image={imageUrl}
-              src={imageUrl}
-              alt={value.activityTitle}
-              sx={{
-                maxWidth: 140,
-                height: 140,
-                objectFit: "fit",
-                typography: "body2",
-              }}
-            />
-          )}
-
-          <CardContent
+          <Box
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              width: "100%",
+              px: { xs: 2, sm: 2, md: 2, lg: 0 },
             }}
           >
             <Typography sx={{ typography: { xs: "body2", sm: "body1" } }}>
               {value.activityTitle}
             </Typography>
-            <Box sx={{ py: 1 }}>
-              <Rating name="rating" value={value.rating} readOnly />
-            </Box>
+
+            <Rating name="rating" value={value.rating} size="medium" readOnly />
+
             <Box onClick={(e) => e.stopPropagation()}>
-              <Link to={`/categories/${value.categoryId}`}>
-                <Chip
-                  sx={{
-                    maxWidth: "fit-content",
-                    typography: { xs: "body2", sm: "body1" },
-                  }}
-                  label={value.categoryName}
-                  variant="outlined"
-                  clickable
-                />
+              <Link
+                to={`/categories/${value.categoryId}`}
+                style={{
+                  color: "#0A82D8",
+                  fontFamily: "Montserrat, sans-serif",
+                }}
+              >
+                {value.categoryName}
               </Link>
             </Box>
-            <Typography
-              sx={{ mt: 1, fontSize: "0.8rem", color: "text.secondary" }}
-            >
-              {value?.dateCreated?.toString()}
-            </Typography>{" "}
-          </CardContent>
-        </Card>
-        <Box
-          onClick={() => setOpen(true)}
-          sx={{
-            ":hover": { backgroundColor: "#f5f5f5" },
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <IconButton disableRipple>
-            <DeleteOutline />
-          </IconButton>
-          <Typography>Delete from Activities</Typography>
-          <ConfirmDeletionDialog
-            open={open}
-            setOpen={setOpen}
-            value={value.id}
-            onDelete={onDelete}
-          />
-        </Box>
-      </Box>
+          </Box>
+        </CardContent>
+      </CardActionArea>
+      <CardActions
+        sx={{ display: "flex", justifyContent: "space-between", pl: 2, py: 0 }}
+      >
+        <Typography sx={{ fontSize: "0.8rem", color: "text.secondary" }}>
+          {value?.dateCreated?.toString()}
+        </Typography>{" "}
+        <IconButton disableRipple onClick={() => setOpen(true)}>
+          <DeleteOutline fontSize="small" />
+        </IconButton>
+        <ConfirmDeletionDialog
+          open={open}
+          setOpen={setOpen}
+          value={value.id}
+          onDelete={onDelete}
+        />
+      </CardActions>
       {error[value.id] && (
         <Typography variant="body2" color="error.main">
           {error[value.id]}
         </Typography>
       )}
-    </>
+    </Card>
   );
 }
