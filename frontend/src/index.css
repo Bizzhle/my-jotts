@@ -87,3 +87,8 @@ img.activity-image {
 input {
   display: none;
 }
+
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
