@@ -9,7 +9,6 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencrypt.acme.httpchalenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=${DOMAIN_EMAIL}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
     ports:
@@ -69,7 +68,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5432"
 
 volumes:
   db_data: {}

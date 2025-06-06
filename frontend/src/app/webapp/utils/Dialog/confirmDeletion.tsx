@@ -33,7 +33,7 @@ export const ConfirmDeletionDialog = ({
         <Typography>Are you sure you want to delete this {section}?</Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setOpen(false)} color="primary">
+        <Button onClick={() => setOpen(false)} color="primary" size="small">
           Cancel
         </Button>
         <Button
@@ -43,6 +43,7 @@ export const ConfirmDeletionDialog = ({
           }}
           color="error"
           autoFocus
+          size="small"
         >
           Delete
         </Button>
