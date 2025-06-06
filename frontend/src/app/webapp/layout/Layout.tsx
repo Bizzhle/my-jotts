@@ -57,9 +57,10 @@ function Layout({ children }: LayoutProps) {
         component="main"
         sx={{
           flexGrow: 1,
-          overflowX: "auto",
+          overflowY: "auto",
           display: "flex",
           flexDirection: "column",
+          overflowX: "hidden",
         }}
         onClick={handleClose}
       >
@@ -67,8 +68,8 @@ function Layout({ children }: LayoutProps) {
         <Box
           sx={{
             mt: 4,
-            px: { xs: 2, sm: 4, md: 6, lg: 8 },
-            py: { xs: 4, sm: 4 },
+            px: { xs: 0, sm: 4, md: 6, lg: 8 },
+            py: { xs: openSearchBar ? 4 : 0 },
             flexGrow: 1,
           }}
         >

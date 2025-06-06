@@ -117,6 +117,18 @@ export const theme = createTheme({
         },
       },
     },
+    // MuiCard: {
+    //   styleOverrides: {
+    //     root: {
+    //       backgroundColor: "#fff",
+    //       // boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    //       // borderRadius: "8px",
+    //       // ":hover": {
+    //       //   boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    //       // },
+    //     },
+    //   },
+    // },
     // MuiTextField: {
     //   styleOverrides: {
     //     root: {
