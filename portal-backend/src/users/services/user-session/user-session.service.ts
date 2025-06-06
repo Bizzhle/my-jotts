@@ -74,7 +74,7 @@ export class UserSessionService {
   }
 
   public async getValidSessionByRefreshToken(refreshToken) {
-    return await this.getValidSessionByCondition({ refresh_token: refreshToken });
+    return await this.userSessionRepository.getSessionByRefreshToken(refreshToken);
   }
 
   private async getValidSessionByCondition(condition: {
