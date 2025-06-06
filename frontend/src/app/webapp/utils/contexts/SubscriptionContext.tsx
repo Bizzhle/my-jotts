@@ -44,8 +44,10 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   };
 
   useEffect(() => {
-    fetchSubscriptionStatus();
-    fetchPlans();
+    if (authenticatedUser) {
+      fetchSubscriptionStatus();
+      fetchPlans();
+    }
   }, [authenticatedUser]);
 
   return (
