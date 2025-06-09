@@ -17,7 +17,6 @@ export default function Category() {
     null
   );
   const [open, setOpen] = useState(false);
-
   const [errors, setErrors] = useState<
     Record<number, string | null | undefined>
   >({});
