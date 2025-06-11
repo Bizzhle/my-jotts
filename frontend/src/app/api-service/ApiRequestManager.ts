@@ -13,6 +13,7 @@ import { CategoryData, CategoryDto } from "./dtos/category.dto";
 import { ChangePasswordDto } from "./dtos/change-password.dto";
 import { ForgotPasswordResponseDto } from "./dtos/forgotpassword.dto";
 import { LogoutUserDto } from "./dtos/logout-user.dto";
+import { PageDto } from "./dtos/pageInfo.dto";
 import { registrationData } from "./dtos/registration.dto";
 import { LoginResponseDto, RefreshResponseDto } from "./dtos/session-info.dto";
 import { PaymentPlanDto } from "./dtos/subscription/payment-plan.dto";
@@ -100,22 +101,24 @@ export class ApiHandler {
     return ApiMethods.get<ActivityResponseDto>(url);
   };
   static getActivities = (
-    search?: string
-  ): Promise<ActivitiesResponseDto[]> => {
-    const url = ENDPOINTS.GET_ACTIVITIES(search);
-    return ApiMethods.get<ActivitiesResponseDto[]>(url);
+    search?: string,
+    limit?: number,
+    offset?: number
+  ): Promise<PageDto<ActivitiesResponseDto>> => {
+    const url = ENDPOINTS.GET_ACTIVITIES(search, limit, offset);
+    return ApiMethods.get<PageDto<ActivitiesResponseDto>>(url);
   };
   static getActivitiesByCategoryName = (
     categoryName: string
-  ): Promise<ActivitiesResponseDto[]> => {
+  ): Promise<PageDto<ActivitiesResponseDto>> => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_NAME(categoryName);
-    return ApiMethods.get<ActivitiesResponseDto[]>(url);
+    return ApiMethods.get<PageDto<ActivitiesResponseDto>>(url);
   };
   static getActivitiesByCategory = (
     categoryId: string | number
-  ): Promise<ActivitiesResponseDto[]> => {
+  ): Promise<PageDto<ActivitiesResponseDto>> => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_ID(categoryId);
-    return ApiMethods.get<ActivitiesResponseDto[]>(url);
+    return ApiMethods.get<PageDto<ActivitiesResponseDto>>(url);
   };
   static updateActivity = (
     activityId: number,

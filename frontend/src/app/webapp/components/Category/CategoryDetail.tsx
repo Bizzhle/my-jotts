@@ -5,6 +5,7 @@ import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { LayoutContext } from "../../layout/LayoutContext";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
 import ActivityCard from "../Card";
+import { WithIntersectionObserver } from "../InfiniteScroll";
 
 export interface responseError {
   [key: number]: string | null | undefined;
@@ -55,24 +56,25 @@ export default function CategoryDetail() {
           </Typography>
         </Breadcrumbs>
       </Box>
-
-      {activities.length === 0 ? (
-        <Box mb={2}>
-          <Typography>No activities found for this category.</Typography>
-        </Box>
-      ) : (
-        <Grid container sx={{ mb: 2 }} spacing={{ xs: 1, sm: 2, md: 2 }}>
-          {activities.map((activity, index) => (
-            <Grid item xs={12} sm={12} key={index}>
-              <ActivityCard
-                value={activity}
-                onDelete={handleDeleteClick}
-                error={error}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
+      <WithIntersectionObserver>
+        {activities.length === 0 ? (
+          <Box mb={2}>
+            <Typography>No activities found for this category.</Typography>
+          </Box>
+        ) : (
+          <Grid container sx={{ mb: 2 }} spacing={{ xs: 1, sm: 2, md: 2 }}>
+            {activities.map((activity, index) => (
+              <Grid item xs={12} sm={12} key={index}>
+                <ActivityCard
+                  value={activity}
+                  onDelete={handleDeleteClick}
+                  error={error}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </WithIntersectionObserver>
     </>
   );
 }

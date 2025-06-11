@@ -24,7 +24,9 @@ import {
 import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateActivityDto } from '../dto/create-activity.dto';
+import { PaginationQueryDto } from '../dto/paginationQuery.dto';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
+import { ListWithActivityPaginationResponseDto } from '../dto/response-dto/ListWithActivityPaginationResponse.dto';
 import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { ActivityService } from '../service/activity.service';
 import { OptionalFileValidationPipe } from '../validator/optional-parse-file';
@@ -69,8 +71,9 @@ export class ActivityController {
   async getAllUserActivities(
     @GetCurrentUserFromJwt() emailAddress: string,
     @Query('search') search?: string,
-  ): Promise<ActivityResponseDto[]> {
-    return await this.activityService.getAllUserActivities(emailAddress, search);
+    @Query() paginationDto?: PaginationQueryDto,
+  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
+    return await this.activityService.getAllUserActivities(emailAddress, search, paginationDto);
   }
 
   @IsAuthorizedUser()
@@ -85,8 +88,13 @@ export class ActivityController {
   async getAllUserActivitiesByCategory(
     @Param('categoryId', ParseIntPipe) categoryId: number,
     @GetCurrentUserFromJwt() emailAddress: string,
-  ): Promise<ActivityResponseDto[]> {
-    return this.activityService.getUserActivitiesByCategory(categoryId, emailAddress);
+    @Query() paginationDto?: PaginationQueryDto,
+  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
+    return this.activityService.getUserActivitiesByCategory(
+      categoryId,
+      emailAddress,
+      paginationDto,
+    );
   }
 
   @IsAuthorizedUser()
