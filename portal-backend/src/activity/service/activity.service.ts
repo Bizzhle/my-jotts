@@ -4,7 +4,6 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { WithTransactionService } from '../../app/services/with-transaction.services';
@@ -16,7 +15,9 @@ import { SubscriptionService } from '../../subscription/services/subscription.se
 import { UploadService } from '../../upload/service/upload.service';
 import { UserAccountRepository } from '../../users/repositories/user-account.repository';
 import { CreateActivityDto } from '../dto/create-activity.dto';
+import { PAGINATION_ITEMS_PER_PAGE, PaginationQueryDto } from '../dto/paginationQuery.dto';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
+import { ListWithActivityPaginationResponseDto } from '../dto/response-dto/ListWithActivityPaginationResponse.dto';
 import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { Activity } from '../entities/activity.entity';
 import { ActivityRepository } from '../repositories/activity.repository';
@@ -104,7 +105,14 @@ export class ActivityService extends WithTransactionService {
     }
   }
 
-  async getAllUserActivities(emailAddress: string, search: string): Promise<ActivityResponseDto[]> {
+  async getAllUserActivities(
+    emailAddress: string,
+    search: string,
+    paginationDto?: PaginationQueryDto,
+  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
+    const startOffset = paginationDto?.offset ?? 0;
+    const activityLimit = paginationDto?.limit ?? PAGINATION_ITEMS_PER_PAGE;
+    let activityCount = null;
     try {
       const user = await this.userAccountRepository.findOne({
         where: {
@@ -123,14 +131,24 @@ export class ActivityService extends WithTransactionService {
 
       let activities;
       if (isSubscriptionActive) {
-        activities = await this.activityRepository.getAllUserActivities(user.id, search);
+        activities = await this.activityRepository.getAllUserActivities(
+          user.id,
+          search,
+          startOffset,
+          activityLimit,
+        );
       } else {
-        activities = await this.activityRepository.getAllUserActivities(user.id, search, {
-          take: 5,
-          order: { date_created: 'DESC' },
-        });
+        activities = await this.activityRepository.getAllUserActivities(
+          user.id,
+          search,
+          startOffset,
+          5,
+        );
       }
 
+      if (startOffset === 0) {
+        activityCount = await this.activityRepository.getActivityCount(search, user.id);
+      }
       let activityResponse: ActivityResponseDto[] = [];
 
       for (const activity of activities) {
@@ -154,7 +172,12 @@ export class ActivityService extends WithTransactionService {
         });
       }
 
-      return activityResponse;
+      return {
+        offset: startOffset,
+        limit: activityLimit,
+        count: activityCount,
+        data: activityResponse,
+      };
     } catch (err) {
       await this.logService.debug(err);
       if (err instanceof BadRequestException) {
@@ -212,8 +235,12 @@ export class ActivityService extends WithTransactionService {
   async getUserActivitiesByCategory(
     categoryId: number,
     emailAddress: string,
-  ): Promise<ActivityResponseDto[]> {
+    paginationDto?: PaginationQueryDto,
+  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
     try {
+      const startOffset = paginationDto?.offset ?? 0;
+      const activityLimit = paginationDto?.limit ?? PAGINATION_ITEMS_PER_PAGE;
+      let activityCount = null;
       const user = await this.userAccountRepository.findOne({
         where: {
           email_address: emailAddress,
@@ -226,15 +253,12 @@ export class ActivityService extends WithTransactionService {
       const activities = await this.activityRepository.getUserActivitiesByCategory(
         categoryId,
         user.id,
+        startOffset,
+        activityLimit,
       );
-
-      // const activities = await this.activityRepository.find({
-      //   where: {
-      //     user_id: user.id,
-      //     category: { id: categoryId },
-      //   },
-      //   relations: ['category'],
-      // });
+      if (startOffset === 0) {
+        activityCount = await this.activityRepository.getActivityCount('', user.id);
+      }
 
       let activityResponse: ActivityResponseDto[] = [];
 
@@ -259,7 +283,12 @@ export class ActivityService extends WithTransactionService {
         });
       }
 
-      return activityResponse;
+      return {
+        offset: startOffset,
+        limit: activityLimit,
+        count: activityCount,
+        data: activityResponse,
+      };
     } catch (err) {
       await this.logService.debug(err);
       if (err instanceof NotFoundException) {
@@ -393,50 +422,7 @@ export class ActivityService extends WithTransactionService {
     }
   }
 
-  async deleteActivity(activityId: number, emailAddress: string) {
-    try {
-      const user = await this.userAccountRepository.findOne({
-        where: {
-          email_address: emailAddress,
-        },
-      });
-
-      if (!user) {
-        throw new UnauthorizedException('User not logged in');
-      }
-
-      const activity = await this.activityRepository.findOne({
-        where: {
-          id: activityId,
-          user_id: user.id,
-        },
-        relations: ['imageFiles'], // Load related image files
-      });
-
-      if (!activity) {
-        throw new NotFoundException('Activity not found.');
-      }
-
-      const activityImage = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
-
-      if (activityImage) {
-        await Promise.all(
-          activityImage.map(async (image) => {
-            await this.imageUploadService.deleteUploadFile(image.key);
-          }),
-        );
-      }
-
-      await this.imageFileService.deleteImageFile(user.id, activity.id);
-
-      await this.activityRepository.remove(activity);
-
-      return { message: 'Activity deleted successfully' };
-    } catch (err) {
-      this.logService.error('Error deleting activity', err);
-      throw new InternalServerErrorException('Could not delete activity');
-    }
-  }
+  async deleteActivity(activityId: number, emailAddress: string) {}
 
   private async validateActivityCreation(
     userId: number,
