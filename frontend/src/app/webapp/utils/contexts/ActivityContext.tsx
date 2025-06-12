@@ -6,6 +6,7 @@ import {
   ActivityResponseDto,
 } from "../../../api-service/dtos/activity.dto";
 import { CategoryDto } from "../../../api-service/dtos/category.dto";
+import { PageInfoDto } from "../../../api-service/dtos/pageInfo.dto";
 import { useObjectReducer } from "../shared/objectReducer";
 import { useDebounce } from "../shared/useDebounce";
 import { useAuth } from "./hooks/useAuth";
@@ -26,6 +27,7 @@ interface ActivityContextState {
   activityDataLoading: boolean;
   activityDataError?: string;
   category: CategoryDto | null;
+  pageInfo: PageInfoDto;
 }
 
 interface ActivityContextValue extends ActivityContextState {
@@ -35,6 +37,7 @@ interface ActivityContextValue extends ActivityContextState {
   fetchActivity: () => void;
   fetchCategories: () => void;
   fetchCategory: () => void;
+  setPage: (page: number) => void;
 }
 
 const initialState: ActivityContextState = {
@@ -47,6 +50,11 @@ const initialState: ActivityContextState = {
   activityDataLoading: false,
   activityDataError: "",
   category: null,
+  pageInfo: {
+    limit: 10, // Default limit
+    offset: 0, // Default offset
+    count: 0, // Total count of activities
+  },
 };
 export const ActivityContext = createContext<ActivityContextValue>(
   {} as ActivityContextValue
@@ -61,40 +69,82 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   const debouncedSearch = useDebounce(state.searchQuery);
   const { authenticatedUser } = useAuth(); // get user or auth state
 
+  const setPage = useCallback(
+    (page: number) => {
+      const limit = state.pageInfo.limit ?? 10;
+      const offset = (page - 1) * limit;
+      setState({ pageInfo: { ...state.pageInfo, offset } });
+    },
+    [setState, state.pageInfo]
+  );
+
   const findActivity = useCallback(
     (searchQuery: string) => {
-      setState({ searchQuery });
+      setState({ searchQuery, pageInfo: { ...state.pageInfo, offset: 0 } });
     },
-    [setState]
+    [setState, state.pageInfo]
   );
 
   const loadActivities = useCallback(async () => {
     try {
       setState("loading", true);
-      const response = categoryId
+      const { data, count, ...page } = categoryId
         ? await ApiHandler.getActivitiesByCategory(categoryId)
-        : await ApiHandler.getActivities(debouncedSearch);
-      setState({ activities: response });
+        : await ApiHandler.getActivities(
+            debouncedSearch,
+            state.pageInfo.limit,
+            state.pageInfo.offset
+          );
+      setState({
+        activities:
+          state.pageInfo.offset === 0 ? data : [...state.activities, ...data],
+      });
+      setState({
+        pageInfo: { ...page, count: count ?? state.pageInfo.count },
+      });
     } catch (err) {
       setState("error", isApiError(err));
     } finally {
       setState("loading", false);
     }
-  }, [categoryId, debouncedSearch, setState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    categoryId,
+    debouncedSearch,
+    state.pageInfo.limit,
+    state.pageInfo.offset,
+    setState,
+  ]);
 
   const reloadActivity = useCallback(async () => {
     try {
       setState("loading", true);
-      const activity = categoryId
+      const { data, count, ...page } = categoryId
         ? await ApiHandler.getActivitiesByCategory(categoryId)
-        : await ApiHandler.getActivities();
-      setState({ activities: activity });
+        : await ApiHandler.getActivities(
+            debouncedSearch,
+            state.pageInfo.limit,
+            state.pageInfo.offset
+          );
+      setState({
+        activities:
+          state.pageInfo.offset === 0 ? data : [...state.activities, ...data],
+        pageInfo: { ...page, count: count ?? state.pageInfo.count },
+      });
     } catch (err) {
       setState("error", isApiError(err));
     } finally {
       setState("loading", false);
     }
-  }, [categoryId, setState]);
+  }, [
+    categoryId,
+    state.pageInfo.limit,
+    state.pageInfo.offset,
+    state.pageInfo.count,
+    debouncedSearch,
+    state.activities,
+    setState,
+  ]);
 
   const fetchActivity = useCallback(async () => {
     if (!id) {
@@ -146,7 +196,14 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
       loadActivities();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, categoryId, id, authenticatedUser]);
+  }, [
+    debouncedSearch,
+    categoryId,
+    id,
+    authenticatedUser,
+    state.pageInfo.limit,
+    state.pageInfo.offset,
+  ]);
 
   useEffect(() => {
     if (authenticatedUser) {
@@ -170,7 +227,9 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
       fetchActivity,
       fetchCategories,
       fetchCategory,
+      setPage, // Add setPage to context value
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       state,
       reloadActivity,
@@ -179,6 +238,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
       fetchActivity,
       fetchCategories,
       fetchCategory,
+      setPage,
     ]
   );
 

@@ -13,8 +13,22 @@ export const ENDPOINTS = {
   REFRESH_TOKEN: (): string => `/auth/refresh`,
   CREATE_ACTIVITY: (): string => `/activities`,
   GET_ACTIVITY: (id: string): string => `/activities/${id}`,
-  GET_ACTIVITIES: (search?: string): string => {
-    const searchParams = search ? new URLSearchParams({ search }) : undefined;
+  GET_ACTIVITIES: (
+    search?: string,
+    limit?: number,
+    offset?: number
+  ): string => {
+    const searchParams = new URLSearchParams();
+    if (search) {
+      searchParams.append("search", search);
+    }
+    if (limit) {
+      searchParams?.append("limit", limit.toString());
+    }
+    if (offset) {
+      searchParams?.append("offset", offset.toString());
+    }
+
     return `/activities?${searchParams?.toString()}`;
   },
   GET_ACTIVITIES_BY_CATEGORY_NAME: (categoryName: string): string =>

@@ -75,6 +75,7 @@ function Layout({ children }: LayoutProps) {
         >
           {children || <Outlet />}
         </Box>
+        <Toolbar />
       </Box>
       <Footer />
     </Container>

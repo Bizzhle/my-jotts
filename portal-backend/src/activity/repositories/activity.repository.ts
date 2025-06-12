@@ -6,32 +6,43 @@ import { Activity } from '../entities/activity.entity';
 
 type CreateActivity = Omit<CreateActivityDto, 'category'>;
 
-interface activityOptions {
-  take?: number;
-  order?: { [key: string]: 'ASC' | 'DESC' };
-}
 @Injectable()
 export class ActivityRepository extends Repository<Activity> {
   constructor(ds: DataSource) {
     super(Activity, ds.manager);
   }
 
-  async getAllUserActivities(userId: number, search: string, options?: activityOptions) {
+  async getAllUserActivities(
+    userId: number,
+    search: string,
+    startOffset: number,
+    activityLimit: number,
+  ) {
     const query = await this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name', 'category.id'])
+      .skip(startOffset)
+      .take(activityLimit)
+      .orderBy('activity.date_created', 'DESC')
       .where('activity.user_id = :userId', { userId });
 
     if (search) {
       query.where('activity.activity_title ILIKE :name', { name: `%${search}%` });
     }
 
-    if (options) {
-      query.limit(options.take);
-      query.orderBy(options.order);
+    return query.getMany();
+  }
+
+  async getActivityCount(filter?: string, userId?: number): Promise<number> {
+    const query = this.createQueryBuilder('activity').where('activity.user_id = :userId', {
+      userId,
+    });
+
+    if (filter) {
+      query.andWhere('activity.activity_title ILIKE :filter', { filter: `%${filter}%` });
     }
 
-    return query.getMany();
+    return query.getCount();
   }
 
   async getActivityByUserIdAndActivityId(activityId: number, userId: number) {
@@ -43,12 +54,19 @@ export class ActivityRepository extends Repository<Activity> {
       .getOne();
   }
 
-  async getUserActivitiesByCategory(categoryId: number, userId: number) {
+  async getUserActivitiesByCategory(
+    categoryId: number,
+    userId: number,
+    startOffset: number,
+    activityLimit: number,
+  ) {
     return this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])
       .where('activity.user_id = :userId', { userId })
       .andWhere('category.id = :categoryId', { categoryId })
+      .skip(startOffset)
+      .take(activityLimit)
       .getMany();
   }
 
