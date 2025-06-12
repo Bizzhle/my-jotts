@@ -13,6 +13,7 @@ import ActivityCard from "../components/Card";
 import { responseError } from "../components/Category/CategoryDetail";
 import CategoryForm from "../components/Category/CategoryForm";
 import HomeBanner from "../components/HomeBanner";
+import { WithIntersectionObserver } from "../components/InfiniteScroll";
 import { LayoutContext } from "../layout/LayoutContext";
 import { useActivities } from "../utils/contexts/hooks/useActivities";
 
@@ -61,27 +62,29 @@ export default function HomePage() {
           setCategoryFormOpen={setCategoryFormOpen}
         />
       </Box>
-      <Grid container spacing={{ xs: 2 }}>
-        {activities?.length > 0 ? (
-          activities.map((activity, index) => (
-            <Grid item xs={12} key={index}>
-              <ActivityCard
-                value={activity}
-                onDelete={handleDeleteClick}
-                error={error}
-              />
-            </Grid>
-          ))
-        ) : (
-          <Typography>
-            {searchQuery
-              ? `There are no activities with this ${searchQuery}`
-              : "There are no activities"}
-          </Typography>
-        )}
-      </Grid>
-      <ActivityDialogForm open={activityFormOpen} handleClose={handleClose} />
-      <CategoryForm open={categoryFormOpen} handleClose={handleClose} />
+      <WithIntersectionObserver>
+        <Grid container spacing={{ xs: 2 }}>
+          {activities?.length > 0 ? (
+            activities.map((activity, index) => (
+              <Grid item xs={12} key={index}>
+                <ActivityCard
+                  value={activity}
+                  onDelete={handleDeleteClick}
+                  error={error}
+                />
+              </Grid>
+            ))
+          ) : (
+            <Typography>
+              {searchQuery
+                ? `There are no activities with this ${searchQuery}`
+                : "There are no activities"}
+            </Typography>
+          )}
+        </Grid>
+        <ActivityDialogForm open={activityFormOpen} handleClose={handleClose} />
+        <CategoryForm open={categoryFormOpen} handleClose={handleClose} />
+      </WithIntersectionObserver>
     </>
   );
 }

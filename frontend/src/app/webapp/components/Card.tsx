@@ -68,7 +68,7 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
         >
           <Box
             sx={{
-              px: { xs: 2, sm: 2, md: 2, lg: 0 },
+              px: { xs: 2, sm: 2, md: 0, lg: 0 },
             }}
           >
             <Typography sx={{ typography: { xs: "body2", sm: "body1" } }}>
