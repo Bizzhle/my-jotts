@@ -49,7 +49,7 @@ export default function Header({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -86,6 +86,7 @@ export default function Header({
       return;
     }
     setOpen(false);
+    setSelectedIndex(null);
   };
 
   const handleAccountMenuClose = (url?: string) => {
@@ -97,6 +98,7 @@ export default function Header({
 
   const handleReloadActivity = async () => {
     await reloadActivity();
+    setSelectedIndex(null);
   };
 
   return (
@@ -211,7 +213,7 @@ export default function Header({
                           </MenuItem>
                           {categories.map((category, index) => (
                             <Link
-                              to={`/categories/${category.categoryName}`}
+                              to={`/categories/${category.id}`}
                               key={index}
                               style={{
                                 textDecoration: "none",
@@ -219,7 +221,7 @@ export default function Header({
                               }}
                             >
                               <MenuItem
-                                disabled={index === selectedIndex}
+                                // disabled={index === selectedIndex}
                                 selected={index === selectedIndex}
                                 onClick={(event) =>
                                   handleMenuItemClick(event, index)
