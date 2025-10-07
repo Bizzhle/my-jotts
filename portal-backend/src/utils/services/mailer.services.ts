@@ -33,12 +33,12 @@ export class MailerService {
     });
   }
 
-  async sendMail(email: string, subject: string, text: string) {
+  async sendMail(email: string, subject: string, textOrHtml: string) {
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: 'MyJotts',
       to: email,
       subject,
-      text,
+      ...(textOrHtml.startsWith('<') ? { html: textOrHtml } : { text: textOrHtml }),
     };
 
     return this.transporter.sendMail(mailOptions);
@@ -52,14 +52,7 @@ export class MailerService {
         emailAddress: to,
         token: forgotPasswordLink,
       });
-      const mailOptions = {
-        from: 'MyJotts',
-        to,
-        subject: 'Password reset request',
-        html,
-      };
-
-      return await this.transporter.sendMail(mailOptions);
+      return await this.sendMail(to, 'Password reset request', html);
     } catch (error) {
       throw new Error(`Failed to send registration email: ${error.message}`);
     }
@@ -73,14 +66,8 @@ export class MailerService {
         emailAddress: to,
         token: resetLink,
       });
-      const mailOptions = {
-        from: 'MyJotts',
-        to,
-        subject: 'Password reset request',
-        html,
-      };
 
-      return await this.transporter.sendMail(mailOptions);
+      return await this.sendMail(to, 'Password reset request', html);
     } catch (error) {
       throw new Error(`Failed to send registration email: ${error.message}`);
     }
@@ -99,7 +86,7 @@ export class MailerService {
         subject: 'Registration request',
         html,
       };
-      return await this.transporter.sendMail(mailOptions);
+      return await this.sendMail(to, 'Registration request', html);
     } catch (error) {
       throw new Error(`Failed to send registration email: ${error.message}`);
     }
