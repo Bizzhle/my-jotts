@@ -58,12 +58,16 @@ export class UserAuthService extends WithTransactionService {
 
   async refreshSession(token: string) {
     const session = await this.userSession.getValidSessionByRefreshToken(token);
-    const user = await this.userService.getUserById(session.user_id);
-    const sessionId = randomUUID();
-
     if (!session) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
+    const user = await this.userService.getUserById(session.user_id);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    await this.userSession.invalidateUserSession(session.refresh_token);
+    const sessionId = randomUUID();
 
     const { accessToken, refreshToken } = await this.userSession.generateToken(user, sessionId);
 
@@ -98,13 +102,12 @@ export class UserAuthService extends WithTransactionService {
     const transaction = await this.createTransaction(this.datasource);
     try {
       const user = await this.userService.getUserByEmail(emailAddress);
-      const resetToken = randomUUID();
-      const expiryDate = new Date();
-      expiryDate.setHours(expiryDate.getHours() + 1);
-
       if (!user) {
         throw new NotFoundException('Email address not registered');
       }
+      const resetToken = randomUUID();
+      const expiryDate = new Date();
+      expiryDate.setHours(expiryDate.getHours() + 1);
 
       const reset = await this.passwordResetTokenRepository.create({
         userId: user.id,
@@ -123,7 +126,7 @@ export class UserAuthService extends WithTransactionService {
       };
     } catch (error) {
       await transaction.rollbackTransaction();
-      throw new BadRequestException(error, 'Cannot reset password');
+      throw new BadRequestException('Cannot reset password');
     } finally {
       await this.closeTransaction(transaction);
     }

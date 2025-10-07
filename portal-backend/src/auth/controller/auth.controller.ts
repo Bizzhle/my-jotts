@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Put } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Put } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiInternalServerErrorResponse,
@@ -7,6 +7,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { logoutUserDto } from 'src/users/dto/logout-user.dto';
+import { UserLogoutService } from 'src/users/services/user-service/user-logout.service';
 import { GetUidFromJWT } from '../../app/jwt.decorators';
 import { LoginDto } from '../../users/dto/initial-login-response.dto';
 import { RefreshSessionDto } from '../../users/dto/refresh-session-response.dto';
@@ -18,7 +20,10 @@ import { UserAuthService } from '../services/userauth.service';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly userAuthService: UserAuthService) {}
+  constructor(
+    private readonly userAuthService: UserAuthService,
+    private readonly userLogoutService: UserLogoutService,
+  ) {}
 
   @Post('login')
   @ApiOperation({ summary: 'Logs in a user' })
@@ -30,6 +35,17 @@ export class AuthController {
   @ApiInternalServerErrorResponse({ description: 'Server error' })
   public async login(@Body() loginDto: LoginDto) {
     return await this.userAuthService.login(loginDto);
+  }
+
+  @Post('logout')
+  @ApiOperation({ description: 'Ends a user"s session' })
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: 'User logout successful, invalid credentials' })
+  @ApiUnauthorizedResponse({ description: 'User mot logged out' })
+  @ApiBadRequestResponse({ description: 'No refreshToken ' })
+  @ApiInternalServerErrorResponse({ description: 'Server error' })
+  async logoutUser(@Body() dto: logoutUserDto) {
+    return this.userLogoutService.logoutUser(dto.refreshToken);
   }
 
   @Post('refresh')

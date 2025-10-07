@@ -35,7 +35,7 @@ export class UserRegistrationService extends WithTransactionService {
       return await this.mailerService.sendRegistrationEmail(dto.emailAddress, verificationToken);
     } catch (error) {
       await transaction.rollbackTransaction();
-      throw new BadRequestException(error, 'Cannot register user');
+      throw new BadRequestException('Cannot register user', error.message);
     } finally {
       await this.closeTransaction(transaction);
     }

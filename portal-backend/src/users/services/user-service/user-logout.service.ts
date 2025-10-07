@@ -13,7 +13,7 @@ export class UserLogoutService {
         throw new Error('Cannot find userSession with valid refresh token');
       }
 
-      await this.userSessionService.logoutSession(refreshToken);
+      await this.userSessionService.invalidateUserSession(refreshToken);
     } catch (err) {
       throw new Error('cannot logout user');
     }
