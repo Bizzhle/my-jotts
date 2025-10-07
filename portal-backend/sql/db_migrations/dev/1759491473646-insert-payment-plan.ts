@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 import { DevMigration } from '../../../src/typeorm/migration';
 
 @DevMigration
-export class InsertPaymentPlan1735154572359 implements MigrationInterface {
+export class InsertPaymentPlan1759491473646 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             INSERT INTO payment_plan VALUES
