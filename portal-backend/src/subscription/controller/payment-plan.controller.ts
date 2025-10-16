@@ -13,15 +13,14 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { PaymentPlanService } from '../services/payment-plan.service';
-import { PaymentPlan } from '../entities/payment-plan.entity';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreatePaymentPlanDto } from '../dtos/payment-plan.dto';
+import { PaymentPlan } from '../entities/payment-plan.entity';
+import { PaymentPlanService } from '../services/payment-plan.service';
 
 @ApiTags('Payment Plan')
 @Controller('payment-plan')
@@ -34,7 +33,7 @@ export class PaymentPlanController {
   @ApiOperation({
     description: 'Gets all active payment plans',
   })
-  @ApiOkResponse({ status: 201, description: 'Payment plans were returned' })
+  @ApiOkResponse({ description: 'Payment plans were returned' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getActivePlans(): Promise<PaymentPlan[]> {
     return await this.paymentPlanService.getAllActivePlans();
@@ -55,7 +54,7 @@ export class PaymentPlanController {
   })
   @ApiBody({ type: CreatePaymentPlanDto })
   @HttpCode(HttpStatus.CREATED)
-  @ApiOkResponse({ status: 201, description: 'Payment plan is created' })
+  @ApiOkResponse({ description: 'Payment plan is created' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async createPaymentPlan(@Body() dto: CreatePaymentPlanDto) {
     return await this.paymentPlanService.createPlan(dto);
@@ -69,7 +68,7 @@ export class PaymentPlanController {
   })
   @ApiBody({ type: CreatePaymentPlanDto })
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ status: 201, description: 'Payment plan is updated' })
+  @ApiOkResponse({ description: 'Payment plan is updated' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async updatePlan(@Param('id') id: number, @Body() dto: CreatePaymentPlanDto) {
     return this.paymentPlanService.updatePlan(id, dto);

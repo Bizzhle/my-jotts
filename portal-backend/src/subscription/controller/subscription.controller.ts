@@ -19,11 +19,11 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
+import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
 import { SubscriptionService } from '../services/subscription.service';
-import { Request, Response } from 'express';
-import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 
 @ApiTags('Subscription')
 @Controller('subscription')
@@ -36,7 +36,7 @@ export class SubscriptionController {
   @ApiOperation({
     description: 'Returns user subscription details',
   })
-  @ApiOkResponse({ status: 201, description: 'Subscription information were returned' })
+  @ApiOkResponse({ description: 'Subscription information were returned' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
@@ -49,7 +49,7 @@ export class SubscriptionController {
   @ApiBearerAuth()
   @ApiOperation({ description: 'Create a subscription for user' })
   @HttpCode(HttpStatus.CREATED)
-  @ApiOkResponse({ status: 201, description: 'Subscription is created' })
+  @ApiOkResponse({ description: 'Subscription is created' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async createSubscription(
     @Body() dto: CreateSubscriptionDto,
