@@ -3,15 +3,13 @@ import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
-  ApiTags,
 } from '@nestjs/swagger';
 import { UserAccount } from '../../users/entities/user-account.entity';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { VerifyRegistrationDto } from '../dtos/verify-registration.dto';
 import { UserRegistrationService } from '../services/user-registration.service';
 
-@ApiTags('Auth')
-@Controller('auth')
+@Controller('auth1')
 export class UsersRegistrationController {
   constructor(private readonly userRegistrationService: UserRegistrationService) {}
 

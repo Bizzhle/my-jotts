@@ -33,7 +33,7 @@ export class CategoryController {
     summary: 'Get a category by ID',
     description: 'Fetches a category by its ID for the authorized user',
   })
-  @ApiOkResponse({ status: 200, description: 'Category found successfully.' })
+  @ApiOkResponse({ description: 'Category found successfully.' })
   @ApiNotFoundResponse({ description: 'Category not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
@@ -51,7 +51,7 @@ export class CategoryController {
     summary: 'Creates a category',
     description: 'An category is created by a user',
   })
-  @ApiOkResponse({ status: 201, description: 'The Category has been successfully created.' })
+  @ApiOkResponse({ description: 'The Category has been successfully created.' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })

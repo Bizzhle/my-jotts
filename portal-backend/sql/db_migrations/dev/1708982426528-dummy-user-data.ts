@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { DevMigration } from '../../../src/typeorm/migration';
+import { DevMigration } from '../../../src/typeorm-config/migration';
 
 @DevMigration
 export class DummyUserData1708982426528 implements MigrationInterface {

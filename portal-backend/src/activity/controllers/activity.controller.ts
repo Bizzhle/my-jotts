@@ -42,7 +42,7 @@ export class ActivityController {
     summary: 'Creates an activity',
     description: 'An activity is created by a user',
   })
-  @ApiOkResponse({ status: 201, description: 'The Activity has been successfully created.' })
+  @ApiOkResponse({ description: 'The Activity has been successfully created.' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
@@ -64,7 +64,7 @@ export class ActivityController {
   @ApiOperation({
     description: 'Gets all activities related to a user',
   })
-  @ApiOkResponse({ status: 201, description: 'Activities were returned' })
+  @ApiOkResponse({ description: 'Activities were returned' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
@@ -81,7 +81,7 @@ export class ActivityController {
   @ApiOperation({
     description: 'Gets activities by category',
   })
-  @ApiOkResponse({ status: 201, description: 'Activities were returned' })
+  @ApiOkResponse({ description: 'Activities were returned' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
@@ -102,7 +102,7 @@ export class ActivityController {
   @ApiOperation({
     description: 'Gets activities by category name',
   })
-  @ApiOkResponse({ status: 201, description: 'Activities were returned' })
+  @ApiOkResponse({ description: 'Activities were returned' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
@@ -120,7 +120,6 @@ export class ActivityController {
     description: 'Gets an activity',
   })
   @ApiOkResponse({
-    status: 201,
     description: 'The Activity has been successfully returned to use.',
   })
   @ApiNotFoundResponse({ description: 'User not found' })
@@ -139,7 +138,7 @@ export class ActivityController {
     summary: 'Updates an activity',
     description: 'An activity is updated by a user',
   })
-  @ApiOkResponse({ status: 201, description: 'The Activity has been successfully updated.' })
+  @ApiOkResponse({ description: 'The Activity has been successfully updated.' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
@@ -160,7 +159,7 @@ export class ActivityController {
     summary: 'Deletes an activity',
     description: 'An activity is deleted by a user',
   })
-  @ApiOkResponse({ status: 201, description: 'The Activity has been successfully deleted.' })
+  @ApiOkResponse({ description: 'The Activity has been successfully deleted.' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
