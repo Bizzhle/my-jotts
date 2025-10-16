@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
@@ -8,11 +8,14 @@ import getLogLevels from './utils/get-log-levels';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
     bufferLogs: true,
     logger: getLogLevels(process.env.NODE_ENV === 'production'),
   });
 
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', {
+    exclude: [{ path: 'api/auth/(.*)', method: RequestMethod.ALL }],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       stopAtFirstError: true,
@@ -26,7 +29,7 @@ async function bootstrap() {
     origin:
       process.env.NODE_ENV === 'production'
         ? ['https://www.myjotts.com', 'https://myjotts.com']
-        : ['http://localhost:5173', 'http://myjotts.local'],
+        : ['http://localhost:5173', 'http://myjotts.local', 'http://localhost:4000'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
