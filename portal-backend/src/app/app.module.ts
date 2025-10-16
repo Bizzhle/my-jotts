@@ -1,29 +1,24 @@
-import {
-  ClassSerializerInterceptor,
-  Logger,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-} from '@nestjs/common';
+import { ClassSerializerInterceptor, Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { auth } from 'auth';
 import { ActivityModule } from 'src/activity/activity.module';
 import { CategoryModule } from 'src/category/category.module';
 import { UsersModule } from 'src/users/users.module';
-import { LogsMiddleware } from '../logger/middlewares/log.middleware';
+import { AuthenticationModule } from '../auth/auth.module';
+import { CertificateModule } from '../certificates/certificate.module';
+import { ImageModule } from '../image/image.module';
 import { LogsModule } from '../logger/logs.module';
+import { LogsMiddleware } from '../logger/middlewares/log.middleware';
+import { SubscriptionModule } from '../subscription/subscription.module';
 import { UploadModule } from '../upload/upload.module';
+import { RolesGuard } from '../users/guards/role.guard';
 import { ExcludeNullInterceptor } from '../utils/exclude-null.interceptor';
+import { UtilsModule } from '../utils/util.module';
 import { EnvironmentConfigRootModule } from './configuration/Environment';
 import { TypeOrmRootModule } from './configuration/TypeORM';
 import { ExceptionsFilter } from './exceptions.filter';
-import { RequestContextMiddleware } from './middleware/request-context.middleware';
-import { ImageModule } from '../image/image.module';
-import { RolesGuard } from '../users/guards/role.guard';
-import { JwtModule } from '@nestjs/jwt';
-import { CertificateModule } from '../certificates/certificate.module';
-import { AuthModule } from '../auth/auth.module';
-import { UtilsModule } from '../utils/util.module';
-import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
   imports: [
@@ -39,9 +34,12 @@ import { SubscriptionModule } from '../subscription/subscription.module';
       global: true,
     }),
     CertificateModule,
-    AuthModule,
+    AuthenticationModule,
     UtilsModule,
     SubscriptionModule,
+    AuthModule.forRoot({
+      auth,
+    }),
   ],
   providers: [
     // RequestContextMiddleware,
