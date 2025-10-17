@@ -33,17 +33,32 @@
       .button:hover {
         background-color: #0056b3;
       }
+      .div {
+        font-family: Arial sans-serif;
+        max-width: 600px;
+        margin: 0 auto"
+      }
+      .link {
+          display: inline-block;
+          padding: 12px 24px;
+          background-color: #007bff;
+          color: white;
+          text-decoration: none;
+          border-radius: 4px;
+          margin: 20px 0;
+      }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>Welcome {{emailAddress}}!</h1>
-      <p>
-        Thank you for registering with us. Please confirm your email address by clicking the link
-        below:
+    <div class="div">
+      <h2>Verify Your Email Address</h2>
+      <p>Hi {{emailAddress || 'there'}},</p>
+      <p>Thank you for signing up! Please click the button below to verify your email address:</p>
+      <a href="${url}" class="link"> Verify Email </a>
+      <p>Or copy and paste this link: <br /><a href="{{url}}">${url}</a></p>
+      <p style="color: #666; font-size: 12px; margin-top: 30px">
+        If you didn't create an account, you can safely ignore this email.
       </p>
-      <a href="{{token}}" target="_blank" class="button">Confirm Email</a>
-      <p>If you did not register, please ignore this email.</p>
     </div>
   </body>
 </html>
