@@ -3,7 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { betterAuth } from 'better-auth';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import * as path from 'path';
 import { AppDataSource } from './sql/data-source';
 
@@ -23,6 +23,7 @@ async function sendEmail(email: string, subject: string, html: string) {
     subject,
     html,
   };
+
   return transporter.sendMail(mailOptions);
 }
 
@@ -31,18 +32,32 @@ export const auth = betterAuth({
   url: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: typeormAdapter(AppDataSource),
-  emailAndPassword: { enabled: true, requireEmailVerification: true },
-  sendVerificationEmail: async ({ user, url, token }) => {
-    console.log('Verification URL:', url);
-
-    const html = await loadTemplate('email-verification.template', {
-      emailAddress: user.email,
-      url: url,
-    });
-    await sendEmail(user.email, 'Verify your email', html);
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    sendResetPassword: async ({ user, url, token }) => {
+      const html = await loadTemplate('reset-password.template', {
+        emailAddress: user.email,
+        url: url,
+        // token: token,
+      });
+      await sendEmail(user.email, 'Reset your password', html);
+    },
   },
+  emailVerification: {
+    sendOnSignUp: true, // Send verification email on signup
+    autoSignInAfterVerification: true, // Optional: auto sign-in after verification
+    sendVerificationEmail: async ({ user, url, token }) => {
+      const html = await loadTemplate('email-verification.template', {
+        emailAddress: user.email,
+        url: url,
+      });
 
+      await sendEmail(user.email, 'Verify your email', html);
+    },
+  },
   trustedOrigins: ['http://localhost:4000'],
+  basePath: 'api/vl',
 });
 
 export const initializeAuth = async () => {
@@ -55,7 +70,14 @@ const loadTemplate = async (
   templateName: string,
   data: { emailAddress: string; url: string; token?: string },
 ) => {
-  const templatePath = path.resolve(__dirname, '../..', 'html-templates', `${templateName}.html`);
+  const baseDir =
+    process.env.NODE_ENV === 'production'
+      ? path.resolve(process.cwd(), 'dist', 'src', 'html-templates')
+      : path.resolve(process.cwd(), 'src', 'html-templates');
+
+  const templatePath = path.resolve(baseDir, `${templateName}.html`);
+
+  console.log(templatePath);
 
   if (!fs.existsSync(templatePath)) {
     throw new NotFoundException(`Template not found: ${templatePath}`);

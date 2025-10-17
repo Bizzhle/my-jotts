@@ -1,4 +1,4 @@
-import { RequestMethod, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
@@ -13,9 +13,7 @@ async function bootstrap() {
     logger: getLogLevels(process.env.NODE_ENV === 'production'),
   });
 
-  app.setGlobalPrefix('api/v1', {
-    exclude: [{ path: 'api/auth/(.*)', method: RequestMethod.ALL }],
-  });
+  app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
     new ValidationPipe({
       stopAtFirstError: true,
