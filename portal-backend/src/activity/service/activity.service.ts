@@ -43,7 +43,7 @@ export class ActivityService extends WithTransactionService {
     try {
       const user = await this.userAccountRepository.findOne({
         where: {
-          email_address: emailAddress,
+          email: emailAddress,
         },
       });
 
@@ -56,7 +56,7 @@ export class ActivityService extends WithTransactionService {
         category = await this.datasource.transaction(async (entityManager) => {
           return await this.categoryService.createCategory(
             { categoryName: dto.categoryName },
-            user.email_address,
+            user.email,
             entityManager, // Pass the entity manager to handle the transaction
           );
         });
@@ -68,7 +68,7 @@ export class ActivityService extends WithTransactionService {
         location: dto.location || null,
         rating: dto.rating,
         description: dto.description,
-        user_id: user.id,
+        user: user,
         category_id: category.id,
         date_created: new Date(),
         date_updated: new Date(),
@@ -88,7 +88,7 @@ export class ActivityService extends WithTransactionService {
                 uploadedFile.Location,
                 uploadedFile.Key,
                 savedActivity.id,
-                user.id,
+                user,
               ),
           ),
         );
@@ -116,7 +116,7 @@ export class ActivityService extends WithTransactionService {
     try {
       const user = await this.userAccountRepository.findOne({
         where: {
-          email_address: emailAddress,
+          email: emailAddress,
         },
       });
 
@@ -124,9 +124,8 @@ export class ActivityService extends WithTransactionService {
         throw new BadRequestException('User not logged in');
       }
 
-      const subscription = await this.subscriptionService.getUserSubscriptionInformation(
-        emailAddress,
-      );
+      const subscription =
+        await this.subscriptionService.getUserSubscriptionInformation(emailAddress);
       const isSubscriptionActive = subscription && subscription.status === 'active';
 
       let activities;
@@ -191,7 +190,7 @@ export class ActivityService extends WithTransactionService {
     try {
       const user = await this.userAccountRepository.findOne({
         where: {
-          email_address: emailAddress,
+          email: emailAddress,
         },
       });
       const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
@@ -243,7 +242,7 @@ export class ActivityService extends WithTransactionService {
       let activityCount = null;
       const user = await this.userAccountRepository.findOne({
         where: {
-          email_address: emailAddress,
+          email: emailAddress,
         },
       });
       if (!user) {
@@ -304,7 +303,7 @@ export class ActivityService extends WithTransactionService {
   ): Promise<ActivityResponseDto[]> {
     try {
       const user = await this.userAccountRepository.findOne({
-        where: { email_address: emailAddress },
+        where: { email: emailAddress },
       });
       if (!user) {
         throw new NotFoundException('User not found');
@@ -319,7 +318,7 @@ export class ActivityService extends WithTransactionService {
 
       const activities = await this.activityRepository.find({
         where: {
-          user_id: user.id,
+          user: { id: user.id },
           category: { id: category.id },
         },
         relations: ['category'],
@@ -365,7 +364,7 @@ export class ActivityService extends WithTransactionService {
     try {
       const user = await this.userAccountRepository.findOne({
         where: {
-          email_address: emailAddress,
+          email: emailAddress,
         },
       });
 
@@ -382,7 +381,7 @@ export class ActivityService extends WithTransactionService {
       if (!category) {
         category = await this.categoryService.createCategory(
           { categoryName: dto.categoryName },
-          user.email_address,
+          user.email,
         );
       }
 
@@ -409,7 +408,7 @@ export class ActivityService extends WithTransactionService {
                 uploadedFile.Location,
                 uploadedFile.Key,
                 updatedActivity.id,
-                user.id,
+                user,
               ),
           ),
         );
@@ -425,19 +424,18 @@ export class ActivityService extends WithTransactionService {
   async deleteActivity(activityId: number, emailAddress: string) {}
 
   private async validateActivityCreation(
-    userId: number,
+    userId: string,
     emailAddress: string,
     dto: CreateActivityDto,
     file?: Express.Multer.File[],
   ) {
     // Check subscription status
-    const subscription = await this.subscriptionService.getUserSubscriptionInformation(
-      emailAddress,
-    );
+    const subscription =
+      await this.subscriptionService.getUserSubscriptionInformation(emailAddress);
     const isSubscriptionActive = subscription && subscription.status === SubscriptionStatus.active;
 
     // Count user's activities
-    const activityCount = await this.activityRepository.count({ where: { user_id: userId } });
+    const activityCount = await this.activityRepository.count({ where: { user: { id: userId } } });
 
     // Restrict activity creation if subscription is not active and activity count is 5 or more
     if (!isSubscriptionActive && activityCount >= 5) {
@@ -457,7 +455,7 @@ export class ActivityService extends WithTransactionService {
     const existingActivity = await this.activityRepository.findOne({
       where: {
         activity_title: dto.activityTitle,
-        user_id: userId,
+        user: { id: userId },
       },
     });
 
