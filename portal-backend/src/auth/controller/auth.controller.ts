@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { ForgotPasswordDto, ResetPasswordDto } from '../dtos/forgot-password.dto';
 import { SignInDto } from '../dtos/signin.dto';
 import { SignUpDto } from '../dtos/signup.dto';
 import { AuthService } from '../services/auth.service';
@@ -32,8 +33,18 @@ export class AuthController {
   @Post('validate-user')
   @AllowAnonymous()
   async validateUser(@Body() dto: SignInDto) {
-    console.log(`Validating user with email: ${dto.email}`);
-
     return await this.authService.validateUser(dto.email);
+  }
+
+  @Post('password-reset/request')
+  @AllowAnonymous()
+  async requestPasswordReset(@Body() dto: ForgotPasswordDto) {
+    return this.authService.requestResetPassword(dto);
+  }
+
+  @Post('password-reset/confirm')
+  @AllowAnonymous()
+  async confirmPasswordReset(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 }
