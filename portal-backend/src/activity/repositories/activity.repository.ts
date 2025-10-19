@@ -13,7 +13,7 @@ export class ActivityRepository extends Repository<Activity> {
   }
 
   async getAllUserActivities(
-    userId: number,
+    userId: string,
     search: string,
     startOffset: number,
     activityLimit: number,
@@ -33,7 +33,7 @@ export class ActivityRepository extends Repository<Activity> {
     return query.getMany();
   }
 
-  async getActivityCount(filter?: string, userId?: number): Promise<number> {
+  async getActivityCount(filter?: string, userId?: string): Promise<number> {
     const query = this.createQueryBuilder('activity').where('activity.user_id = :userId', {
       userId,
     });
@@ -45,7 +45,7 @@ export class ActivityRepository extends Repository<Activity> {
     return query.getCount();
   }
 
-  async getActivityByUserIdAndActivityId(activityId: number, userId: number) {
+  async getActivityByUserIdAndActivityId(activityId: number, userId: string) {
     return this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])
@@ -56,7 +56,7 @@ export class ActivityRepository extends Repository<Activity> {
 
   async getUserActivitiesByCategory(
     categoryId: number,
-    userId: number,
+    userId: string,
     startOffset: number,
     activityLimit: number,
   ) {

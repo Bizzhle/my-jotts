@@ -41,10 +41,12 @@ export class CategoryService {
         throw new UnauthorizedException('User not available');
       }
 
-      const categoryCount = await this.categoryRepository.count({ where: { user_id: user.id } });
+      const categoryCount = await this.categoryRepository.count({
+        where: { user: { id: user.id } },
+      });
 
       const subscription = await this.subscriptionService.getUserSubscriptionInformation(
-        user.email_address,
+        user.email,
       );
       const isSubscriptionActive =
         subscription && subscription.status === SubscriptionStatus.active;
@@ -61,7 +63,7 @@ export class CategoryService {
 
       if (entityManager) {
         const category = await this.categoryRepository.create({
-          user_id: user.id,
+          user: { id: user.id },
           category_name: dto.categoryName,
           description: dto.description,
         });
@@ -95,7 +97,7 @@ export class CategoryService {
     return this.categoryRepository.findUserCategoryById(id, user.id);
   }
 
-  public async getCategoryByName(name: string, userId: number) {
+  public async getCategoryByName(name: string, userId: string) {
     return await this.categoryRepository.findCategoryByName(name, userId);
   }
 
