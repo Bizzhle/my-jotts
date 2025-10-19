@@ -1,3 +1,4 @@
+import { User } from 'src/users/entities/User.entity';
 import {
   Column,
   CreateDateColumn,
@@ -7,7 +8,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { InvoiceStatus } from '../enum/invoice.enum';
-import { UserAccount } from '../../users/entities/user-account.entity';
 import { Subscription } from './subscription.entity';
 
 @Entity()
@@ -48,6 +48,6 @@ export class Invoice {
   @ManyToOne(() => Subscription, (subscription) => subscription.invoices, { eager: true })
   subscription: Subscription;
 
-  @ManyToOne(() => UserAccount, (user) => user.invoices)
-  user: UserAccount;
+  @ManyToOne(() => User, (user) => user.invoices)
+  user: User;
 }

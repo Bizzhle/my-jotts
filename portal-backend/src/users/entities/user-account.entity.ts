@@ -1,19 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  Unique,
-} from 'typeorm';
-import { Activity } from '../../activity/entities/activity.entity';
-import { Category } from '../../category/entities/category.entity';
-import { ImageFile } from '../../image/entities/image-file.entity';
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Role } from '../../permissions/entities/role.entity';
-import { Invoice } from '../../subscription/entities/invoice.entity';
-import { Subscription } from '../../subscription/entities/subscription.entity';
 
 @Entity({ name: 'user_account' })
 @Unique(['email_address'])
@@ -60,19 +47,4 @@ export class UserAccount {
     inverseJoinColumn: { name: 'role_id' },
   })
   roles: Role[];
-
-  @OneToMany(() => Category, (category) => category.userAccount)
-  categories: Category[];
-
-  @OneToMany(() => Activity, (activity) => activity.userAccount)
-  activities: Activity[];
-
-  @OneToMany(() => ImageFile, (imageFile) => imageFile.userAccount)
-  imageFiles: ImageFile[];
-
-  @OneToMany(() => Subscription, (subscription) => subscription.user)
-  subscriptions: Subscription[];
-
-  @OneToMany(() => Invoice, (invoice) => invoice.user)
-  invoices: Invoice[];
 }

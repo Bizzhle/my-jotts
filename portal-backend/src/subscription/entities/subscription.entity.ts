@@ -1,3 +1,4 @@
+import { User } from 'src/users/entities/User.entity';
 import {
   Column,
   CreateDateColumn,
@@ -8,7 +9,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserAccount } from '../../users/entities/user-account.entity';
 import { SubscriptionStatus } from '../enum/subscrition.enum';
 import { Invoice } from './invoice.entity';
 import { PaymentPlan } from './payment-plan.entity';
@@ -24,12 +24,9 @@ export class Subscription {
   @Column()
   stripeCustomerId: string;
 
-  @Column({ name: 'user_id', type: 'integer' })
-  userId: number;
-
-  @ManyToOne(() => UserAccount, (user) => user.subscriptions)
-  @JoinColumn({ name: 'user_id' })
-  user: UserAccount;
+  @ManyToOne(() => User, (user) => user.subscriptions)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @Column({ type: 'enum', enum: SubscriptionStatus })
   status: SubscriptionStatus;
