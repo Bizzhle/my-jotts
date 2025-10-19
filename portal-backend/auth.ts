@@ -36,10 +36,11 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url, token }) => {
+      const frontendUrl = process.env.FRONTEND_URL;
+      const callbackURL = `${frontendUrl}/reset-password?token=${token}`;
       const html = await loadTemplate('reset-password.template', {
         emailAddress: user.email,
-        url: url,
-        // token: token,
+        url: callbackURL,
       });
       await sendEmail(user.email, 'Reset your password', html);
     },
@@ -48,9 +49,12 @@ export const auth = betterAuth({
     sendOnSignUp: true, // Send verification email on signup
     autoSignInAfterVerification: true, // Optional: auto sign-in after verification
     sendVerificationEmail: async ({ user, url, token }) => {
+      const frontendUrl = process.env.FRONTEND_URL;
+      const callbackURL = `${frontendUrl}/verify-email?token=${token}`;
+
       const html = await loadTemplate('email-verification.template', {
         emailAddress: user.email,
-        url: url,
+        url: callbackURL,
       });
 
       await sendEmail(user.email, 'Verify your email', html);
@@ -76,8 +80,6 @@ const loadTemplate = async (
       : path.resolve(process.cwd(), 'src', 'html-templates');
 
   const templatePath = path.resolve(baseDir, `${templateName}.html`);
-
-  console.log(templatePath);
 
   if (!fs.existsSync(templatePath)) {
     throw new NotFoundException(`Template not found: ${templatePath}`);
