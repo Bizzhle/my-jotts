@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import Stripe from 'stripe';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Subscription } from '../entities/subscription.entity';
-import { UserAccountRepository } from '../../users/repositories/user-account.repository';
-import { SubscriptionStatus } from '../enum/subscrition.enum';
-import { Request, Response } from 'express';
-import { InvoiceService } from './invoice.service';
-import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
-import { AppLoggerService } from '../../logger/services/app-logger.service';
-import { PaymentPlan } from '../entities/payment-plan.entity';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Request, Response } from 'express';
+import { User } from 'src/users/entities/User.entity';
+import Stripe from 'stripe';
+import { Repository } from 'typeorm';
+import { AppLoggerService } from '../../logger/services/app-logger.service';
+import { UserAccountRepository } from '../../users/repositories/user-account.repository';
+import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
+import { PaymentPlan } from '../entities/payment-plan.entity';
+import { Subscription } from '../entities/subscription.entity';
+import { SubscriptionStatus } from '../enum/subscrition.enum';
+import { InvoiceService } from './invoice.service';
 
 @Injectable()
 export class SubscriptionService {
@@ -28,18 +29,18 @@ export class SubscriptionService {
   ) {
     const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     this.stripe = new Stripe(secretKey, {
-      apiVersion: '2024-12-18.acacia',
+      apiVersion: '2025-09-30.clover',
     });
     this.webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
   }
 
-  public async getOrCreateCustomer(userId: number, userEmail: string) {
+  public async getOrCreateCustomer(user: User) {
     const { stripeCustomerId } = await this.subscriptionRepository.findOne({
-      where: { userId },
+      where: { user },
     });
     if (!stripeCustomerId) {
       const customer = await this.stripe.customers.create({
-        email: userEmail,
+        email: user.email,
         name: 'Paul Egbo',
       });
       return customer.id;
@@ -51,29 +52,23 @@ export class SubscriptionService {
     try {
       const user = await this.userAccountRepository.findOne({
         where: {
-          email_address: emailAddress,
+          email: emailAddress,
         },
       });
 
       const paymentPlan = await this.paymentPlanRepository.findOne({
         where: { id: dto.paymentPlanId },
       });
-      const stripeCustomerId = await this.getOrCreateCustomer(user.id, user.email_address);
+      const stripeCustomerId = await this.getOrCreateCustomer(user);
 
-      const stripeSubscription = await this.stripe.subscriptions.create({
-        customer: stripeCustomerId,
-        items: [{ price: dto.priceId }],
-        payment_behavior: 'default_incomplete',
-        payment_settings: { save_default_payment_method: 'on_subscription' },
-        expand: ['latest_invoice.payment_intent'],
-      });
+      const stripeSubscription = await this.createStripeSubscription(stripeCustomerId, dto.priceId);
 
       const subscriptionData: Partial<Subscription> = {
         stripeSubscriptionId: stripeSubscription.id,
         stripeCustomerId: stripeCustomerId,
         status: SubscriptionStatus[stripeSubscription.status],
         priceId: dto.priceId,
-        userId: user.id,
+        user: user,
         paymentPlan: paymentPlan,
       };
 
@@ -84,11 +79,43 @@ export class SubscriptionService {
       if (stripeInvoice) {
         await this.invoiceService.createInvoice(stripeInvoice);
       }
-      const paymentIntent = stripeInvoice.payment_intent as Stripe.PaymentIntent;
+      const paymentIntent = await this.createPaymentIntent(
+        stripeInvoice.amount_due,
+        stripeInvoice.currency,
+      );
       return {
         subscriptionId: stripeSubscription.id,
         clientSecret: paymentIntent.client_secret,
       };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async createStripeSubscription(
+    customerId: string,
+    priceId: string,
+  ): Promise<Stripe.Subscription> {
+    try {
+      const subscription = await this.stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+      });
+
+      return subscription;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createPaymentIntent(amount: number, currency: string): Promise<Stripe.PaymentIntent> {
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.create({
+        amount,
+        currency,
+        payment_method_types: ['card'],
+      });
+      return paymentIntent;
     } catch (error) {
       throw new Error(error.message);
     }
@@ -109,11 +136,11 @@ export class SubscriptionService {
   async getUserSubscriptionInformation(username: string) {
     const user = await this.userAccountRepository.findOne({
       where: {
-        email_address: username,
+        email: username,
       },
     });
     return await this.subscriptionRepository.findOne({
-      where: { userId: user.id, status: SubscriptionStatus.active },
+      where: { user, status: SubscriptionStatus.active },
     });
   }
 
@@ -159,11 +186,11 @@ export class SubscriptionService {
       where: { stripeSubscriptionId: stripeSubscription.id },
     });
 
-    if (subscription) {
-      subscription.status = SubscriptionStatus[stripeSubscription.status];
-      (subscription.currentPeriodStart = new Date(stripeSubscription.current_period_start * 1000)),
-        (subscription.currentPeriodEnd = new Date(stripeSubscription.current_period_end * 1000));
-      await this.subscriptionRepository.save(subscription);
-    }
+    // if (subscription) {
+    //   subscription.status = SubscriptionStatus[stripeSubscription.status];
+    //   ((subscription.currentPeriodStart = new Date(stripeSubscription.current_period_start * 1000)),
+    //     (subscription.currentPeriodEnd = new Date(stripeSubscription.current_period_end * 1000)));
+    //   await this.subscriptionRepository.save(subscription);
+    // }
   }
 }
