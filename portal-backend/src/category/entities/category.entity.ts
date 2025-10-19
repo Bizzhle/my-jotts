@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
+import { Expose } from 'class-transformer';
+import { User } from 'src/users/entities/User.entity';
 import {
   Column,
   Entity,
@@ -10,17 +11,12 @@ import {
   Unique,
 } from 'typeorm';
 import { Activity } from '../../activity/entities/activity.entity';
-import { UserAccount } from '../../users/entities/user-account.entity';
 
 @Entity({ name: 'category' })
 @Unique(['category_name'])
 export class Category {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: 'integer' })
-  @Exclude()
-  user_id: number;
 
   @Column({ type: 'varchar', nullable: false })
   @Expose({ name: 'categoryName' })
@@ -37,9 +33,9 @@ export class Category {
   @Column({ type: 'date', nullable: true })
   updatedAt: Date;
 
-  @ManyToOne(() => UserAccount, (user) => user.categories)
-  @JoinColumn({ name: 'user_id' })
-  userAccount: UserAccount;
+  @ManyToOne(() => User, (user) => user.categories)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @OneToMany(() => Activity, (activity) => activity.category)
   activities: Activity[];

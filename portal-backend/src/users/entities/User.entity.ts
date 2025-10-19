@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Activity } from 'src/activity/entities/activity.entity';
+import { Category } from 'src/category/entities/category.entity';
+import { ImageFile } from 'src/image/entities/image-file.entity';
+import { Invoice } from 'src/subscription/entities/invoice.entity';
+import { Subscription } from 'src/subscription/entities/subscription.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('user')
 export class User {
@@ -22,4 +27,19 @@ export class User {
 
   @Column('date', { name: 'updatedAt', nullable: false })
   updatedAt: Date;
+
+  @OneToMany(() => Category, (category) => category.user)
+  categories: Category[];
+
+  @OneToMany(() => Activity, (activity) => activity.user)
+  activities: Activity[];
+
+  @OneToMany(() => ImageFile, (imageFile) => imageFile.user)
+  imageFiles: ImageFile[];
+
+  @OneToMany(() => Subscription, (subscription) => subscription.user)
+  subscriptions: Subscription[];
+
+  @OneToMany(() => Invoice, (invoice) => invoice.user)
+  invoices: Invoice[];
 }
