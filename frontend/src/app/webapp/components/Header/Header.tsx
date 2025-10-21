@@ -21,7 +21,7 @@ import {
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
-import { useAuth } from "../../utils/contexts/hooks/useAuth";
+import { useBetterAuth } from "../../utils/contexts/hooks/useBetterAuth";
 import SearchBar from "../SearchBar";
 
 interface HeaderProps {
@@ -43,7 +43,7 @@ export default function Header({
   openSearchBar,
   handleSearchBar,
 }: HeaderProps) {
-  const { logoutUser } = useAuth();
+  const { logoutUser } = useBetterAuth();
   const { categories, searchQuery, findActivity, reloadActivity } =
     useActivities();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
