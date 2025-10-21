@@ -15,6 +15,15 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
 });
+const FRONTEND_URL = process.env.FRONTEND_URL;
+const BACKEND_URL = process.env.DOMAIN;
+const BETTER_AUTH_URL = process.env.BETTER_AUTH_URL;
+
+const trustedOrigins = [FRONTEND_URL, BACKEND_URL, BETTER_AUTH_URL].filter(
+  (url): url is string => !!url && /^https?:\/\//.test(url),
+);
+
+console.log('Trusted Origins:', trustedOrigins);
 
 async function sendEmail(email: string, subject: string, html: string) {
   const mailOptions = {
@@ -48,7 +57,7 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true, // Send verification email on signup
     autoSignInAfterVerification: true, // Optional: auto sign-in after verification
-    sendVerificationEmail: async ({ user, url, token }) => {
+    sendVerificationEmail: async ({ user, url, token }, request) => {
       const frontendUrl = process.env.FRONTEND_URL;
       const callbackURL = `${frontendUrl}/verify-email?token=${token}`;
 
@@ -60,8 +69,9 @@ export const auth = betterAuth({
       await sendEmail(user.email, 'Verify your email', html);
     },
   },
-  trustedOrigins: ['http://localhost:4000'],
-  basePath: 'api/vl',
+  trustedOrigins,
+  basePath: '/api/auth',
+  exposeRoutes: false,
 });
 
 export const initializeAuth = async () => {
