@@ -10,7 +10,6 @@ import {
   Put,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiBody,
   ApiInternalServerErrorResponse,
   ApiOkResponse,
@@ -29,7 +28,6 @@ export class PaymentPlanController {
 
   @Get()
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   @ApiOperation({
     description: 'Gets all active payment plans',
   })
@@ -41,14 +39,12 @@ export class PaymentPlanController {
 
   @Get(':id')
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   async getPlan(@Param('id') id: number) {
     return this.paymentPlanService.getPlanById(id);
   }
 
   @Post()
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   @ApiOperation({
     description: 'Create an active payment plan',
   })
@@ -62,7 +58,6 @@ export class PaymentPlanController {
 
   @Put(':id')
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   @ApiOperation({
     description: 'Update an active payment plan.',
   })
@@ -76,7 +71,6 @@ export class PaymentPlanController {
 
   @Delete(':id')
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   async deactivatePlan(@Param('id') id: number) {
     return this.paymentPlanService.deactivatePlan(id);
   }

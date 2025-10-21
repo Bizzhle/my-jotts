@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -9,7 +8,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
+import { GetCurrentUserEmail } from '../../app/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
@@ -21,14 +20,12 @@ export class CategoryController {
 
   @IsAuthorizedUser()
   @Get('categories')
-  @ApiBearerAuth()
-  async getAllCategories(@GetCurrentUserFromJwt() emailAddress: string) {
-    return this.categoryService.getAllUserCategories(emailAddress);
+  async getAllCategories(@GetCurrentUserEmail() emailAddress: string) {
+    return await this.categoryService.getAllUserCategories(emailAddress);
   }
 
   @IsAuthorizedUser()
   @Get(':categoryId')
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get a category by ID',
     description: 'Fetches a category by its ID for the authorized user',
@@ -39,14 +36,13 @@ export class CategoryController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getCategoryById(
     @Param('categoryId', ParseIntPipe) categoryId: number,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
   ) {
     return this.categoryService.getCategoryById(categoryId, emailAddress);
   }
 
   @IsAuthorizedUser()
   @Post()
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Creates a category',
     description: 'An category is created by a user',
@@ -57,7 +53,7 @@ export class CategoryController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   @ApiServiceUnavailableResponse()
   async createCategory(
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
     @Body() dto: CreateCategoryDto,
   ) {
     return await this.categoryService.createCategory(dto, emailAddress);
@@ -65,18 +61,16 @@ export class CategoryController {
 
   @IsAuthorizedUser()
   @Patch(':id/update')
-  @ApiBearerAuth()
   async updateCategory(
     @Param('id') id: number,
     @Body() dto: UpdateCategoryDto,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
   ) {
     return this.categoryService.updateCategory(id, dto, emailAddress);
   }
 
   @IsAuthorizedUser()
   @Delete(':id/delete')
-  @ApiBearerAuth()
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })

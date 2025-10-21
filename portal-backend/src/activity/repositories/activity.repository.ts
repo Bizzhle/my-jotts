@@ -24,7 +24,7 @@ export class ActivityRepository extends Repository<Activity> {
       .skip(startOffset)
       .take(activityLimit)
       .orderBy('activity.date_created', 'DESC')
-      .where('activity.user_id = :userId', { userId });
+      .where('activity.userId = :userId', { userId });
 
     if (search) {
       query.where('activity.activity_title ILIKE :name', { name: `%${search}%` });
@@ -34,7 +34,7 @@ export class ActivityRepository extends Repository<Activity> {
   }
 
   async getActivityCount(filter?: string, userId?: string): Promise<number> {
-    const query = this.createQueryBuilder('activity').where('activity.user_id = :userId', {
+    const query = this.createQueryBuilder('activity').where('activity.userId = :userId', {
       userId,
     });
 
@@ -49,7 +49,7 @@ export class ActivityRepository extends Repository<Activity> {
     return this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])
-      .where('activity.user_id = :userId', { userId })
+      .where('activity.userId = :userId', { userId })
       .andWhere('activity.id = :activityId', { activityId })
       .getOne();
   }
@@ -63,7 +63,7 @@ export class ActivityRepository extends Repository<Activity> {
     return this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])
-      .where('activity.user_id = :userId', { userId })
+      .where('activity.userId = :userId', { userId })
       .andWhere('category.id = :categoryId', { categoryId })
       .skip(startOffset)
       .take(activityLimit)
@@ -74,7 +74,7 @@ export class ActivityRepository extends Repository<Activity> {
     return this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
       .select(['activity', 'category.category_name'])
-      .where('activity.user_id = :userId', { userId })
+      .where('activity.userId = :userId', { userId })
       .andWhere('LOWER(category.name) = LOWER(:categoryName)', { categoryName })
       .getMany();
   }

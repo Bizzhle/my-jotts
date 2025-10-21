@@ -34,12 +34,10 @@ export class UserAccountRepository extends Repository<User> {
   //   await this.update(userId, { last_logged_in: new Date() });
   // }
 
-  public async findUserByEmail(email_address: string): Promise<User | null> {
-    return await this.createQueryBuilder('user_account')
-      .where('LOWER(user_account.email_address) = LOWER(:email_address)', {
-        email_address: email_address,
-      })
-      .getOne();
+  public async findUserByEmail(email: string): Promise<User | null> {
+    return await this.findOneBy({
+      email,
+    });
   }
 
   public async findUserById(userId: number): Promise<User | null> {

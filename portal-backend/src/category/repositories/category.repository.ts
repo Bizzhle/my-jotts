@@ -53,13 +53,13 @@ export class CategoryRepository extends Repository<Category> {
 
   public async findCategoryByName(
     categoryName: string,
-    user_id: string,
+    userId: string,
   ): Promise<Category | undefined> {
     return this.createQueryBuilder('category')
       .where('LOWER(category.category_name) = LOWER(:categoryName)', {
         categoryName,
       })
-      .andWhere('category.user_id = :user_id', { user_id })
+      .andWhere('category.userId = :userId', { userId })
       .getOne();
   }
 
