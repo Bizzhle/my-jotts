@@ -2,13 +2,12 @@ import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
-import { registrationData } from "../api-service/dtos/registration.dto";
-import { SessionState } from "../libs/SessionState";
-import { useAuth } from "../webapp/utils/contexts/hooks/useAuth";
+import { isApiError } from "../api-service/ApiRequestManager";
+import { authClient } from "../libs/betterAuthClient";
+import { useBetterAuth } from "../webapp/utils/contexts/hooks/useBetterAuth";
 
 type LoginData = {
-  emailAddress: string;
+  email: string;
   password: string;
 };
 
@@ -16,7 +15,7 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState<string | undefined>("");
-  const { getUserInfo, startSession } = useAuth();
+  const { startSession, storeLoginError, loginError } = useBetterAuth();
   const {
     handleSubmit,
     register,
@@ -25,19 +24,21 @@ export default function LoginForm() {
 
   const from = location.state?.from?.pathname || "/";
 
-  const onSubmit = async (data: registrationData) => {
+  const onSubmit = async (params: LoginData) => {
     try {
-      const response = await ApiHandler.login(data);
-      SessionState.accessToken = response?.accessToken;
-      SessionState.refreshToken = response?.refreshToken;
-
-      await startSession({
-        emailAddress: response?.emailAddress,
-        accessToken: response?.accessToken,
-        refreshToken: response?.refreshToken,
+      const { data, error } = await authClient.signIn.email({
+        email: params.email,
+        password: params.password,
       });
 
-      await getUserInfo();
+      if (error?.message) {
+        await storeLoginError(error.message);
+      }
+
+      if (data) {
+        await startSession(data.user);
+      }
+
       navigate(from, { replace: true });
     } catch (err) {
       const errorMessage = isApiError(err);
@@ -62,7 +63,7 @@ export default function LoginForm() {
           fullWidth
           label="email address"
           type="email"
-          {...register("emailAddress")}
+          {...register("email")}
           color="secondary"
         />
         <TextField
@@ -76,11 +77,12 @@ export default function LoginForm() {
           helperText={errors.password?.message}
           color="secondary"
         />
-        {error && (
-          <Typography color="error" variant="body2">
-            Username or password is wrong, please try again
-          </Typography>
-        )}
+        {error ||
+          (loginError && (
+            <Typography color="error" variant="body2">
+              {loginError}
+            </Typography>
+          ))}
 
         <Button
           variant="contained"

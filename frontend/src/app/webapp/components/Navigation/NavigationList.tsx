@@ -9,7 +9,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../utils/contexts/hooks/useAuth";
+import { useBetterAuth } from "../../utils/contexts/hooks/useBetterAuth";
 import { NavigationData } from "./NavigationData";
 
 interface NavigationListProps {
@@ -17,7 +17,7 @@ interface NavigationListProps {
 }
 
 export default function NavigationList({ toggle }: NavigationListProps) {
-  const { logoutUser } = useAuth();
+  const { logoutUser } = useBetterAuth();
   return (
     <List sx={{ width: 230 }}>
       {NavigationData.map((item, index) => (

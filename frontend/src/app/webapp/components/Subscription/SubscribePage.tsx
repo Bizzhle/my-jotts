@@ -13,13 +13,13 @@ import { useContext, useEffect } from "react";
 import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { formatDateString } from "../../../libs/utils/Date";
 import { LayoutContext } from "../../layout/LayoutContext";
-import { useAuth } from "../../utils/contexts/hooks/useAuth";
+import { useBetterAuth } from "../../utils/contexts/hooks/useBetterAuth";
 import { useSubscription } from "../../utils/contexts/hooks/useSubscription";
 import ProfileCards from "../AccountInfo/utils/ProfileCards";
 import { CancelSubscription } from "./CancelSubscription";
 
 export default function SubscribePage() {
-  const { authenticatedUser } = useAuth();
+  const { authenticatedUser } = useBetterAuth();
   const { hideSearchBar } = useContext(LayoutContext);
   const { subscription, paymentPlans } = useSubscription();
 
@@ -39,7 +39,7 @@ export default function SubscribePage() {
       const basePaymentLinkUrl = link;
       const successUrl = "http://localhost/5173/";
       const paymentLinkWithEmail = `${basePaymentLinkUrl}?prefilled_email=${encodeURIComponent(
-        authenticatedUser?.emailAddress || ""
+        authenticatedUser?.email || ""
       )}&success_url=${encodeURIComponent(successUrl)}`;
       window.location.href = paymentLinkWithEmail;
     } catch (error) {
