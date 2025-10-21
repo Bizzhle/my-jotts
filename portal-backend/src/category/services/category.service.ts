@@ -86,7 +86,7 @@ export class CategoryService {
     if (!user) {
       throw new BadRequestException('User not logged in');
     }
-    return this.categoryRepository.findAllCategoriesForUser(user.id);
+    return await this.categoryRepository.findAllCategoriesForUser(user.id);
   }
 
   async getCategoryById(id: number, emailAddress: string): Promise<Category> {

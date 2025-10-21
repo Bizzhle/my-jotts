@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -24,7 +25,7 @@ export class AuthService {
     try {
       const existing = await this.userRepository.findOne({ where: { email } });
       if (existing) {
-        throw new BadRequestException('User already exists');
+        throw new ConflictException('User already exists');
       }
 
       const betterAuth = await auth;
@@ -36,7 +37,11 @@ export class AuthService {
           name,
         },
       });
+      return { message: 'User registration successful' };
     } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
       throw new BadRequestException('Failed to create user');
     }
   }
@@ -54,6 +59,20 @@ export class AuthService {
         //   headers: await headers(),
       });
 
+      return {
+        email: result.user.email,
+        token: result.token,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('User does not exist');
+    }
+  }
+
+  async getUserData(email: string) {
+    try {
+      const result = await this.userRepository.findOneBy({
+        email,
+      });
       return result;
     } catch (error) {
       throw new UnauthorizedException('User does not exist');
@@ -118,6 +137,26 @@ export class AuthService {
       return { message: 'Password reset successfully' };
     } catch (error) {
       throw new BadRequestException(error.message || 'Password reset failed');
+    }
+  }
+
+  async verifyEmail(dto: ResetPasswordDto) {
+    const { token } = dto;
+    try {
+      // 🔹 Complete reset using BetterAuth API
+      const result = await auth.api.verifyEmail({
+        query: {
+          token,
+        },
+      });
+
+      if (!result) {
+        throw new BadRequestException('Invalid or expired token');
+      }
+
+      return { message: 'User verified' };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'User verification failed failed');
     }
   }
 }

@@ -6,7 +6,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
+import { GetCurrentUserEmail } from '../../app/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { User } from '../entities/User.entity';
 import { UserDetailService } from '../services/user-service/user-details.service';
@@ -23,7 +23,7 @@ export class UserDetailController {
   @ApiBadRequestResponse({ description: 'invalid credential' })
   @ApiUnauthorizedResponse({ description: 'invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'server error' })
-  async getUser(@GetCurrentUserFromJwt() emailAddress: string): Promise<User> {
+  async getUser(@GetCurrentUserEmail() emailAddress: string): Promise<User> {
     return await this.userDetailService.getUserProfileByEmail(emailAddress);
   }
 }

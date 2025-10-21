@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
-  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -21,7 +20,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
+import { GetCurrentUserEmail } from '../../app/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { PaginationQueryDto } from '../dto/paginationQuery.dto';
@@ -37,7 +36,6 @@ export class ActivityController {
 
   @IsAuthorizedUser()
   @Post()
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Creates an activity',
     description: 'An activity is created by a user',
@@ -48,7 +46,7 @@ export class ActivityController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   @UseInterceptors(FilesInterceptor('files', 3))
   async createActivity(
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
     @Body() dto: CreateActivityDto,
     @UploadedFiles(new OptionalFileValidationPipe())
     file?: Express.Multer.File[],
@@ -69,7 +67,7 @@ export class ActivityController {
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getAllUserActivities(
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
     @Query('search') search?: string,
     @Query() paginationDto?: PaginationQueryDto,
   ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
@@ -87,7 +85,7 @@ export class ActivityController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getAllUserActivitiesByCategory(
     @Param('categoryId', ParseIntPipe) categoryId: number,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
     @Query() paginationDto?: PaginationQueryDto,
   ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
     return this.activityService.getUserActivitiesByCategory(
@@ -108,7 +106,7 @@ export class ActivityController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getAllUserActivitiesByCategoryName(
     @Param('categoryName') categoryName: string,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
   ) {
     return this.activityService.getUserActivitiesByCategoryName(categoryName, emailAddress);
   }
@@ -127,7 +125,7 @@ export class ActivityController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getOneUserActivity(
     @Param('id', ParseIntPipe) id: number,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
   ): Promise<ActivityResponseDto> {
     return this.activityService.getUserActivity(id, emailAddress);
   }
@@ -146,7 +144,7 @@ export class ActivityController {
   async updateUserActivity(
     @Param('id') activityId: number,
     @Body() dto: UpdateActivityDto,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
     @UploadedFiles(new OptionalFileValidationPipe())
     files?: Express.Multer.File[],
   ) {
@@ -165,7 +163,7 @@ export class ActivityController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async removeUserActivity(
     @Param('id') activityId: number,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
   ) {
     return this.activityService.deleteActivity(activityId, emailAddress);
   }

@@ -11,7 +11,6 @@ import {
   Res,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -20,7 +19,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
+import { GetCurrentUserEmail } from '../../app/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
 import { SubscriptionService } from '../services/subscription.service';
@@ -32,7 +31,6 @@ export class SubscriptionController {
 
   @Get()
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   @ApiOperation({
     description: 'Returns user subscription details',
   })
@@ -40,27 +38,25 @@ export class SubscriptionController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
-  async getSubscription(@GetCurrentUserFromJwt() username: string) {
+  async getSubscription(@GetCurrentUserEmail() username: string) {
     return await this.subscriptionService.getUserSubscriptionInformation(username);
   }
 
   @Post()
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   @ApiOperation({ description: 'Create a subscription for user' })
   @HttpCode(HttpStatus.CREATED)
   @ApiOkResponse({ description: 'Subscription is created' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async createSubscription(
     @Body() dto: CreateSubscriptionDto,
-    @GetCurrentUserFromJwt() username: string,
+    @GetCurrentUserEmail() username: string,
   ) {
     return this.subscriptionService.createSubscription(dto, username);
   }
 
   @Delete(':id')
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   async cancelSubscription(@Param('id') id: string) {
     return this.subscriptionService.cancelSubscription(id);
   }
