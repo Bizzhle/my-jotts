@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
@@ -13,7 +13,13 @@ async function bootstrap() {
     logger: getLogLevels(process.env.NODE_ENV === 'production'),
   });
 
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', {
+    exclude: [
+      // Exclude the entire auth controller
+      { path: 'api/auth', method: RequestMethod.ALL },
+      { path: 'api/auth/(.*)', method: RequestMethod.ALL },
+    ],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       stopAtFirstError: true,
@@ -27,7 +33,7 @@ async function bootstrap() {
     origin:
       process.env.NODE_ENV === 'production'
         ? ['https://www.myjotts.com', 'https://myjotts.com']
-        : ['http://localhost:5173', 'http://myjotts.local', 'http://localhost:4000'],
+        : ['http://localhost:5173', 'http://myjotts.local'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
