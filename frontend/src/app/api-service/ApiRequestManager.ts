@@ -1,9 +1,8 @@
 import axios, { AxiosError } from "axios";
+import { User } from "better-auth";
 import { ForgotPasswordData } from "../authentication/ForgotPassword";
-import { ResetPasswordData } from "../authentication/ResetPassword";
 import { SessionState } from "../libs/SessionState";
 import { ActivityData } from "../webapp/components/Activity/ActivityDialogForm";
-import { UserInfo } from "../webapp/utils/contexts/AuthContext";
 import { ApiMethods } from "./ApiMethods";
 import {
   ActivitiesResponseDto,
@@ -15,7 +14,12 @@ import { ForgotPasswordResponseDto } from "./dtos/forgotpassword.dto";
 import { LogoutUserDto } from "./dtos/logout-user.dto";
 import { PageDto } from "./dtos/pageInfo.dto";
 import { registrationData } from "./dtos/registration.dto";
-import { LoginResponseDto, RefreshResponseDto } from "./dtos/session-info.dto";
+import { ResetPasswordDataRequestDto } from "./dtos/reset-password.dto";
+import {
+  LoginResponseDto,
+  RefreshResponseDto,
+  SignInResponseDto,
+} from "./dtos/session-info.dto";
 import { PaymentPlanDto } from "./dtos/subscription/payment-plan.dto";
 import {
   SubscriptionDto,
@@ -30,9 +34,7 @@ interface ApiError {
 }
 
 export class ApiHandler {
-  static login = (
-    params: registrationData
-  ): Promise<LoginResponseDto | undefined> => {
+  static login = (params: registrationData): Promise<SignInResponseDto> => {
     const url = ENDPOINTS.LOGIN();
     return ApiMethods.post(url, params);
   };
@@ -40,9 +42,9 @@ export class ApiHandler {
     const url = ENDPOINTS.REGISTER_USER();
     return ApiMethods.post(url, params);
   };
-  static logout = (params: LogoutUserDto): Promise<void> => {
+  static logout = (): Promise<void> => {
     const url = ENDPOINTS.LOGOUT();
-    return ApiMethods.post<void, LogoutUserDto>(url, params);
+    return ApiMethods.post<void, LogoutUserDto>(url);
   };
   static forgotPassword = (
     params: ForgotPasswordData
@@ -53,9 +55,11 @@ export class ApiHandler {
       params
     );
   };
-  static resetPassword = (params: ResetPasswordData): Promise<void> => {
+  static resetPassword = (
+    params: ResetPasswordDataRequestDto
+  ): Promise<void> => {
     const url = ENDPOINTS.RESET_PASSWORD();
-    return ApiMethods.put<void, ResetPasswordData>(url, params);
+    return ApiMethods.post<void, ResetPasswordDataRequestDto>(url, params);
   };
   static changePassword = (params: ChangePasswordDto): Promise<void> => {
     const url = ENDPOINTS.CHANGE_PASSWORD();
@@ -68,9 +72,9 @@ export class ApiHandler {
     const url = ENDPOINTS.VERIFY_REGISTRATION();
     return ApiMethods.post(url, { emailAddress, verificationToken });
   };
-  static getUserData = (): Promise<UserInfo> => {
+  static getUserData = (): Promise<User> => {
     const url = ENDPOINTS.GET_USER_DATA();
-    return ApiMethods.get<UserInfo>(url);
+    return ApiMethods.get(url);
   };
   static refreshToken = (): Promise<RefreshResponseDto> => {
     const refreshToken = SessionState.refreshToken;

@@ -1,15 +1,15 @@
 export const ENDPOINTS = {
   // Auth
-  LOGIN: (): string => "/auth/login",
-  LOGOUT: (): string => "/auth/logout",
+  LOGIN: (): string => "/auth/sign-in",
+  LOGOUT: (): string => "/auth/sign-out",
   REGISTER_USER: (): string => {
-    return `/auth/register`;
+    return `/auth/sign-up`;
   },
   FORGOT_PASSWORD: (): string => "/auth/forgot-password",
   RESET_PASSWORD: (): string => "/auth/reset-password",
   CHANGE_PASSWORD: (): string => "/auth/change-password",
   VERIFY_REGISTRATION: (): string => `/auth/verify-registration`,
-  GET_USER_DATA: (): string => `/users/me`,
+  GET_USER_DATA: (): string => `/auth/me`,
   REFRESH_TOKEN: (): string => `/auth/refresh`,
   CREATE_ACTIVITY: (): string => `/activities`,
   GET_ACTIVITY: (id: string): string => `/activities/${id}`,
