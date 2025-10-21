@@ -4,6 +4,10 @@ export interface LoginResponseDto {
   refreshToken: string;
 }
 
+export interface SignInResponseDto {
+  email: string;
+  token: string;
+}
 export interface RefreshResponseDto {
   accessToken: string;
   refreshToken: string;
