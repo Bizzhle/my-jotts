@@ -54,6 +54,7 @@ export function BetterAuthProvider(props: AuthUserProviderProps) {
   async function logoutUser() {
     await authClient.signOut();
     setUser(null);
+    window.location.href = "/";
   }
 
   async function startSession(data: User | null) {
@@ -66,6 +67,7 @@ export function BetterAuthProvider(props: AuthUserProviderProps) {
     try {
       const { data } = await authClient.getSession();
       setSession(data?.session ?? null);
+      setUser(data?.user ?? null);
     } catch {
       setSession(null);
     } finally {
