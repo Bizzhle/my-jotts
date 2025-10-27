@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -20,6 +21,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Permissions } from 'src/auth/decorators/permission.decorator';
 import { GetCurrentUserEmail } from '../../app/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateActivityDto } from '../dto/create-activity.dto';
@@ -35,6 +37,7 @@ export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
   @IsAuthorizedUser()
+  @Permissions({ activity: ['create'] })
   @Post()
   @ApiOperation({
     summary: 'Creates an activity',
@@ -47,14 +50,15 @@ export class ActivityController {
   @UseInterceptors(FilesInterceptor('files', 3))
   async createActivity(
     @GetCurrentUserEmail() emailAddress: string,
+    @Req() req: Request,
     @Body() dto: CreateActivityDto,
     @UploadedFiles(new OptionalFileValidationPipe())
     file?: Express.Multer.File[],
   ) {
     if (!file) {
-      return await this.activityService.createActivity(emailAddress, dto);
+      return await this.activityService.createActivity(emailAddress, dto, req.headers);
     }
-    return await this.activityService.createActivity(emailAddress, dto, file);
+    return await this.activityService.createActivity(emailAddress, dto, req.headers, file);
   }
 
   @IsAuthorizedUser()
@@ -68,6 +72,7 @@ export class ActivityController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getAllUserActivities(
     @GetCurrentUserEmail() emailAddress: string,
+    @Req() req: Request,
     @Query('search') search?: string,
     @Query() paginationDto?: PaginationQueryDto,
   ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
@@ -146,9 +151,11 @@ export class ActivityController {
     @Body() dto: UpdateActivityDto,
     @GetCurrentUserEmail() emailAddress: string,
     @UploadedFiles(new OptionalFileValidationPipe())
+    @Req()
+    req: Request,
     files?: Express.Multer.File[],
   ) {
-    return this.activityService.updateActivity(activityId, dto, emailAddress, files);
+    return this.activityService.updateActivity(activityId, dto, emailAddress, req.headers, files);
   }
 
   @IsAuthorizedUser()

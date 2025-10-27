@@ -10,7 +10,6 @@ import {
 import { EntityManager } from 'typeorm';
 import { ActivityRepository } from '../../activity/repositories/activity.repository';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
-import { SubscriptionStatus } from '../../subscription/enum/subscrition.enum';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
 import { UsersService } from '../../users/services/user-service/users.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
@@ -31,6 +30,7 @@ export class CategoryService {
   public async createCategory(
     dto: CreateCategoryDto,
     emailAddress: string,
+    headers: HeadersInit,
     entityManager?: EntityManager,
   ): Promise<Category> {
     try {
@@ -45,13 +45,10 @@ export class CategoryService {
         where: { user: { id: user.id } },
       });
 
-      const subscription = await this.subscriptionService.getUserSubscriptionInformation(
-        user.email,
-      );
-      const isSubscriptionActive =
-        subscription && subscription.status === SubscriptionStatus.active;
+      // stripe deactivated for now, replaced later
+      // const isSubscriptionActive = await this.subscriptionService.getActiveSubscription(headers);
 
-      if (!isSubscriptionActive && categoryCount >= 5) {
+      if (categoryCount >= 10) {
         throw new ForbiddenException('Maximum categories');
       }
 

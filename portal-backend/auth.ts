@@ -1,20 +1,23 @@
+import { stripe } from '@better-auth/stripe';
 import { typeormAdapter } from '@hedystia/better-auth-typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { betterAuth } from 'better-auth';
-import * as fs from 'fs';
-import * as handlebars from 'handlebars';
-import * as nodemailer from 'nodemailer';
-import * as path from 'path';
+import { admin as adminPlugin } from 'better-auth/plugins/admin';
+import { AppLoggerService } from 'src/logger/services/app-logger.service';
+import { BetterAuthLoggerPlugin } from 'src/logger/services/log-plugin';
+import { loadTemplate } from 'src/utils/services/load-template-config';
+import { sendEmail } from 'src/utils/services/transporter';
+import Stripe from 'stripe';
 import { AppDataSource } from './sql/data-source';
+import { ac, roles } from './src/permissions/permissions';
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: +process.env.SMTP_PORT,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
+const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-09-30.clover', // Latest API version as of Stripe SDK v19
 });
+
+// const logger = new AppLoggerService()
+const logger = new AppLoggerService('BetterAuth', {} as any, new ConfigService());
+
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const BACKEND_URL = process.env.DOMAIN;
 const BETTER_AUTH_URL = process.env.BETTER_AUTH_URL;
@@ -22,19 +25,6 @@ const BETTER_AUTH_URL = process.env.BETTER_AUTH_URL;
 const trustedOrigins = [FRONTEND_URL, BACKEND_URL, BETTER_AUTH_URL].filter(
   (url): url is string => !!url && /^https?:\/\//.test(url),
 );
-
-console.log('Trusted Origins:', trustedOrigins);
-
-async function sendEmail(email: string, subject: string, html: string) {
-  const mailOptions = {
-    from: 'MyJotts',
-    to: email,
-    subject,
-    html,
-  };
-
-  return transporter.sendMail(mailOptions);
-}
 
 AppDataSource.initialize();
 export const auth = betterAuth({
@@ -44,6 +34,16 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    user: {
+      additionalFields: {
+        role: {
+          type: 'string',
+          input: false,
+          required: true,
+          defaultValue: 'user',
+        },
+      },
+    },
     sendResetPassword: async ({ user, url, token }) => {
       const frontendUrl = process.env.FRONTEND_URL;
       const callbackURL = `${frontendUrl}/reset-password?token=${token}`;
@@ -60,43 +60,137 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url, token }, request) => {
       const frontendUrl = process.env.FRONTEND_URL;
       const callbackURL = `${frontendUrl}/verify-email?token=${token}`;
-
       const html = await loadTemplate('email-verification.template', {
         emailAddress: user.email,
         url: callbackURL,
       });
-
       await sendEmail(user.email, 'Verify your email', html);
     },
   },
   trustedOrigins,
   basePath: '/api/auth',
   exposeRoutes: false,
+  plugins: [
+    BetterAuthLoggerPlugin(),
+    stripe({
+      stripeClient,
+      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
+      createCustomerOnSignUp: true,
+      // onCustomerCreate: async ({ customer, stripeCustomer, user }, request) => {
+      //   // Do something with the newly created customer
+      //   console.log(`Customer ${customer.id} created for user ${user.id}`);
+      // },
+      getCustomerCreateParams: async ({ user }) => ({
+        email: user.email,
+        name: user.name,
+        metadata: {
+          userId: user.id,
+        },
+      }),
+      subscription: {
+        enabled: true,
+        plans: [
+          {
+            name: 'basic',
+            priceId: 'price_H5UU1',
+            limits: {
+              activities: 10,
+              categories: 10,
+            },
+          },
+          {
+            name: 'PRO',
+            priceId: 'price_H5UU2',
+            freeTrial: {
+              days: 14,
+            },
+          },
+        ], // Define subscription plans here if needed
+        requireEmailVerification: true,
+        onSubscriptionCreated: async ({ subscription, user }) => {
+          const html = await loadTemplate('subscription-created.template.html', {
+            emailAddress: user.email,
+            url: '',
+          });
+          // Update user role based on plan
+          await auth.api.setRole({
+            body: {
+              userId: user.id,
+              role: subscription.plan, // "basic", "premium", or "enterprise"
+            },
+            headers: {},
+          });
+          await sendEmail(user.email, 'Subscription Created', html);
+        },
+
+        onSubscriptionUpdated: async ({ subscription, user }) => {
+          console.log(`Subscription updated for ${user.email}: ${subscription.plan}`);
+
+          // Update user role when plan changes
+          await auth.api.setRole({
+            body: {
+              userId: user.id,
+              role: subscription.plan,
+            },
+            headers: {},
+          });
+        },
+
+        onSubscriptionCanceled: async ({ subscription, user }) => {
+          const html = await loadTemplate('subscription-cancelled.template.html', {
+            emailAddress: user.email,
+            url: '',
+          });
+
+          // Downgrade to free tier
+          await auth.api.setRole({
+            body: {
+              userId: user.id,
+              role: 'user',
+            },
+            headers: {},
+          });
+          await sendEmail(user.email, 'Subscription Cancelled', html);
+        },
+      },
+      onEvent: async (event) => {
+        console.log(`Stripe event: ${event.type}`);
+
+        // Handle custom events if needed
+        if (event.type === 'invoice.payment_failed') {
+          // Send payment failed notification
+          console.log('Payment failed:', event.data.object);
+        }
+      },
+    }),
+
+    adminPlugin({
+      ac,
+      roles: { admin: roles.admin, user: roles.user, pro: roles.pro },
+      defaultRole: 'user',
+      adminRoles: ['admin'],
+      adminUserIds: [
+        '73656e5e-eb89-4610-ad58-48cd57a50023',
+        'b520deca-57e7-47be-9c58-0ba2a7d224f1',
+      ],
+    }),
+  ],
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          if (process.env.ADMIN_EMAILS?.split(',').includes(user.email)) {
+            return { data: { ...user, role: 'admin' } };
+          }
+          return { data: user };
+        },
+      },
+    },
+  },
 });
 
 export const initializeAuth = async () => {
   if (!AppDataSource.isInitialized) {
     await AppDataSource.initialize();
   }
-};
-
-const loadTemplate = async (
-  templateName: string,
-  data: { emailAddress: string; url: string; token?: string },
-) => {
-  const baseDir =
-    process.env.NODE_ENV === 'production'
-      ? path.resolve(process.cwd(), 'dist', 'src', 'html-templates')
-      : path.resolve(process.cwd(), 'src', 'html-templates');
-
-  const templatePath = path.resolve(baseDir, `${templateName}.html`);
-
-  if (!fs.existsSync(templatePath)) {
-    throw new NotFoundException(`Template not found: ${templatePath}`);
-  }
-  const template = fs.readFileSync(templatePath, 'utf-8');
-
-  const compiledTemplate = handlebars.compile(template);
-
-  return compiledTemplate(data);
 };
