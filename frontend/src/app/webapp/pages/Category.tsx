@@ -57,7 +57,15 @@ export default function Category() {
 
   return (
     <>
-      <Box>
+      <Box
+        component="div"
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="h6" sx={{ mb: 3 }}>
           Categories
         </Typography>

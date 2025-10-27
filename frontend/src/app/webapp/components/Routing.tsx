@@ -4,6 +4,7 @@ import { ForgotPassword } from "../../authentication/ForgotPassword";
 import Login from "../../authentication/Login";
 import { ResetPassword } from "../../authentication/ResetPassword";
 import { ProtectedRoute } from "../../libs/auth/ProtectedRoute";
+import { RequiresAdminPermission } from "../../libs/auth/RequiresAdminPermission";
 import Register from "../../registration/Register";
 import Layout from "../layout/Layout";
 import { LayoutProvider } from "../layout/LayoutContext";
@@ -17,6 +18,7 @@ import AccountPage from "./AccountInfo/AccountPage";
 import { ChangePassword } from "./AccountInfo/ChangePassword";
 import ActivityDetail from "./Activity/ActivityDetail";
 import CategoryDetail from "./Category/CategoryDetail";
+import AdminDashboard from "./Dashboard/Admin-Dashboard";
 import WrappedCheckoutForm from "./Subscription/CheckoutForm";
 import SubscribePage from "./Subscription/SubscribePage";
 
@@ -101,6 +103,16 @@ const router = createBrowserRouter([
         Component: () => (
           <ProtectedRoute>
             <ChangePassword />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/dashboard",
+        Component: () => (
+          <ProtectedRoute>
+            <RequiresAdminPermission>
+              <AdminDashboard />
+            </RequiresAdminPermission>
           </ProtectedRoute>
         ),
       },
