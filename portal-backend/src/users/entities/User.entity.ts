@@ -2,7 +2,6 @@ import { Activity } from 'src/activity/entities/activity.entity';
 import { Category } from 'src/category/entities/category.entity';
 import { ImageFile } from 'src/image/entities/image-file.entity';
 import { Invoice } from 'src/subscription/entities/invoice.entity';
-import { Subscription } from 'src/subscription/entities/subscription.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('user')
@@ -28,6 +27,12 @@ export class User {
   @Column('date', { name: 'updatedAt', nullable: false })
   updatedAt: Date;
 
+  @Column('text', { nullable: true })
+  stripeCustomerId: string;
+
+  @Column('text', { name: 'role', nullable: false, default: 'user' })
+  role: string;
+
   @OneToMany(() => Category, (category) => category.user)
   categories: Category[];
 
@@ -36,9 +41,6 @@ export class User {
 
   @OneToMany(() => ImageFile, (imageFile) => imageFile.user)
   imageFiles: ImageFile[];
-
-  @OneToMany(() => Subscription, (subscription) => subscription.user)
-  subscriptions: Subscription[];
 
   @OneToMany(() => Invoice, (invoice) => invoice.user)
   invoices: Invoice[];

@@ -40,6 +40,14 @@ export class UserAccountRepository extends Repository<User> {
     });
   }
 
+  public async findUserRoleById(userId: string): Promise<string | null> {
+    const user = await this.findOne({
+      where: { id: userId },
+      select: ['role'],
+    });
+    return user ? user.role : null;
+  }
+
   public async findUserById(userId: number): Promise<User | null> {
     return await this.createQueryBuilder('user_account').where({ id: userId }).getOne();
   }
