@@ -5,12 +5,12 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { User } from 'src/users/entities/User.entity';
 import { DataSource } from 'typeorm';
 import { WithTransactionService } from '../../app/services/with-transaction.services';
 import { CategoryService } from '../../category/services/category.service';
 import { ImageFileService } from '../../image/services/image-file.service';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
-import { SubscriptionStatus } from '../../subscription/enum/subscrition.enum';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
 import { UploadService } from '../../upload/service/upload.service';
 import { UserAccountRepository } from '../../users/repositories/user-account.repository';
@@ -22,6 +22,7 @@ import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { Activity } from '../entities/activity.entity';
 import { ActivityRepository } from '../repositories/activity.repository';
 
+const UN_SUBSCRIBED_MAX_ACTIVITIES = 10;
 @Injectable()
 export class ActivityService extends WithTransactionService {
   constructor(
@@ -37,7 +38,12 @@ export class ActivityService extends WithTransactionService {
     super();
   }
 
-  async createActivity(emailAddress: string, dto: CreateActivityDto, file?: Express.Multer.File[]) {
+  async createActivity(
+    emailAddress: string,
+    dto: CreateActivityDto,
+    headers: HeadersInit,
+    file?: Express.Multer.File[],
+  ) {
     const transaction = await this.createTransaction(this.datasource);
 
     try {
@@ -47,7 +53,7 @@ export class ActivityService extends WithTransactionService {
         },
       });
 
-      await this.validateActivityCreation(user.id, emailAddress, dto, file);
+      await this.validateActivityCreation(user, dto, file, headers);
 
       let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
 
@@ -57,6 +63,7 @@ export class ActivityService extends WithTransactionService {
           return await this.categoryService.createCategory(
             { categoryName: dto.categoryName },
             user.email,
+            headers,
             entityManager, // Pass the entity manager to handle the transaction
           );
         });
@@ -124,26 +131,12 @@ export class ActivityService extends WithTransactionService {
         throw new BadRequestException('User not logged in');
       }
 
-      const subscription =
-        await this.subscriptionService.getUserSubscriptionInformation(emailAddress);
-      const isSubscriptionActive = subscription && subscription.status === 'active';
-
-      let activities;
-      if (isSubscriptionActive) {
-        activities = await this.activityRepository.getAllUserActivities(
-          user.id,
-          search,
-          startOffset,
-          activityLimit,
-        );
-      } else {
-        activities = await this.activityRepository.getAllUserActivities(
-          user.id,
-          search,
-          startOffset,
-          5,
-        );
-      }
+      const activities = await this.activityRepository.getAllUserActivities(
+        user.id,
+        search,
+        startOffset,
+        activityLimit,
+      );
 
       if (startOffset === 0) {
         activityCount = await this.activityRepository.getActivityCount(search, user.id);
@@ -359,6 +352,7 @@ export class ActivityService extends WithTransactionService {
     activityId: number,
     dto: UpdateActivityDto,
     emailAddress: string,
+    headers: HeadersInit,
     files?: Express.Multer.File[],
   ) {
     try {
@@ -382,6 +376,7 @@ export class ActivityService extends WithTransactionService {
         category = await this.categoryService.createCategory(
           { categoryName: dto.categoryName },
           user.email,
+          headers,
         );
       }
 
@@ -424,21 +419,24 @@ export class ActivityService extends WithTransactionService {
   async deleteActivity(activityId: number, emailAddress: string) {}
 
   private async validateActivityCreation(
-    userId: string,
-    emailAddress: string,
+    user: User,
     dto: CreateActivityDto,
     file?: Express.Multer.File[],
+    headers?: HeadersInit,
   ) {
     // Check subscription status
-    const subscription =
-      await this.subscriptionService.getUserSubscriptionInformation(emailAddress);
-    const isSubscriptionActive = subscription && subscription.status === SubscriptionStatus.active;
+    const isSubscriptionActive = await this.subscriptionService.getActiveSubscription(headers);
+
+    const userRole = await this.userAccountRepository.findUserRoleById(user.id);
 
     // Count user's activities
-    const activityCount = await this.activityRepository.count({ where: { user: { id: userId } } });
+    const activityCount = await this.activityRepository.count({ where: { user: { id: user.id } } });
 
-    // Restrict activity creation if subscription is not active and activity count is 5 or more
-    if (!isSubscriptionActive && activityCount >= 5) {
+    // Restrict activity creation if subscription is not active and activity count is 10 or more
+    if (
+      (userRole === 'user' || !isSubscriptionActive) &&
+      activityCount >= UN_SUBSCRIBED_MAX_ACTIVITIES
+    ) {
       throw new ForbiddenException({
         message: 'Maximum activities',
       });
@@ -455,7 +453,7 @@ export class ActivityService extends WithTransactionService {
     const existingActivity = await this.activityRepository.findOne({
       where: {
         activity_title: dto.activityTitle,
-        user: { id: userId },
+        user: { id: user.id },
       },
     });
 
