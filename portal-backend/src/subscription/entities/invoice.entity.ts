@@ -8,7 +8,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { InvoiceStatus } from '../enum/invoice.enum';
-import { Subscription } from './subscription.entity';
 
 @Entity()
 export class Invoice {
@@ -44,9 +43,6 @@ export class Invoice {
 
   @Column({ nullable: true })
   dueDate: Date;
-
-  @ManyToOne(() => Subscription, (subscription) => subscription.invoices, { eager: true })
-  subscription: Subscription;
 
   @ManyToOne(() => User, (user) => user.invoices)
   user: User;
