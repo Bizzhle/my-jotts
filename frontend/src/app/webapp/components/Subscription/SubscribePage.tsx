@@ -1,5 +1,6 @@
 import { Check } from "@mui/icons-material";
 import {
+  Alert,
   Box,
   Button,
   Container,
@@ -9,8 +10,9 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { useContext, useEffect } from "react";
-import { ApiHandler } from "../../../api-service/ApiRequestManager";
+import { useContext, useEffect, useState } from "react";
+import { isApiError } from "../../../api-service/ApiRequestManager";
+import { authClient } from "../../../libs/betterAuthClient";
 import { formatDateString } from "../../../libs/utils/Date";
 import { LayoutContext } from "../../layout/LayoutContext";
 import { useBetterAuth } from "../../utils/contexts/hooks/useBetterAuth";
@@ -22,28 +24,32 @@ export default function SubscribePage() {
   const { authenticatedUser } = useBetterAuth();
   const { hideSearchBar } = useContext(LayoutContext);
   const { subscription, paymentPlans } = useSubscription();
+  const [error, setError] = useState<string | undefined>("");
 
   useEffect(() => {
     hideSearchBar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCreateSubscription = async (
-    priceId: string,
-    link: string,
-    paymentPlanId: number
-  ) => {
-    try {
-      await ApiHandler.createSubscription(priceId, paymentPlanId);
+  async function storeError(error: string) {
+    setError(error);
+  }
 
-      const basePaymentLinkUrl = link;
-      const successUrl = "http://localhost/5173/";
-      const paymentLinkWithEmail = `${basePaymentLinkUrl}?prefilled_email=${encodeURIComponent(
-        authenticatedUser?.email || ""
-      )}&success_url=${encodeURIComponent(successUrl)}`;
-      window.location.href = paymentLinkWithEmail;
+  const handleCreateSubscription = async (paymentPlanName: string) => {
+    try {
+      const { error } = await authClient.subscription.upgrade({
+        plan: paymentPlanName,
+        successUrl: "http://localhost/5173/",
+        cancelUrl: "http://localhost/5173/subscription",
+        disableRedirect: true,
+      });
+
+      if (error?.message) {
+        await storeError(error.message);
+      }
     } catch (error) {
-      console.log(error);
+      const errorMessage = isApiError(error);
+      setError(errorMessage);
     }
   };
 
@@ -57,6 +63,7 @@ export default function SubscribePage() {
         <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
           Manage your Subscription
         </Typography>
+        {error && <Alert>{error}</Alert>}
 
         <ProfileCards title="Active plan">
           <Box
@@ -85,7 +92,7 @@ export default function SubscribePage() {
                   variant="body1"
                   sx={{ color: "#b0b0b5" }}
                 >{`auto renews on ${formatDateString(
-                  subscription?.currentPeriodEnd
+                  subscription?.periodEnd
                 )}`}</Typography>
               </Box>
             )}
@@ -132,13 +139,7 @@ export default function SubscribePage() {
                     disabled={
                       plan.name === "BASIC" || subscription?.status === "active"
                     }
-                    onClick={() =>
-                      handleCreateSubscription(
-                        plan.stripePriceId,
-                        plan.link,
-                        plan.id
-                      )
-                    }
+                    onClick={() => handleCreateSubscription(plan.name)}
                   >
                     {plan.name === "BASIC" ? "Free" : "Subscribe"}
                   </Button>

@@ -172,11 +172,13 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   const fetchCategories = useCallback(async () => {
     try {
       const response = await ApiHandler.getCategories();
+
       setState("categories", response);
     } catch (err) {
       setState("error", isApiError(err));
     }
-  }, [setState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchCategory = useCallback(async () => {
     if (!categoryId) {
@@ -212,7 +214,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   }, [fetchActivity, authenticatedUser]);
 
   useEffect(() => {
-    fetchCategories();
+    // fetchCategories();
     fetchCategory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId]);

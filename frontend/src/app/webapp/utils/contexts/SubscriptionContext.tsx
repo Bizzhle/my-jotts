@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from "react";
 import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { PaymentPlanDto } from "../../../api-service/dtos/subscription/payment-plan.dto";
 import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
+import { authClient } from "../../../libs/betterAuthClient";
 import { useBetterAuth } from "./hooks/useBetterAuth";
 
 interface SubscriptionContextType {
@@ -29,8 +30,12 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const fetchSubscriptionStatus = async () => {
     setLoading(true);
     try {
-      const data = await ApiHandler.getSubscription();
-      setSubscription(data);
+      const { data: subscriptions } = await authClient.subscription.list();
+
+      const activeSubscription = subscriptions?.find(
+        (sub) => sub.status === "active" || sub.status === "trialing"
+      );
+      setSubscription(activeSubscription);
     } catch (error) {
       console.error("Error fetching subscription status:", error);
     } finally {
