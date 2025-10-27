@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import {
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -55,8 +65,9 @@ export class CategoryController {
   async createCategory(
     @GetCurrentUserEmail() emailAddress: string,
     @Body() dto: CreateCategoryDto,
+    @Req() req: Request,
   ) {
-    return await this.categoryService.createCategory(dto, emailAddress);
+    return await this.categoryService.createCategory(dto, emailAddress, req.headers);
   }
 
   @IsAuthorizedUser()
