@@ -12,7 +12,8 @@ export interface User {
   email: string;
   emailVerified: boolean;
   name: string;
-  image?: string | null | undefined;
+  image?: string | null;
+  role?: string | null;
 }
 
 interface Session {
@@ -27,7 +28,7 @@ interface Session {
 
 interface AuthContextType {
   readonly isAuthenticated: boolean;
-  readonly authenticatedUser: User | null;
+  readonly authenticatedUser: User | undefined;
   isLoading: boolean;
   user: User | null;
   logoutUser: () => void;
@@ -43,7 +44,7 @@ export const BetterAuthContext = createContext<AuthContextType | undefined>(
 
 export function BetterAuthProvider(props: AuthUserProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | undefined>(undefined);
   const [loginError, setLoginError] = useState("");
   const [session, setSession] = useState<Session | null>(null);
 
@@ -53,11 +54,11 @@ export function BetterAuthProvider(props: AuthUserProviderProps) {
 
   async function logoutUser() {
     await authClient.signOut();
-    setUser(null);
+    setUser(undefined);
     window.location.href = "/";
   }
 
-  async function startSession(data: User | null) {
+  async function startSession(data: User | undefined) {
     setIsLoading(true);
     setUser(data);
     setIsLoading(false);
@@ -67,7 +68,7 @@ export function BetterAuthProvider(props: AuthUserProviderProps) {
     try {
       const { data } = await authClient.getSession();
       setSession(data?.session ?? null);
-      setUser(data?.user ?? null);
+      setUser(data?.user ?? undefined);
     } catch {
       setSession(null);
     } finally {
@@ -82,7 +83,7 @@ export function BetterAuthProvider(props: AuthUserProviderProps) {
   return (
     <BetterAuthContext.Provider
       value={{
-        user: user,
+        user: user || null,
         get isAuthenticated() {
           return !!user?.email;
         },

@@ -72,6 +72,12 @@ export const auth = betterAuth({
   exposeRoutes: false,
   plugins: [
     BetterAuthLoggerPlugin(),
+    adminPlugin({
+      ac,
+      roles: { admin: roles.admin, user: roles.user, pro: roles.pro },
+      defaultRole: 'user',
+      adminRoles: ['admin'],
+    }),
     stripe({
       stripeClient,
       stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
@@ -162,17 +168,6 @@ export const auth = betterAuth({
           console.log('Payment failed:', event.data.object);
         }
       },
-    }),
-
-    adminPlugin({
-      ac,
-      roles: { admin: roles.admin, user: roles.user, pro: roles.pro },
-      defaultRole: 'user',
-      adminRoles: ['admin'],
-      adminUserIds: [
-        '73656e5e-eb89-4610-ad58-48cd57a50023',
-        'b520deca-57e7-47be-9c58-0ba2a7d224f1',
-      ],
     }),
   ],
   databaseHooks: {

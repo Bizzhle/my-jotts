@@ -9,18 +9,33 @@ import {
   ListItemText,
 } from "@mui/material";
 import { Link } from "react-router-dom";
+import checkUserPermission from "../../../libs/auth/CheckUserPermission";
 import { useBetterAuth } from "../../utils/contexts/hooks/useBetterAuth";
-import { NavigationData } from "./NavigationData";
+import { NavigationData, NavigationDataList } from "./NavigationData";
 
 interface NavigationListProps {
   toggle: () => void;
 }
 
 export default function NavigationList({ toggle }: NavigationListProps) {
-  const { logoutUser } = useBetterAuth();
+  const { logoutUser, authenticatedUser } = useBetterAuth();
+
+  function getAllowedNavigationItems(items: ReadonlyArray<NavigationDataList>) {
+    // You can implement permission-based filtering here
+    return items.filter((item) => {
+      if (!item.requiredPermission) return true;
+      if (
+        item.requiredPermission &&
+        !checkUserPermission(authenticatedUser, item.requiredPermission)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }
   return (
     <List sx={{ width: 230 }}>
-      {NavigationData.map((item, index) => (
+      {getAllowedNavigationItems(NavigationData).map((item, index) => (
         <Link
           to={item.path}
           key={index}
