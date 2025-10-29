@@ -6,9 +6,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { auth } from 'auth';
 import { User } from 'src/users/entities/User.entity';
 import { UserAccountRepository } from 'src/users/repositories/user-account.repository';
+import { auth } from '../auth';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dtos/forgot-password.dto';
 import { SignInDto } from '../dtos/signin.dto';
 import { SignUpDto } from '../dtos/signup.dto';

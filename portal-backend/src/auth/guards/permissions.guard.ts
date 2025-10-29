@@ -6,7 +6,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { auth } from 'auth';
+import { auth } from '../auth';
 import { PERMISSIONS_KEY } from '../decorators/permission.decorator';
 
 @Injectable()

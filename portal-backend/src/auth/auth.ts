@@ -1,22 +1,18 @@
 import { stripe } from '@better-auth/stripe';
 import { typeormAdapter } from '@hedystia/better-auth-typeorm';
-import { ConfigService } from '@nestjs/config';
 import { betterAuth } from 'better-auth';
+import { openAPI } from 'better-auth/plugins';
 import { admin as adminPlugin } from 'better-auth/plugins/admin';
-import { AppLoggerService } from 'src/logger/services/app-logger.service';
-import { BetterAuthLoggerPlugin } from 'src/logger/services/log-plugin';
-import { loadTemplate } from 'src/utils/services/load-template-config';
-import { sendEmail } from 'src/utils/services/transporter';
 import Stripe from 'stripe';
-import { AppDataSource } from './sql/data-source';
-import { ac, roles } from './src/permissions/permissions';
+import { AppDataSource } from '../../sql/data-source';
+import { BetterAuthLoggerPlugin } from '../logger/services/log-plugin';
+import { ac, roles } from '../permissions/permissions';
+import { loadTemplate } from '../utils/services/load-template-config';
+import { sendEmail } from '../utils/services/transporter';
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-09-30.clover', // Latest API version as of Stripe SDK v19
 });
-
-// const logger = new AppLoggerService()
-const logger = new AppLoggerService('BetterAuth', {} as any, new ConfigService());
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const BACKEND_URL = process.env.DOMAIN;
@@ -71,6 +67,7 @@ export const auth = betterAuth({
   basePath: '/api/auth',
   exposeRoutes: false,
   plugins: [
+    openAPI(),
     BetterAuthLoggerPlugin(),
     adminPlugin({
       ac,
