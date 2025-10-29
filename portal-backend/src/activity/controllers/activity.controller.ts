@@ -22,7 +22,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Permissions } from 'src/auth/decorators/permission.decorator';
-import { GetCurrentUserEmail } from '../../app/jwt.decorators';
+import { GetCurrentUserEmail } from '../../app/decorators/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { PaginationQueryDto } from '../dto/paginationQuery.dto';

@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { User } from 'src/users/entities/User.entity';
 import {
   Column,
   Entity,
@@ -12,6 +11,7 @@ import {
 } from 'typeorm';
 import { Category } from '../../category/entities/category.entity';
 import { ImageFile } from '../../image/entities/image-file.entity';
+import { User } from '../../users/entities/User.entity';
 
 @Entity({ name: 'activity' })
 @Unique(['activity_title'])

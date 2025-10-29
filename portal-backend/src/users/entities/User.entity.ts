@@ -1,8 +1,8 @@
-import { Activity } from 'src/activity/entities/activity.entity';
-import { Category } from 'src/category/entities/category.entity';
-import { ImageFile } from 'src/image/entities/image-file.entity';
-import { Invoice } from 'src/subscription/entities/invoice.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Activity } from '../../activity/entities/activity.entity';
+import { Category } from '../../category/entities/category.entity';
+import { ImageFile } from '../../image/entities/image-file.entity';
+import { Invoice } from '../../subscription/entities/invoice.entity';
 
 @Entity('user')
 export class User {

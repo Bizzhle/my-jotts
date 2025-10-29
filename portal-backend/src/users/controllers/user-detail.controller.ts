@@ -6,7 +6,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { GetCurrentUserEmail } from '../../app/jwt.decorators';
+import { GetCurrentUserEmail } from '../../app/decorators/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { User } from '../entities/User.entity';
 import { UserDetailService } from '../services/user-service/user-details.service';

@@ -18,7 +18,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { GetCurrentUserEmail } from '../../app/jwt.decorators';
+import { GetCurrentUserEmail } from '../../app/decorators/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';

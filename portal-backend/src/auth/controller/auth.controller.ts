@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
-import { GetCurrentUserEmail } from 'src/app/jwt.decorators';
+import { GetCurrentUserEmail } from 'src/app/decorators/jwt.decorators';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dtos/forgot-password.dto';
 import { SignInDto } from '../dtos/signin.dto';
 import { SignUpDto } from '../dtos/signup.dto';
