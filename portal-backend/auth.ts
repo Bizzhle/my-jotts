@@ -4,11 +4,11 @@ import { betterAuth } from 'better-auth';
 import { openAPI } from 'better-auth/plugins';
 import { admin as adminPlugin } from 'better-auth/plugins/admin';
 import Stripe from 'stripe';
-import { AppDataSource } from '../../sql/data-source';
-import { BetterAuthLoggerPlugin } from '../logger/services/log-plugin';
-import { ac, roles } from '../permissions/permissions';
-import { loadTemplate } from '../utils/services/load-template-config';
-import { sendEmail } from '../utils/services/transporter';
+import { AppDataSource } from './sql/data-source';
+import { BetterAuthLoggerPlugin } from './src/logger/services/log-plugin';
+import { ac, roles } from './src/permissions/permissions';
+import { loadTemplate } from './src/utils/services/load-template-config';
+import { sendEmail } from './src/utils/services/transporter';
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-09-30.clover', // Latest API version as of Stripe SDK v19

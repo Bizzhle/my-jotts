@@ -5,20 +5,15 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/entities/User.entity';
-import { UserAccountRepository } from 'src/users/repositories/user-account.repository';
-import { auth } from '../auth';
+import { auth } from '../../../auth';
+import { UserAccountRepository } from '../../users/repositories/user-account.repository';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dtos/forgot-password.dto';
 import { SignInDto } from '../dtos/signin.dto';
 import { SignUpDto } from '../dtos/signup.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: UserAccountRepository,
-  ) {}
+  constructor(private readonly userRepository: UserAccountRepository) {}
 
   async signup(dto: SignUpDto) {
     const { email, password, name } = dto;

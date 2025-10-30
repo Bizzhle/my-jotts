@@ -1,19 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { PasswordResetToken } from '../../../users/entities/password-reset-token.entity';
+import { UserAccountRepository } from '../../../users/repositories/user-account.repository';
 import { UsersService } from '../../../users/services/user-service/users.service';
 import { UserSessionService } from '../../../users/services/user-session/user-session.service';
 import { MailerService } from '../../../utils/services/mailer.services';
+import { AuthService } from '../auth.service';
 import { PasswordService } from '../password.service';
-import { UserAuthService } from '../userauth.service';
+
+jest.mock('../../../../auth', () => ({
+  auth: {
+    api: {
+      signUpEmail: jest.fn(),
+      signInEmail: jest.fn(),
+    },
+  },
+}));
 
 describe('User Authentication', () => {
-  let service: UserAuthService;
+  let service: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UserAuthService,
+        AuthService,
+        {
+          provide: UserAccountRepository,
+          useValue: {},
+        },
         {
           provide: UsersService,
           useValue: {
@@ -51,7 +65,7 @@ describe('User Authentication', () => {
       ],
     }).compile();
 
-    service = module.get<UserAuthService>(UserAuthService);
+    service = module.get<AuthService>(AuthService);
   });
 
   it('logs a user in', async () => {});

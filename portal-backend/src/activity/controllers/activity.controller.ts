@@ -21,8 +21,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Permissions } from 'src/auth/decorators/permission.decorator';
 import { GetCurrentUserEmail } from '../../app/decorators/jwt.decorators';
+import { Permissions } from '../../auth/decorators/permission.decorator';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { PaginationQueryDto } from '../dto/paginationQuery.dto';

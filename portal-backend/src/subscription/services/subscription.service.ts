@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import { Repository } from 'typeorm';
-import { auth } from '../../../src/auth/auth';
+import { auth } from '../../../auth';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { UserAccountRepository } from '../../users/repositories/user-account.repository';
 import { PaymentPlan } from '../entities/payment-plan.entity';
