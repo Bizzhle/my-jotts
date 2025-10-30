@@ -15,6 +15,7 @@ export class CategoryRepository extends Repository<Category> {
       user: { id: userId },
       category_name: dto.categoryName,
       description: dto.description,
+      createdAt: new Date(),
     });
     await this.save<Category>(category);
 
@@ -47,7 +48,7 @@ export class CategoryRepository extends Repository<Category> {
   public async updateCategory(id: number, dto: UpdateCategoryDto, userId: string) {
     await this.update(
       { id: id, user: { id: userId } },
-      { category_name: dto.categoryName, description: dto.description },
+      { category_name: dto.categoryName, description: dto.description, createdAt: new Date() },
     );
   }
 

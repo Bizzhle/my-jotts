@@ -1,7 +1,7 @@
 import { Exclude } from 'class-transformer';
-import { User } from 'src/users/entities/User.entity';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Activity } from '../../activity/entities/activity.entity';
+import { User } from '../../users/entities/User.entity';
 
 @Entity()
 export class ImageFile {

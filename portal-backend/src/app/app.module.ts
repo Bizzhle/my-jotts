@@ -2,8 +2,8 @@ import { ClassSerializerInterceptor, Logger, MiddlewareConsumer, Module } from '
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { auth } from '../../auth';
 import { ActivityModule } from '../activity/activity.module';
-import { auth } from '../auth/auth';
 import { AuthenticationModule } from '../auth/auth.module';
 import { CategoryModule } from '../category/category.module';
 import { CertificateModule } from '../certificates/certificate.module';

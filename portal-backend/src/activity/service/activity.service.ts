@@ -1,9 +1,9 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { User } from 'src/users/entities/User.entity';
 import { DataSource } from 'typeorm';
@@ -128,7 +128,7 @@ export class ActivityService extends WithTransactionService {
       });
 
       if (!user) {
-        throw new BadRequestException('User not logged in');
+        throw new UnauthorizedException('User not logged in');
       }
 
       const activities = await this.activityRepository.getAllUserActivities(
@@ -172,10 +172,10 @@ export class ActivityService extends WithTransactionService {
       };
     } catch (err) {
       await this.logService.debug(err);
-      if (err instanceof BadRequestException) {
+      if (err instanceof UnauthorizedException) {
         throw err;
       }
-      throw new InternalServerErrorException('Could not fetch activities');
+      throw err;
     }
   }
 

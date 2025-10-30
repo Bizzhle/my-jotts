@@ -1,4 +1,3 @@
-import { User } from 'src/users/entities/User.entity';
 import {
   Column,
   CreateDateColumn,
@@ -7,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/User.entity';
 import { InvoiceStatus } from '../enum/invoice.enum';
 
 @Entity()

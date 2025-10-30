@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { User } from 'src/users/entities/User.entity';
 import {
   Column,
   Entity,
@@ -11,6 +10,7 @@ import {
   Unique,
 } from 'typeorm';
 import { Activity } from '../../activity/entities/activity.entity';
+import { User } from '../../users/entities/User.entity';
 
 @Entity({ name: 'category' })
 @Unique(['category_name'])

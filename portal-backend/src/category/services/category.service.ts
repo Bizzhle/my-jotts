@@ -23,8 +23,8 @@ export class CategoryService {
     private readonly categoryRepository: CategoryRepository,
     private readonly activityRepository: ActivityRepository,
     private readonly usersService: UsersService,
-    private readonly subscriptionService: SubscriptionService,
     private readonly loggerService: AppLoggerService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   public async createCategory(
@@ -46,9 +46,9 @@ export class CategoryService {
       });
 
       // stripe deactivated for now, replaced later
-      // const isSubscriptionActive = await this.subscriptionService.getActiveSubscription(headers);
+      const isSubscriptionActive = await this.subscriptionService.getActiveSubscription(headers);
 
-      if (categoryCount >= 10) {
+      if (isSubscriptionActive && categoryCount >= 10) {
         throw new ForbiddenException('Maximum categories');
       }
 
@@ -63,6 +63,7 @@ export class CategoryService {
           user: { id: user.id },
           category_name: dto.categoryName,
           description: dto.description,
+          createdAt: new Date(),
         });
         createdCategory = await entityManager.save(Category, category);
       } else {
