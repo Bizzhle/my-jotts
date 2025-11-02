@@ -48,6 +48,10 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+  // if (process.env.NODE_ENV !== 'production') {
+  //   await seedLocalUsers();
+  // }
+
   await app.listen(4000, '0.0.0.0');
 }
 bootstrap();
