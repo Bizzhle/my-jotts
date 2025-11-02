@@ -10,9 +10,7 @@ import { Permission } from '../permissions/entities/permission.entity';
 import { Role } from '../permissions/entities/role.entity';
 import { UtilsModule } from '../utils/util.module';
 import { UserDetailController } from './controllers/user-detail.controller';
-import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { User } from './entities/User.entity';
-import { UserSession } from './entities/usersession.entity';
 import { JwtAuthGuard } from './guards/jwt.auth.guard';
 import { UserAccountRepository } from './repositories/user-account.repository';
 import { UserSessionRepository } from './repositories/user-session.repository';
@@ -22,16 +20,7 @@ import { UserSessionService } from './services/user-session/user-session.service
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      User,
-      UserSession,
-      Activity,
-      Category,
-      Role,
-      Permission,
-      SigningSecret,
-      PasswordResetToken,
-    ]),
+    TypeOrmModule.forFeature([User, Activity, Category, Role, Permission, SigningSecret]),
     PassportModule,
     UtilsModule,
     CertificateModule,

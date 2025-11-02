@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
-import path from 'path';
+import * as path from 'path';
 
 export const loadTemplate = async (
   templateName: string,
