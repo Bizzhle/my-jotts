@@ -27,19 +27,20 @@ export const auth = betterAuth({
   url: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: typeormAdapter(AppDataSource),
+  user: {
+    additionalFields: {
+      role: {
+        type: 'string',
+        input: false,
+        required: true,
+        defaultValue: 'user',
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-    user: {
-      additionalFields: {
-        role: {
-          type: 'string',
-          input: false,
-          required: true,
-          defaultValue: 'user',
-        },
-      },
-    },
+
     sendResetPassword: async ({ user, url, token }) => {
       const frontendUrl = process.env.FRONTEND_URL;
       const callbackURL = `${frontendUrl}/reset-password?token=${token}`;
@@ -71,7 +72,7 @@ export const auth = betterAuth({
     BetterAuthLoggerPlugin(),
     adminPlugin({
       ac,
-      roles: { admin: roles.admin, user: roles.user, pro: roles.pro },
+      roles: { admin: roles.admin, user: roles.user },
       defaultRole: 'user',
       adminRoles: ['admin'],
     }),
@@ -83,13 +84,13 @@ export const auth = betterAuth({
       //   // Do something with the newly created customer
       //   console.log(`Customer ${customer.id} created for user ${user.id}`);
       // },
-      getCustomerCreateParams: async ({ user }) => ({
-        email: user.email,
-        name: user.name,
-        metadata: {
-          userId: user.id,
-        },
-      }),
+      // getCustomerCreateParams: async ({ user }) => ({
+      //   email: user.email,
+      //   name: user.name,
+      //   metadata: {
+      //     userId: user.id,
+      //   },
+      // }),
       subscription: {
         enabled: true,
         plans: [
@@ -168,16 +169,16 @@ export const auth = betterAuth({
     }),
   ],
   databaseHooks: {
-    user: {
-      create: {
-        before: async (user) => {
-          if (process.env.ADMIN_EMAILS?.split(',').includes(user.email)) {
-            return { data: { ...user, role: 'admin' } };
-          }
-          return { data: user };
-        },
-      },
-    },
+    // user: {
+    //   create: {
+    //     before: async (user) => {
+    //       if (process.env.ADMIN_EMAILS?.split(',').includes(user.email)) {
+    //         return { data: { ...user, role: 'admin' } };
+    //       }
+    //       return { data: user };
+    //     },
+    //   },
+    // },
   },
 });
 
