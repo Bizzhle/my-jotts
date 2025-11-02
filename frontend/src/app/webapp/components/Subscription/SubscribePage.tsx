@@ -136,9 +136,10 @@ export default function SubscribePage() {
                     variant="contained"
                     fullWidth
                     sx={{ mt: 2 }}
-                    disabled={
-                      plan.name === "BASIC" || subscription?.status === "active"
-                    }
+                    // disabled={
+                    //   plan.name === "BASIC" || subscription?.status === "active"
+                    // }
+                    disabled
                     onClick={() => handleCreateSubscription(plan.name)}
                   >
                     {plan.name === "BASIC" ? "Free" : "Subscribe"}
