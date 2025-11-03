@@ -20,8 +20,9 @@ import {
 } from "@mui/material";
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import checkUserPermission from "../../../libs/auth/CheckUserPermission";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
-import { useAuth } from "../../utils/contexts/hooks/useAuth";
+import { useBetterAuth } from "../../utils/contexts/hooks/useBetterAuth";
 import SearchBar from "../SearchBar";
 
 interface HeaderProps {
@@ -43,7 +44,7 @@ export default function Header({
   openSearchBar,
   handleSearchBar,
 }: HeaderProps) {
-  const { logoutUser } = useAuth();
+  const { logoutUser, authenticatedUser } = useBetterAuth();
   const { categories, searchQuery, findActivity, reloadActivity } =
     useActivities();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -62,6 +63,7 @@ export default function Header({
     setOpen(false);
   };
 
+  const hasPermission = checkUserPermission(authenticatedUser, "admin");
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -277,6 +279,14 @@ export default function Header({
                 >
                   Subscription
                 </MenuItem>
+                {hasPermission && (
+                  <MenuItem
+                    onClick={() => handleAccountMenuClose("/dashboard")}
+                  >
+                    Dashboard
+                  </MenuItem>
+                )}
+
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </Box>

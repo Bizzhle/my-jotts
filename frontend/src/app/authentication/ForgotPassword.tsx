@@ -9,11 +9,12 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
+import { isApiError } from "../api-service/ApiRequestManager";
+import { authClient } from "../libs/betterAuthClient";
 import { LayoutContext } from "../webapp/layout/LayoutContext";
 
 export interface ForgotPasswordData {
-  emailAddress: string;
+  email: string;
 }
 
 export const ForgotPassword = () => {
@@ -31,14 +32,22 @@ export const ForgotPassword = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onSubmit = async (data: ForgotPasswordData) => {
+  async function storeError(error: string) {
+    setError(error);
+  }
+
+  const onSubmit = async (params: ForgotPasswordData) => {
     try {
-      const response = await ApiHandler.forgotPassword(data);
+      const { data, error } = await authClient.requestPasswordReset(params);
       reset({
-        emailAddress: "",
+        email: "",
       });
-      setError("");
-      setSuccessMessage(response.message);
+      if (error?.message) {
+        await storeError(error.message);
+      }
+      if (data) {
+        setSuccessMessage(data?.message);
+      }
     } catch (error) {
       const errorMessage = isApiError(error);
       setError(errorMessage);
@@ -105,7 +114,7 @@ export const ForgotPassword = () => {
             fullWidth
             label="email address"
             type="email"
-            {...register("emailAddress")}
+            {...register("email")}
             color="secondary"
           />
 

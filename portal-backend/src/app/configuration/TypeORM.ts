@@ -1,8 +1,9 @@
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join, resolve } from 'path';
-import { CustomNamingStrategy } from '../../typeorm/custom-foreign-keys-naming-strategy';
-import { EnvGet, EnvGetBoolean } from '../decorators/env-get.decorators';
+import { CustomNamingStrategy } from '../../typeorm-config/custom-foreign-keys-naming-strategy';
 import { EnvironmentConfigRootModule } from './Environment';
+import { DatabaseConfig } from './database-config';
+import { DatabaseConfigModule } from './databaseConfig.module';
 
 function cliOptions() {
   return {
@@ -16,27 +17,9 @@ function serverOptions() {
   };
 }
 
-class DatabaseConfig {
-  @EnvGetBoolean('DATABASE_RUN_DEV_MIGRATIONS', false)
-  runDevMigrations: boolean;
-
-  @EnvGetBoolean('DATABASE_RUN_MIGRATIONS', false)
-  runMigrations: boolean;
-
-  @EnvGetBoolean('DATABASE_LOG_QUERIES')
-  logQueries: boolean;
-
-  @EnvGetBoolean('DATABASE_USE_SSL')
-  useSsl: boolean;
-
-  @EnvGet('DATABASE_URL', { cast: (url) => new URL(url) })
-  url: URL;
-}
-
 export function TypeOrmRootModule(cli = false) {
   return TypeOrmModule.forRootAsync({
-    imports: [EnvironmentConfigRootModule()],
-    extraProviders: [DatabaseConfig],
+    imports: [EnvironmentConfigRootModule(), DatabaseConfigModule],
     inject: [DatabaseConfig],
     useFactory: (config: DatabaseConfig) => {
       const { url, useSsl } = config;
@@ -44,6 +27,7 @@ export function TypeOrmRootModule(cli = false) {
       const database = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
       const migrationPath = resolve(__dirname, '../../../sql/db_migrations/*.{js,ts}');
       const devMigration = resolve(__dirname, '../../../sql/db_migrations/dev/*.{js,ts}');
+
       const runMigrations = config.runDevMigrations;
 
       const result: TypeOrmModuleOptions = {
@@ -54,7 +38,7 @@ export function TypeOrmRootModule(cli = false) {
         username: url.username,
         password: url.password,
         database,
-        entities: [join(__dirname, '**', '*.entity.{ts, js}')],
+        entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: false,
         logging: config.logQueries,
         autoLoadEntities: true,

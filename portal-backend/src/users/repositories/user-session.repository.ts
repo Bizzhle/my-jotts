@@ -42,7 +42,6 @@ export class UserSessionRepository extends Repository<UserSession> {
         session_start: LessThanOrEqual(new Date()),
         session_end: MoreThanOrEqual(new Date()),
       },
-      relations: ['userAccount'],
     });
   }
 

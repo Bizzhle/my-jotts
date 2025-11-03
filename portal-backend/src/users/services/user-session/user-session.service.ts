@@ -60,7 +60,7 @@ export class UserSessionService {
     return { accessToken, refreshToken };
   }
 
-  public async logoutSession(refreshToken: string): Promise<void> {
+  public async invalidateUserSession(refreshToken: string): Promise<void> {
     const session = await this.userSessionRepository.findOne({
       where: { refresh_token: refreshToken },
     });

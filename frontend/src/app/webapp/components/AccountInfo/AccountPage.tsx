@@ -2,12 +2,12 @@ import { Box, Button, Container, Toolbar, Typography } from "@mui/material";
 import { useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LayoutContext } from "../../layout/LayoutContext";
-import { useAuth } from "../../utils/contexts/hooks/useAuth";
+import { useBetterAuth } from "../../utils/contexts/hooks/useBetterAuth";
 import ProfileCards from "./utils/ProfileCards";
 
 export default function AccountPage() {
   const navigate = useNavigate();
-  const { authenticatedUser } = useAuth();
+  const { authenticatedUser } = useBetterAuth();
   const { hideSearchBar } = useContext(LayoutContext);
 
   useEffect(() => {
@@ -28,10 +28,10 @@ export default function AccountPage() {
 
         <ProfileCards title="MyJotts">
           <Typography variant="body1" gutterBottom>
-            {authenticatedUser?.firstName} {authenticatedUser.lastName}
+            {authenticatedUser?.name}
           </Typography>
           <Typography variant="body1" color="textSecondary" gutterBottom>
-            {authenticatedUser.emailAddress}
+            {authenticatedUser.email}
           </Typography>
           <Typography variant="body1" gutterBottom>
             password: **********

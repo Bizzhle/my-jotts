@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { Category } from '../../category/entities/category.entity';
 import { ImageFile } from '../../image/entities/image-file.entity';
-import { UserAccount } from '../../users/entities/user-account.entity';
+import { User } from '../../users/entities/User.entity';
 
 @Entity({ name: 'activity' })
 @Unique(['activity_title'])
@@ -68,14 +68,9 @@ export class Activity {
   @Expose({ name: 'dateUpdated' })
   date_updated: Date;
 
-  @Column({ name: 'user_id', type: 'integer' })
-  @Exclude()
-  user_id: number;
-
-  @ManyToOne(() => UserAccount, (user) => user.activities)
-  @JoinColumn({ name: 'user_id' })
-  @Exclude()
-  userAccount: UserAccount;
+  @ManyToOne(() => User, (user) => user.activities)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @OneToMany(() => ImageFile, (imageFile) => imageFile.activity)
   imageFiles: ImageFile[];

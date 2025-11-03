@@ -1,17 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PasswordResetToken } from '../users/entities/password-reset-token.entity';
+import { User } from 'src/users/entities/User.entity';
 import { UsersModule } from '../users/users.module';
 import { UtilsModule } from '../utils/util.module';
 import { AuthController } from './controller/auth.controller';
-import { UsersRegistrationController } from './controller/users-registration.controller';
-import { PasswordService } from './services/password.service';
-import { UserRegistrationService } from './services/user-registration.service';
-import { UserAuthService } from './services/userauth.service';
+import { AuthService } from './services/auth.service';
 
 @Module({
-  imports: [UsersModule, TypeOrmModule.forFeature([PasswordResetToken]), UtilsModule],
-  controllers: [AuthController, UsersRegistrationController],
-  providers: [UserAuthService, PasswordService, UserRegistrationService],
+  imports: [UsersModule, TypeOrmModule.forFeature([User]), UtilsModule],
+  controllers: [AuthController],
+  providers: [AuthService],
 })
-export class AuthModule {}
+export class AuthenticationModule {}
