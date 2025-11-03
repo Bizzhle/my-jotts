@@ -1,15 +1,18 @@
 import {
   AccountCircleRounded,
   CardMembership,
+  Dashboard,
   Home,
   PlaylistAddCheckCircleRounded,
 } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
+import { Role } from "../Dashboard/roles";
 
-interface NavigationDataList {
+export interface NavigationDataList {
   title: string;
   path: string;
   icon?: JSX.Element;
+  requiredPermission?: Role;
 }
 
 export const NavigationData: NavigationDataList[] = [
@@ -48,5 +51,16 @@ export const NavigationData: NavigationDataList[] = [
         <CardMembership />
       </IconButton>
     ),
+    requiredPermission: "admin",
+  },
+  {
+    title: "Dashboard",
+    path: "/dashboard",
+    icon: (
+      <IconButton color="secondary" size="large">
+        <Dashboard />
+      </IconButton>
+    ),
+    requiredPermission: "admin",
   },
 ];

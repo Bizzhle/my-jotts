@@ -1,33 +1,50 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CategoryService } from './category.service';
-import { AppLoggerService } from '../../logger/services/app-logger.service';
-import { UsersService } from '../../users/services/user-service/users.service';
 import { ActivityRepository } from '../../activity/repositories/activity.repository';
+import { AppLoggerService } from '../../logger/services/app-logger.service';
+import { SubscriptionService } from '../../subscription/services/subscription.service';
+import { UsersService } from '../../users/services/user-service/users.service';
 import { CategoryRepository } from '../repositories/category.repository';
-import { moveCursor } from 'readline';
-import { result } from 'lodash';
+import { CategoryService } from './category.service';
+
+jest.mock('../../../auth', () => ({
+  auth: {
+    api: {
+      signUpEmail: jest.fn(),
+      signInEmail: jest.fn(),
+    },
+  },
+}));
 
 describe('CategoryService', () => {
   let service: CategoryService;
   let categoryRepository;
   let usersService;
 
-  const mockUser = {
-    id: 1,
-    email_address: 'email@email.com',
-    first_name: 'email',
-    last_name: 'test',
-    registration_date: new Date(),
-    last_logged_in: new Date(),
+  const MOCK_DATE = new Date('2021-10-05T00:00:00.000Z');
+  const user = {
+    id: '7e5e-eb89-4610-ad58-a50023',
+    name: 'test',
+    email: 'test@test.com',
+    emailVerified: true,
+    image: '',
+    createdAt: MOCK_DATE,
+    updatedAt: MOCK_DATE,
+    role: 'user',
+    stripeCustomerId: '',
+    categories: null,
+    activities: null,
+    imageFiles: null,
+    invoices: null,
   };
 
   const category = {
     id: 1,
-    category_name: 'test category',
-    user_id: mockUser.id,
-    description: 'Test',
-    userAccount: null,
+    category_name: 'test',
+    description: '',
+    createdAt: null,
+    updatedAt: null,
     activities: null,
+    user: user,
   };
 
   beforeEach(async () => {
@@ -58,6 +75,12 @@ describe('CategoryService', () => {
           },
         },
         {
+          provide: SubscriptionService,
+          useValue: {
+            getActiveSubscription: jest.fn(),
+          },
+        },
+        {
           provide: ActivityRepository,
           useValue: {
             count: jest.fn(),
@@ -66,33 +89,41 @@ describe('CategoryService', () => {
       ],
     }).compile();
 
+    jest.useFakeTimers();
+
     service = module.get<CategoryService>(CategoryService);
     categoryRepository = module.get<CategoryRepository>(CategoryRepository);
     usersService = module.get<UsersService>(UsersService);
   });
 
+  const req = {
+    headers: {
+      Authorization: `Bearer`,
+    },
+  };
+
   it('creates a category', async () => {
-    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(mockUser);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest.spyOn(service, 'createCategory').mockResolvedValue(category);
 
     const createDto = {
       categoryName: 'test category',
       description: 'Test',
     };
-    const result = await service.createCategory(createDto, mockUser.email_address);
+    const result = await service.createCategory(createDto, user.email, req.headers);
     expect(result).toEqual(category);
   });
 
   it('returns all user categories related to user', async () => {
-    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(mockUser);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest.spyOn(service, 'getAllUserCategories').mockResolvedValue([category]);
 
-    const res = await service.getAllUserCategories(mockUser.email_address);
+    const res = await service.getAllUserCategories(user.email);
     expect(res).toEqual([category]);
   });
 
   it('updates a category', async () => {
-    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(mockUser);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest
       .spyOn(categoryRepository, 'updateCategory')
       .mockResolvedValue({ ...category, category_name: 'updated category' });
@@ -101,19 +132,35 @@ describe('CategoryService', () => {
       categoryName: 'test category',
       description: 'Test',
     };
-    const result = await service.updateCategory(category.id, updateDto, mockUser.email_address);
+    const result = await service.updateCategory(category.id, updateDto, user.email);
+
     expect(result).toEqual({
       id: 1,
       category_name: 'updated category',
-      user_id: mockUser.id,
-      description: 'Test',
-      userAccount: null,
+      description: '',
+      createdAt: null,
+      updatedAt: null,
       activities: null,
+      user: {
+        id: '7e5e-eb89-4610-ad58-a50023',
+        name: 'test',
+        email: 'test@test.com',
+        emailVerified: true,
+        image: '',
+        createdAt: MOCK_DATE,
+        updatedAt: MOCK_DATE,
+        role: 'user',
+        stripeCustomerId: '',
+        categories: null,
+        activities: null,
+        imageFiles: null,
+        invoices: null,
+      },
     });
   });
 
   it('deletes an activity', async () => {
-    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(mockUser);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest.spyOn(service, 'deleteCategory').mockResolvedValue();
 
     const res = await service.deleteCategory(category.id);

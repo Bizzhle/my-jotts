@@ -19,7 +19,7 @@ export class ResetPasswordDto {
   })
   @Validate(UserPasswordValidator)
   @IsNotEmpty()
-  password: string;
+  newPassword: string;
 
   @ApiProperty({
     description: 'Token to reset password',

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PaymentPlan } from '../entities/payment-plan.entity';
-import { Repository } from 'typeorm';
-import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import Stripe from 'stripe';
+import { Repository } from 'typeorm';
 import { CreatePaymentPlanDto } from '../dtos/payment-plan.dto';
+import { PaymentPlan } from '../entities/payment-plan.entity';
 
 @Injectable()
 export class PaymentPlanService {
@@ -16,7 +16,7 @@ export class PaymentPlanService {
   ) {
     const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     this.stripe = new Stripe(secretKey, {
-      apiVersion: '2024-12-18.acacia',
+      apiVersion: '2025-09-30.clover',
     });
   }
 

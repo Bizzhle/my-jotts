@@ -16,6 +16,11 @@ tasks:
     cmds:
       - docker-compose -f docker-compose.dev.yml down
 
+  stop:
+    desc: stop all running containers
+    cmds:
+      - docker stop $(docker ps -a -q)
+
   dev:restart:
     desc: Restarts dev docker container
     cmds:

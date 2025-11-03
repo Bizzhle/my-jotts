@@ -2,21 +2,21 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserAccount } from '../../users/entities/user-account.entity';
 import { SubscriptionStatus } from '../enum/subscrition.enum';
-import { Invoice } from './invoice.entity';
-import { PaymentPlan } from './payment-plan.entity';
 
 @Entity()
 export class Subscription {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ type: 'text', nullable: false })
+  plan: string;
+
+  @Column({ type: 'uuid', unique: true, nullable: false })
+  referenceId: string;
 
   @Column()
   stripeSubscriptionId: string;
@@ -24,34 +24,24 @@ export class Subscription {
   @Column()
   stripeCustomerId: string;
 
-  @Column({ name: 'user_id', type: 'integer' })
-  userId: number;
-
-  @ManyToOne(() => UserAccount, (user) => user.subscriptions)
-  @JoinColumn({ name: 'user_id' })
-  user: UserAccount;
-
   @Column({ type: 'enum', enum: SubscriptionStatus })
   status: SubscriptionStatus;
 
   @Column({ type: 'timestamp', nullable: true })
-  currentPeriodStart: Date;
+  periodStart: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  currentPeriodEnd: Date;
+  periodEnd: Date;
 
-  @Column({ nullable: true })
-  priceId: string;
+  @Column({ type: 'boolean', default: false })
+  cancelAtPeriodEnd: boolean;
 
-  @ManyToOne(() => PaymentPlan, { eager: true })
-  paymentPlan: PaymentPlan;
+  @Column({ type: 'int', nullable: true })
+  seats: number;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @CreateDateColumn({ type: 'timestamp', nullable: true })
+  trialStart: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @OneToMany(() => Invoice, (invoice) => invoice.subscription)
-  invoices: Invoice[];
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
+  trialEnd: Date;
 }

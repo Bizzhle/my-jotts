@@ -13,7 +13,7 @@ import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
 import { LayoutContext } from "../webapp/layout/LayoutContext";
 
 export interface ResetPasswordData {
-  password: string;
+  newPassword: string;
   token: string;
   confirmPassword: string;
 }
@@ -41,8 +41,9 @@ export const ResetPassword = () => {
   }, []);
 
   const onSubmit = async (data: ResetPasswordData) => {
+    const { newPassword } = data;
     try {
-      await ApiHandler.resetPassword({ ...data, token: token || "" });
+      await ApiHandler.resetPassword({ newPassword, token: token || "" });
       setSuccessMessage("Password reset successfully");
     } catch (error) {
       const errorMessage = isApiError(error);
@@ -51,7 +52,7 @@ export const ResetPassword = () => {
   };
 
   const validatePasswordMatch = (value: string) => {
-    const password = watch("password");
+    const password = watch("newPassword");
     return value === password || "Passwords do not match";
   };
 
@@ -119,11 +120,11 @@ export const ResetPassword = () => {
             type="password"
             variant="outlined"
             margin="normal"
-            {...register("password", {
+            {...register("newPassword", {
               required: "password must not be empty",
             })}
-            error={!!errors.password}
-            helperText={errors.password?.message}
+            error={!!errors.newPassword}
+            helperText={errors.newPassword?.message}
             color="secondary"
           />
           <TextField
