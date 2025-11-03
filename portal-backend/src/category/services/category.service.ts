@@ -10,7 +10,6 @@ import {
 import { EntityManager } from 'typeorm';
 import { ActivityRepository } from '../../activity/repositories/activity.repository';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
-import { SubscriptionStatus } from '../../subscription/enum/subscrition.enum';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
 import { UsersService } from '../../users/services/user-service/users.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
@@ -24,13 +23,14 @@ export class CategoryService {
     private readonly categoryRepository: CategoryRepository,
     private readonly activityRepository: ActivityRepository,
     private readonly usersService: UsersService,
-    private readonly subscriptionService: SubscriptionService,
     private readonly loggerService: AppLoggerService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   public async createCategory(
     dto: CreateCategoryDto,
     emailAddress: string,
+    headers: HeadersInit,
     entityManager?: EntityManager,
   ): Promise<Category> {
     try {
@@ -41,15 +41,14 @@ export class CategoryService {
         throw new UnauthorizedException('User not available');
       }
 
-      const categoryCount = await this.categoryRepository.count({ where: { user_id: user.id } });
+      const categoryCount = await this.categoryRepository.count({
+        where: { user: { id: user.id } },
+      });
 
-      const subscription = await this.subscriptionService.getUserSubscriptionInformation(
-        user.email_address,
-      );
-      const isSubscriptionActive =
-        subscription && subscription.status === SubscriptionStatus.active;
+      // stripe deactivated for now, replaced later
+      const isSubscriptionActive = await this.subscriptionService.getActiveSubscription(headers);
 
-      if (!isSubscriptionActive && categoryCount >= 5) {
+      if (isSubscriptionActive && categoryCount >= 10) {
         throw new ForbiddenException('Maximum categories');
       }
 
@@ -61,9 +60,10 @@ export class CategoryService {
 
       if (entityManager) {
         const category = await this.categoryRepository.create({
-          user_id: user.id,
+          user: { id: user.id },
           category_name: dto.categoryName,
           description: dto.description,
+          createdAt: new Date(),
         });
         createdCategory = await entityManager.save(Category, category);
       } else {
@@ -84,7 +84,7 @@ export class CategoryService {
     if (!user) {
       throw new BadRequestException('User not logged in');
     }
-    return this.categoryRepository.findAllCategoriesForUser(user.id);
+    return await this.categoryRepository.findAllCategoriesForUser(user.id);
   }
 
   async getCategoryById(id: number, emailAddress: string): Promise<Category> {
@@ -95,7 +95,7 @@ export class CategoryService {
     return this.categoryRepository.findUserCategoryById(id, user.id);
   }
 
-  public async getCategoryByName(name: string, userId: number) {
+  public async getCategoryByName(name: string, userId: string) {
     return await this.categoryRepository.findCategoryByName(name, userId);
   }
 

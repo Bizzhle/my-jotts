@@ -1,17 +1,17 @@
 import { Box, CircularProgress } from "@mui/material";
-import { ReactNode, useContext } from "react";
+import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { AuthContext } from "../../webapp/utils/contexts/AuthContext";
+import { useBetterAuth } from "../../webapp/utils/contexts/hooks/useBetterAuth";
 
 interface ProtectedLoaderProps {
   children: ReactNode;
 }
 
-export const ProtectedRoutes = ({ children }: ProtectedLoaderProps) => {
-  const { authenticatedUser, loading } = useContext(AuthContext);
+export const ProtectedRoute = ({ children }: ProtectedLoaderProps) => {
+  const { authenticatedUser, isLoading, session } = useBetterAuth();
   const location = useLocation();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress color="info" />
@@ -19,7 +19,7 @@ export const ProtectedRoutes = ({ children }: ProtectedLoaderProps) => {
     );
   }
 
-  return authenticatedUser ? (
+  return authenticatedUser || session ? (
     children
   ) : (
     <Navigate to="/login" state={{ from: location }} replace />

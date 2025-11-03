@@ -1,13 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { WithTransactionService } from 'src/app/services/with-transaction.services';
-import { UserAccount } from '../../entities/user-account.entity';
+import { User } from 'src/users/entities/User.entity';
 import { UserAccountRepository, UserCondition } from '../../repositories/user-account.repository';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly userAccountRepository: UserAccountRepository) {}
 
-  public async getUserByEmail(emailAddress): Promise<UserAccount | null> {
+  public async getUserByEmail(emailAddress): Promise<User | null> {
     return await this.userAccountRepository.findUserByEmail(emailAddress);
   }
 
@@ -15,12 +14,7 @@ export class UsersService {
     return await this.userAccountRepository.findUserById(userId);
   }
 
-  public async updateUserPassword(user: UserAccount, hashedPassword: string) {
-    user.password = hashedPassword;
-    return await this.userAccountRepository.save(user);
-  }
-
-  private async getUserDetails(userCondition: UserCondition): Promise<UserAccount> {
+  private async getUserDetails(userCondition: UserCondition): Promise<User> {
     const userAccount = await this.userAccountRepository.getUserDetail(userCondition);
 
     if (!userAccount) {

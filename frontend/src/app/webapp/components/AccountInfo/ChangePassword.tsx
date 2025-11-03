@@ -1,11 +1,12 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
+import { isApiError } from "../../../api-service/ApiRequestManager";
+import { authClient } from "../../../libs/betterAuthClient";
 import { LayoutContext } from "../../layout/LayoutContext";
 
 export interface ResetPasswordData {
-  oldPassword: string;
+  currentPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
@@ -27,15 +28,28 @@ export const ChangePassword = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onSubmit = async (data: ResetPasswordData) => {
+  async function storeError(error: string) {
+    setError(error);
+  }
+
+  const onSubmit = async (param: ResetPasswordData) => {
     try {
-      await ApiHandler.changePassword(data);
-      setSuccessMessage("Password changed successfully");
+      const { data, error } = await authClient.changePassword({
+        newPassword: param.newPassword,
+        currentPassword: param.currentPassword,
+        revokeOtherSessions: true,
+      });
+      if (data) {
+        setSuccessMessage("Password changed successfully");
+      }
       reset({
-        oldPassword: "",
+        currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
+      if (error?.message) {
+        await storeError(error.message);
+      }
     } catch (error) {
       const errorMessage = isApiError(error);
       setError(errorMessage);
@@ -68,20 +82,20 @@ export const ChangePassword = () => {
             Change Password
           </Typography>
           {successMessage && (
-            <Typography variant="body1" color="success" sx={{ mt: 1 }}>
+            <Typography variant="body1" color="success.main" sx={{ mt: 1 }}>
               {successMessage}
             </Typography>
           )}
           <TextField
             fullWidth
-            label="Old password"
+            label="Current password"
             type="password"
             variant="outlined"
             margin="normal"
-            {...register("oldPassword", {
+            {...register("currentPassword", {
               required: "password must not be empty",
             })}
-            error={!!errors.oldPassword}
+            error={!!errors.currentPassword}
             helperText={errors.newPassword?.message}
             color="secondary"
           />
@@ -94,8 +108,8 @@ export const ChangePassword = () => {
             {...register("newPassword", {
               required: "password must not be empty",
             })}
-            error={!!errors.oldPassword}
-            helperText={errors.oldPassword?.message}
+            error={!!errors.currentPassword}
+            helperText={errors.currentPassword?.message}
             color="secondary"
           />
           <TextField

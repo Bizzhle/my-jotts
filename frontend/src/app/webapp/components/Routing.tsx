@@ -3,7 +3,8 @@ import { ConfirmRegistration } from "../../authentication/ConfirmRegistration";
 import { ForgotPassword } from "../../authentication/ForgotPassword";
 import Login from "../../authentication/Login";
 import { ResetPassword } from "../../authentication/ResetPassword";
-import { ProtectedRoutes } from "../../libs/auth/RequireAuth";
+import { ProtectedRoute } from "../../libs/auth/ProtectedRoute";
+import { RequiresAdminPermission } from "../../libs/auth/RequiresAdminPermission";
 import Register from "../../registration/Register";
 import Layout from "../layout/Layout";
 import { LayoutProvider } from "../layout/LayoutContext";
@@ -17,6 +18,7 @@ import AccountPage from "./AccountInfo/AccountPage";
 import { ChangePassword } from "./AccountInfo/ChangePassword";
 import ActivityDetail from "./Activity/ActivityDetail";
 import CategoryDetail from "./Category/CategoryDetail";
+import AdminDashboard from "./Dashboard/Admin-Dashboard";
 import WrappedCheckoutForm from "./Subscription/CheckoutForm";
 import SubscribePage from "./Subscription/SubscribePage";
 
@@ -39,9 +41,9 @@ const router = createBrowserRouter([
       {
         index: true,
         Component: () => (
-          <ProtectedRoutes>
+          <ProtectedRoute>
             <HomePage />
-          </ProtectedRoutes>
+          </ProtectedRoute>
         ),
       },
       {
@@ -51,57 +53,67 @@ const router = createBrowserRouter([
       {
         path: "activity/:id",
         Component: () => (
-          <ProtectedRoutes>
+          <ProtectedRoute>
             <ActivityDetail />
-          </ProtectedRoutes>
+          </ProtectedRoute>
         ),
       },
       {
         path: "categories/:categoryId",
         Component: () => (
-          <ProtectedRoutes>
+          <ProtectedRoute>
             <CategoryDetail />
-          </ProtectedRoutes>
+          </ProtectedRoute>
         ),
       },
       {
         path: "categories",
         Component: () => (
-          <ProtectedRoutes>
+          <ProtectedRoute>
             <Category />
-          </ProtectedRoutes>
+          </ProtectedRoute>
         ),
       },
       {
         path: "myAccount",
         Component: () => (
-          <ProtectedRoutes>
+          <ProtectedRoute>
             <AccountPage />
-          </ProtectedRoutes>
+          </ProtectedRoute>
         ),
       },
       {
         path: "subscription",
         Component: () => (
-          <ProtectedRoutes>
+          <ProtectedRoute>
             <SubscribePage />
-          </ProtectedRoutes>
+          </ProtectedRoute>
         ),
       },
       {
         path: "checkout",
         Component: () => (
-          <ProtectedRoutes>
+          <ProtectedRoute>
             <WrappedCheckoutForm />
-          </ProtectedRoutes>
+          </ProtectedRoute>
         ),
       },
       {
         path: "change-password",
         Component: () => (
-          <ProtectedRoutes>
+          <ProtectedRoute>
             <ChangePassword />
-          </ProtectedRoutes>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/dashboard",
+        Component: () => (
+          <ProtectedRoute>
+            <RequiresAdminPermission>
+              <AdminDashboard />
+            </RequiresAdminPermission>
+          </ProtectedRoute>
         ),
       },
     ],
@@ -140,7 +152,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/account-confirmation",
+    path: "/verify-email",
     Component: () => (
       <LayoutProvider>
         <Layout>

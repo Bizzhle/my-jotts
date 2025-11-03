@@ -10,20 +10,21 @@ export class CategoryRepository extends Repository<Category> {
     super(Category, ds.manager);
   }
 
-  public async createCategory(dto: CreateCategoryDto, userId: number): Promise<Category> {
+  public async createCategory(dto: CreateCategoryDto, userId: string): Promise<Category> {
     const category = this.create({
-      user_id: userId,
+      user: { id: userId },
       category_name: dto.categoryName,
       description: dto.description,
+      createdAt: new Date(),
     });
     await this.save<Category>(category);
 
     return category;
   }
 
-  public async findAllCategoriesForUser(userId: number): Promise<Category[]> {
+  public async findAllCategoriesForUser(userId: string): Promise<Category[]> {
     return this.find({
-      where: { user_id: userId },
+      where: { user: { id: userId } },
       order: { updatedAt: 'DESC' },
     });
   }
@@ -40,26 +41,26 @@ export class CategoryRepository extends Repository<Category> {
     return await this.findOneBy({ id: categoryId });
   }
 
-  public async findUserCategoryById(categoryId: number, userId: number): Promise<Category> {
-    return await this.findOneBy({ user_id: userId, id: categoryId });
+  public async findUserCategoryById(categoryId: number, userId: string): Promise<Category> {
+    return await this.findOneBy({ user: { id: userId }, id: categoryId });
   }
 
-  public async updateCategory(id: number, dto: UpdateCategoryDto, userId: number) {
+  public async updateCategory(id: number, dto: UpdateCategoryDto, userId: string) {
     await this.update(
-      { id: id, user_id: userId },
-      { category_name: dto.categoryName, description: dto.description },
+      { id: id, user: { id: userId } },
+      { category_name: dto.categoryName, description: dto.description, createdAt: new Date() },
     );
   }
 
   public async findCategoryByName(
     categoryName: string,
-    user_id: number,
+    userId: string,
   ): Promise<Category | undefined> {
     return this.createQueryBuilder('category')
       .where('LOWER(category.category_name) = LOWER(:categoryName)', {
         categoryName,
       })
-      .andWhere('category.user_id = :user_id', { user_id })
+      .andWhere('category.userId = :userId', { userId })
       .getOne();
   }
 

@@ -1,35 +1,34 @@
 import { Box, Container, Link, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { verifyEmail } from "../libs/betterAuthClient";
 
 export const ConfirmRegistration = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  const emailAddress = searchParams.get("emailAddress");
+  const navigate = useNavigate();
   const [message, setMessage] = useState<string | undefined>("");
   const [errorMessage, setErrorMessage] = useState<string | undefined>("");
 
-  const confirmRegistration = async (
-    emailAddress: string,
-    verificationToken: string
-  ) => {
+  async function verify(token: string) {
     try {
-      // Call the API to confirm registration
-      const response = await ApiHandler.verifyRegistration(
-        emailAddress,
-        verificationToken
-      );
-      setMessage(response?.message); // Handle success (e.g., show a success message)
-    } catch (error) {
-      const errorMessage = isApiError(error);
-      setErrorMessage(errorMessage); // Handle error (e.g., show an error message)
+      const { data, error } = await verifyEmail({
+        query: { token },
+      });
+      if (error) throw error;
+
+      if (data) setMessage("Successful");
+
+      // Optionally redirect after success
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err) {
+      setErrorMessage("error");
     }
-  };
+  }
 
   useEffect(() => {
-    if (token && emailAddress) {
-      confirmRegistration(emailAddress, token);
+    if (token) {
+      verify(token);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);

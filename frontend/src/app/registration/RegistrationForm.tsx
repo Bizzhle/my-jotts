@@ -2,8 +2,9 @@ import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
+import { isApiError } from "../api-service/ApiRequestManager";
 import { RegisterData } from "../api-service/dtos/registration.dto";
+import { authClient } from "../libs/betterAuthClient";
 
 export default function RegistrationForm() {
   const navigate = useNavigate();
@@ -16,13 +17,27 @@ export default function RegistrationForm() {
     formState: { errors },
   } = useForm<RegisterData>();
 
+  async function storeError(error: string) {
+    setError(error);
+  }
+
   const onSubmit = async (data: RegisterData) => {
+    const { email, name, password } = data;
     try {
-      await ApiHandler.registerUser(data);
-      setSuccessMessage(
-        "Registration successful, check your email to verify your account"
-      );
-      setError("");
+      const { data, error } = await authClient.signUp.email({
+        email,
+        name,
+        password,
+      });
+      if (data) {
+        setSuccessMessage(
+          "Registration successful, check your email to verify your account"
+        );
+      }
+
+      if (error?.message) {
+        await storeError(error.message);
+      }
     } catch (err) {
       const errorMessage = isApiError(err);
       setError(errorMessage);
@@ -84,11 +99,24 @@ export default function RegistrationForm() {
             label="email address"
             type="email"
             variant="outlined"
-            {...register("emailAddress", {
+            {...register("email", {
               required: "email must not be empty",
             })}
-            error={!!errors.emailAddress}
-            helperText={errors.emailAddress?.message}
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            color="secondary"
+          />
+          <TextField
+            fullWidth
+            label="name"
+            type="name"
+            variant="outlined"
+            margin="normal"
+            {...register("name", {
+              required: "name must not be empty",
+            })}
+            error={!!errors.email}
+            helperText={errors.email?.message}
             color="secondary"
           />
           <TextField
