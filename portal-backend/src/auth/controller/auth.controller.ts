@@ -1,88 +1,58 @@
-import { Body, Controller, Post, Put } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiInternalServerErrorResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
-import { GetUidFromJWT } from '../../app/jwt.decorators';
-import { LoginDto } from '../../users/dto/initial-login-response.dto';
-import { RefreshSessionDto } from '../../users/dto/refresh-session-response.dto';
-import { ChangePasswordDto } from '../dtos/change-password.dto';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { GetCurrentUserEmail } from 'src/app/decorators/jwt.decorators';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dtos/forgot-password.dto';
+import { SignInDto } from '../dtos/signin.dto';
+import { SignUpDto } from '../dtos/signup.dto';
 import { IsAuthorizedUser } from '../guards/auth.guard';
-import { UserAuthService } from '../services/userauth.service';
+import { AuthService } from '../services/auth.service';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly userAuthService: UserAuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
-  @ApiOperation({ summary: 'Logs in a user' })
-  @ApiOkResponse({
-    description: 'User login successful',
-  })
-  @ApiBadRequestResponse({ description: 'user login failed' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  @ApiInternalServerErrorResponse({ description: 'Server error' })
-  public async login(@Body() loginDto: LoginDto) {
-    return await this.userAuthService.login(loginDto);
+  @Post('sign-up')
+  @AllowAnonymous()
+  async signup(@Body() dto: SignUpDto) {
+    await this.authService.signup(dto);
+    // return res.status(201).json(result);
   }
 
-  @Post('refresh')
-  @ApiOperation({ summary: 'refresh a session' })
-  @ApiOkResponse({
-    description: 'User session refreshed',
-  })
-  @ApiBadRequestResponse({ description: 'user login failed' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  @ApiInternalServerErrorResponse({ description: 'Server error' })
-  public async refreshSession(@Body() refreshSessionDto: RefreshSessionDto) {
-    // Ensure refreshToken is defined in RefreshSessionDto and accessed correctly
-    const { refreshToken } = refreshSessionDto;
-    return await this.userAuthService.refreshSession(refreshToken);
+  @Post('sign-in')
+  @AllowAnonymous()
+  async signin(@Body() dto: SignInDto) {
+    return await this.authService.signin(dto);
+  }
+
+  @Post('sign-out')
+  async signout(@Req() req: Request) {
+    const headers = req.headers;
+    return await this.authService.signout(headers);
   }
 
   @IsAuthorizedUser()
-  @Put('change-password')
-  @ApiOperation({ summary: 'Change user password' })
-  @ApiOkResponse({
-    description: 'Password changed',
-  })
-  @ApiBadRequestResponse({ description: 'user password change failed' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  @ApiInternalServerErrorResponse({ description: 'Server error' })
-  async changePassword(
-    @GetUidFromJWT() userId: number,
-    @Body() changePasswordDto: ChangePasswordDto,
-  ) {
-    return await this.userAuthService.changeUserPassword(userId, changePasswordDto);
+  @Get('me')
+  async getUser(@GetCurrentUserEmail() email: string) {
+    return await this.authService.getUserData(email);
+  }
+
+  @Post('validate-user')
+  @AllowAnonymous()
+  async validateUser(@Body() dto: SignInDto) {
+    return await this.authService.validateUser(dto.email);
   }
 
   @Post('forgot-password')
-  @ApiOperation({ summary: 'forgot user password' })
-  @ApiOkResponse({
-    description: 'Password changed',
-  })
-  @ApiBadRequestResponse({ description: 'user password change failed' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  @ApiInternalServerErrorResponse({ description: 'Server error' })
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return await this.userAuthService.forgotPassword(forgotPasswordDto.emailAddress);
+  @AllowAnonymous()
+  async requestPasswordReset(@Body() dto: ForgotPasswordDto) {
+    return this.authService.requestResetPassword(dto);
   }
 
-  @Put('reset-password')
-  @ApiOperation({ summary: 'Reset user password' })
-  @ApiOkResponse({
-    description: 'Password reset',
-  })
-  @ApiBadRequestResponse({ description: 'User password reset failed' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-  @ApiInternalServerErrorResponse({ description: 'Server error' })
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return await this.userAuthService.resetPassword(resetPasswordDto);
+  @Post('reset-password')
+  @AllowAnonymous()
+  async confirmPasswordReset(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 }

@@ -8,12 +8,12 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
-  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -21,7 +21,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
+import { GetCurrentUserEmail } from '../../app/decorators/jwt.decorators';
+import { Permissions } from '../../auth/decorators/permission.decorator';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { PaginationQueryDto } from '../dto/paginationQuery.dto';
@@ -36,27 +37,28 @@ export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
   @IsAuthorizedUser()
+  @Permissions({ activity: ['create'] })
   @Post()
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Creates an activity',
     description: 'An activity is created by a user',
   })
-  @ApiOkResponse({ status: 201, description: 'The Activity has been successfully created.' })
+  @ApiOkResponse({ description: 'The Activity has been successfully created.' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   @UseInterceptors(FilesInterceptor('files', 3))
   async createActivity(
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
+    @Req() req: Request,
     @Body() dto: CreateActivityDto,
     @UploadedFiles(new OptionalFileValidationPipe())
     file?: Express.Multer.File[],
   ) {
     if (!file) {
-      return await this.activityService.createActivity(emailAddress, dto);
+      return await this.activityService.createActivity(emailAddress, dto, req.headers);
     }
-    return await this.activityService.createActivity(emailAddress, dto, file);
+    return await this.activityService.createActivity(emailAddress, dto, req.headers, file);
   }
 
   @IsAuthorizedUser()
@@ -64,12 +66,13 @@ export class ActivityController {
   @ApiOperation({
     description: 'Gets all activities related to a user',
   })
-  @ApiOkResponse({ status: 201, description: 'Activities were returned' })
+  @ApiOkResponse({ description: 'Activities were returned' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getAllUserActivities(
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
+    @Req() req: Request,
     @Query('search') search?: string,
     @Query() paginationDto?: PaginationQueryDto,
   ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
@@ -81,13 +84,13 @@ export class ActivityController {
   @ApiOperation({
     description: 'Gets activities by category',
   })
-  @ApiOkResponse({ status: 201, description: 'Activities were returned' })
+  @ApiOkResponse({ description: 'Activities were returned' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getAllUserActivitiesByCategory(
     @Param('categoryId', ParseIntPipe) categoryId: number,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
     @Query() paginationDto?: PaginationQueryDto,
   ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
     return this.activityService.getUserActivitiesByCategory(
@@ -102,13 +105,13 @@ export class ActivityController {
   @ApiOperation({
     description: 'Gets activities by category name',
   })
-  @ApiOkResponse({ status: 201, description: 'Activities were returned' })
+  @ApiOkResponse({ description: 'Activities were returned' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getAllUserActivitiesByCategoryName(
     @Param('categoryName') categoryName: string,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
   ) {
     return this.activityService.getUserActivitiesByCategoryName(categoryName, emailAddress);
   }
@@ -120,7 +123,6 @@ export class ActivityController {
     description: 'Gets an activity',
   })
   @ApiOkResponse({
-    status: 201,
     description: 'The Activity has been successfully returned to use.',
   })
   @ApiNotFoundResponse({ description: 'User not found' })
@@ -128,7 +130,7 @@ export class ActivityController {
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getOneUserActivity(
     @Param('id', ParseIntPipe) id: number,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
   ): Promise<ActivityResponseDto> {
     return this.activityService.getUserActivity(id, emailAddress);
   }
@@ -139,7 +141,7 @@ export class ActivityController {
     summary: 'Updates an activity',
     description: 'An activity is updated by a user',
   })
-  @ApiOkResponse({ status: 201, description: 'The Activity has been successfully updated.' })
+  @ApiOkResponse({ description: 'The Activity has been successfully updated.' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
@@ -147,11 +149,13 @@ export class ActivityController {
   async updateUserActivity(
     @Param('id') activityId: number,
     @Body() dto: UpdateActivityDto,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
     @UploadedFiles(new OptionalFileValidationPipe())
+    @Req()
+    req: Request,
     files?: Express.Multer.File[],
   ) {
-    return this.activityService.updateActivity(activityId, dto, emailAddress, files);
+    return this.activityService.updateActivity(activityId, dto, emailAddress, req.headers, files);
   }
 
   @IsAuthorizedUser()
@@ -160,13 +164,13 @@ export class ActivityController {
     summary: 'Deletes an activity',
     description: 'An activity is deleted by a user',
   })
-  @ApiOkResponse({ status: 201, description: 'The Activity has been successfully deleted.' })
+  @ApiOkResponse({ description: 'The Activity has been successfully deleted.' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async removeUserActivity(
     @Param('id') activityId: number,
-    @GetCurrentUserFromJwt() emailAddress: string,
+    @GetCurrentUserEmail() emailAddress: string,
   ) {
     return this.activityService.deleteActivity(activityId, emailAddress);
   }

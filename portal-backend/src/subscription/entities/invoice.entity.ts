@@ -6,9 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/User.entity';
 import { InvoiceStatus } from '../enum/invoice.enum';
-import { UserAccount } from '../../users/entities/user-account.entity';
-import { Subscription } from './subscription.entity';
 
 @Entity()
 export class Invoice {
@@ -45,9 +44,6 @@ export class Invoice {
   @Column({ nullable: true })
   dueDate: Date;
 
-  @ManyToOne(() => Subscription, (subscription) => subscription.invoices, { eager: true })
-  subscription: Subscription;
-
-  @ManyToOne(() => UserAccount, (user) => user.invoices)
-  user: UserAccount;
+  @ManyToOne(() => User, (user) => user.invoices)
+  user: User;
 }

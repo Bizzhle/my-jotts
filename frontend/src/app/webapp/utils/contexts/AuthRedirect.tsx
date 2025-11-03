@@ -1,19 +1,18 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "./hooks/useAuth";
+import { useBetterAuth } from "./hooks/useBetterAuth";
 
 export function AuthRedirect() {
-  const { authenticatedUser, loading } = useAuth();
+  const { authenticatedUser, isLoading, session } = useBetterAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
 
   useEffect(() => {
-    if (!loading && authenticatedUser) {
+    if ((!isLoading && authenticatedUser) || session) {
       navigate(from, { replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, authenticatedUser, from, navigate]);
+  }, [isLoading, authenticatedUser, from, navigate, session]);
 
   return null;
 }

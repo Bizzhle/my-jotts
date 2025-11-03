@@ -4,7 +4,8 @@ export interface EnvVars {
   AWS_SECRET_ACCESS_KEY: string;
   AWS_S3_BUCKET_NAME: string;
   AWS_S3_REGION: string;
-  DATABASE_LOG_QUERIES;
+  BETTER_AUTH_SECRET: string;
+  DATABASE_LOG_QUERIES: boolean;
   DATABASE_RUN_MIGRATIONS: boolean;
   DATABASE_RUN_DEV_MIGRATIONS: boolean;
   DATABASE_USE_SSL: boolean;

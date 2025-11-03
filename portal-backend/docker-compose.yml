@@ -34,13 +34,13 @@ services:
     # networks:
     #   - activity-moves
 
-  adminer:
-    container_name: activity-adminer
-    image: adminer
-    ports:
-      - '8080:8080'
-    depends_on:
-      - db
+  # adminer:
+  #   container_name: activity-adminer
+  #   image: adminer
+  #   ports:
+  #     - '8080:8080'
+  #   depends_on:
+  #     - db
 
 volumes:
   pgdata: {}

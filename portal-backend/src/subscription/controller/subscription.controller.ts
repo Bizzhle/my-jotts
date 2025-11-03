@@ -1,78 +1,52 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Req,
-  Res,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
-import { GetCurrentUserFromJwt } from '../../app/jwt.decorators';
-import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
+import { Controller } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { SubscriptionService } from '../services/subscription.service';
-import { Request, Response } from 'express';
-import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 
 @ApiTags('Subscription')
 @Controller('subscription')
 export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
-  @Get()
-  @IsAuthorizedUser()
-  @ApiBearerAuth()
-  @ApiOperation({
-    description: 'Returns user subscription details',
-  })
-  @ApiOkResponse({ status: 201, description: 'Subscription information were returned' })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
-  @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
-  async getSubscription(@GetCurrentUserFromJwt() username: string) {
-    return await this.subscriptionService.getUserSubscriptionInformation(username);
-  }
+  // @Get()
+  // @IsAuthorizedUser()
+  // @ApiOperation({
+  //   description: 'Returns user subscription details',
+  // })
+  // @ApiOkResponse({ description: 'Subscription information were returned' })
+  // @ApiNotFoundResponse({ description: 'User not found' })
+  // @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
+  // @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
+  // async getSubscription(@Req() req: Request) {
+  //   return await this.subscriptionService.getUserSubscriptionOfUser(req.headers);
+  // }
 
-  @Post()
-  @IsAuthorizedUser()
-  @ApiBearerAuth()
-  @ApiOperation({ description: 'Create a subscription for user' })
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOkResponse({ status: 201, description: 'Subscription is created' })
-  @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
-  async createSubscription(
-    @Body() dto: CreateSubscriptionDto,
-    @GetCurrentUserFromJwt() username: string,
-  ) {
-    return this.subscriptionService.createSubscription(dto, username);
-  }
+  // @Post()
+  // @IsAuthorizedUser()
+  // @ApiOperation({ description: 'Create a subscription for user' })
+  // @HttpCode(HttpStatus.CREATED)
+  // @ApiOkResponse({ description: 'Subscription is created' })
+  // @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
+  // async createSubscription(
+  //   @Body() dto: CreateSubscriptionDto,
+  //   @GetCurrentUserEmail() username: string,
+  // ) {
+  //   return this.subscriptionService.createSubscription(dto, username);
+  // }
 
-  @Delete(':id')
-  @IsAuthorizedUser()
-  @ApiBearerAuth()
-  async cancelSubscription(@Param('id') id: string) {
-    return this.subscriptionService.cancelSubscription(id);
-  }
+  // @Delete(':id')
+  // @IsAuthorizedUser()
+  // async cancelSubscription(@Param('id') id: string) {
+  //   return this.subscriptionService.cancelSubscription(id);
+  // }
 
-  @Post('webhook')
-  async webhook(@Req() req: Request, @Res() res: Response) {
-    try {
-      await this.subscriptionService.webhook(req, res);
-      res.status(HttpStatus.OK).send();
-    } catch (error) {
-      console.error('Webhook error:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Webhook processing failed');
-    }
-  }
+  // @Post('webhook')
+  // async webhook(@Req() req: Request, @Res() res: Response) {
+  //   try {
+  //     await this.subscriptionService.webhook(req, res);
+  //     res.status(HttpStatus.OK).send();
+  //   } catch (error) {
+  //     console.error('Webhook error:', error);
+  //     res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Webhook processing failed');
+  //   }
+  // }
 }

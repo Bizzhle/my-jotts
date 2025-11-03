@@ -1,12 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SubscriptionService } from '../subscription.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Subscription } from '../../entities/subscription.entity';
 import Stripe from 'stripe';
-import { UserAccount } from '../../../users/entities/user-account.entity';
-import { CreateSubscriptionDto } from '../../dtos/create-subscription.dto';
 import { UserAccountRepository } from '../../../users/repositories/user-account.repository';
-import { SubscriptionStatus } from '../../enum/subscrition.enum';
+import { Subscription } from '../../entities/subscription.entity';
+import { SubscriptionService } from '../subscription.service';
 
 const mockUser = {
   id: 1,
@@ -17,20 +14,20 @@ const mockUser = {
   last_logged_in: new Date(),
 };
 
-const stripeSubscription: Stripe.Subscription = {
-  id: 'sub_123',
-  customer: 'cus_123',
-  status: 'active',
-  current_period_start: 1625097600,
-  current_period_end: 1625097600,
-  latest_invoice: {
-    id: 'inv_123',
-    payment_intent: {
-      id: 'pi_123',
-      client_secret: 'secret_123',
-    },
-  } as Stripe.Invoice,
-} as Stripe.Subscription;
+// const stripeSubscription: Stripe.Subscription = {
+//   id: 'sub_123',
+//   customer: 'cus_123',
+//   status: 'active',
+//   current_period_start: 1625097600,
+//   current_period_end: 1625097600,
+//   latest_invoice: {
+//     id: 'inv_123',
+//     payment_intent: {
+//       id: 'pi_123',
+//       client_secret: 'secret_123',
+//     },
+//   } as Stripe.Invoice,
+// } as Stripe.Subscription;
 
 describe('Subscription', () => {
   let service: SubscriptionService;

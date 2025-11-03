@@ -63,6 +63,14 @@ tasks:
     cmds:
       - npm run typeorm schema:drop -- -d {{.DATASOURCE}}
 
+  migration:show:
+    desc: shows the list of migrations and whether they have been run or not
+    cmds:
+      - npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:show -d  {{.DATASOURCE}}
+
+  migration:log:
+    cmds:
+      - npm run typeorm schema:log -- -d {{.DATASOURCE}}
   reset:
     desc: Resets and repopulates the database.
     cmds:

@@ -10,18 +10,16 @@ import {
   Put,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiBody,
   ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { PaymentPlanService } from '../services/payment-plan.service';
-import { PaymentPlan } from '../entities/payment-plan.entity';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreatePaymentPlanDto } from '../dtos/payment-plan.dto';
+import { PaymentPlan } from '../entities/payment-plan.entity';
+import { PaymentPlanService } from '../services/payment-plan.service';
 
 @ApiTags('Payment Plan')
 @Controller('payment-plan')
@@ -30,11 +28,10 @@ export class PaymentPlanController {
 
   @Get()
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   @ApiOperation({
     description: 'Gets all active payment plans',
   })
-  @ApiOkResponse({ status: 201, description: 'Payment plans were returned' })
+  @ApiOkResponse({ description: 'Payment plans were returned' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async getActivePlans(): Promise<PaymentPlan[]> {
     return await this.paymentPlanService.getAllActivePlans();
@@ -42,20 +39,18 @@ export class PaymentPlanController {
 
   @Get(':id')
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   async getPlan(@Param('id') id: number) {
     return this.paymentPlanService.getPlanById(id);
   }
 
   @Post()
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   @ApiOperation({
     description: 'Create an active payment plan',
   })
   @ApiBody({ type: CreatePaymentPlanDto })
   @HttpCode(HttpStatus.CREATED)
-  @ApiOkResponse({ status: 201, description: 'Payment plan is created' })
+  @ApiOkResponse({ description: 'Payment plan is created' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async createPaymentPlan(@Body() dto: CreatePaymentPlanDto) {
     return await this.paymentPlanService.createPlan(dto);
@@ -63,13 +58,12 @@ export class PaymentPlanController {
 
   @Put(':id')
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   @ApiOperation({
     description: 'Update an active payment plan.',
   })
   @ApiBody({ type: CreatePaymentPlanDto })
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ status: 201, description: 'Payment plan is updated' })
+  @ApiOkResponse({ description: 'Payment plan is updated' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
   async updatePlan(@Param('id') id: number, @Body() dto: CreatePaymentPlanDto) {
     return this.paymentPlanService.updatePlan(id, dto);
@@ -77,7 +71,6 @@ export class PaymentPlanController {
 
   @Delete(':id')
   @IsAuthorizedUser()
-  @ApiBearerAuth()
   async deactivatePlan(@Param('id') id: number) {
     return this.paymentPlanService.deactivatePlan(id);
   }

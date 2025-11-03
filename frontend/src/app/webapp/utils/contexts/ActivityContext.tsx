@@ -9,7 +9,7 @@ import { CategoryDto } from "../../../api-service/dtos/category.dto";
 import { PageInfoDto } from "../../../api-service/dtos/pageInfo.dto";
 import { useObjectReducer } from "../shared/objectReducer";
 import { useDebounce } from "../shared/useDebounce";
-import { useAuth } from "./hooks/useAuth";
+import { useBetterAuth } from "./hooks/useBetterAuth";
 
 interface Activity extends ActivityResponseDto {}
 
@@ -67,7 +67,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   }>();
   const [state, setState] = useObjectReducer(initialState);
   const debouncedSearch = useDebounce(state.searchQuery);
-  const { authenticatedUser } = useAuth(); // get user or auth state
+  const { authenticatedUser } = useBetterAuth(); // get user or auth state
 
   const setPage = useCallback(
     (page: number) => {
@@ -172,11 +172,13 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   const fetchCategories = useCallback(async () => {
     try {
       const response = await ApiHandler.getCategories();
+
       setState("categories", response);
     } catch (err) {
       setState("error", isApiError(err));
     }
-  }, [setState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchCategory = useCallback(async () => {
     if (!categoryId) {
@@ -212,7 +214,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   }, [fetchActivity, authenticatedUser]);
 
   useEffect(() => {
-    fetchCategories();
+    // fetchCategories();
     fetchCategory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId]);
