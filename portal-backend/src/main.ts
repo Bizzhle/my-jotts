@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app/app.module';
 import { AppLoggerService } from './logger/services/app-logger.service';
 import getLogLevels from './utils/get-log-levels';
+import { trustedOrigins } from './utils/trusted-origins';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -30,10 +31,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? ['https://www.myjotts.com', 'https://myjotts.com']
-        : ['http://localhost:5173', 'http://myjotts.local'],
+    origin: trustedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
