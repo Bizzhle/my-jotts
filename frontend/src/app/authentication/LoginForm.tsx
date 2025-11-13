@@ -26,7 +26,7 @@ export default function LoginForm() {
 
   const onSubmit = async (params: LoginData) => {
     try {
-      const { data, error } = await authClient.signIn.email({
+      const { error } = await authClient.signIn.email({
         email: params.email,
         password: params.password,
       });
@@ -34,6 +34,7 @@ export default function LoginForm() {
       if (error?.message) {
         await storeLoginError(error.message);
       }
+      const { data } = await authClient.getSession();
 
       if (data) {
         await startSession(data.user);
