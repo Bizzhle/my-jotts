@@ -15,7 +15,7 @@ async function bootstrap() {
 
   const allowedOrigins =
     process.env.NODE_ENV === 'production'
-      ? ['https://myjotts.com', 'https://myjotts.local']
+      ? ['https://myjotts.com', 'https://api.myjotts.com', 'https://myjotts.local']
       : ['http://localhost:5173'];
 
   app.enableCors({
