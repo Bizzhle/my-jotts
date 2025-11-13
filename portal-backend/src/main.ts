@@ -5,7 +5,6 @@ import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app/app.module';
 import { AppLoggerService } from './logger/services/app-logger.service';
 import getLogLevels from './utils/get-log-levels';
-import { trustedOrigins } from './utils/trusted-origins';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -14,6 +13,19 @@ async function bootstrap() {
     logger: getLogLevels(process.env.NODE_ENV === 'production'),
   });
 
+  const allowedOrigins =
+    process.env.NODE_ENV === 'production'
+      ? ['https://myjotts.com', 'https://api.myjotts.com', 'https://myjotts.local']
+      : ['http://localhost:5173'];
+
+  app.enableCors({
+    origin: allowedOrigins,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Custom-Header'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
   app.setGlobalPrefix('api/v1', {
     exclude: [
       // Exclude the entire auth controller
@@ -30,13 +42,6 @@ async function bootstrap() {
       disableErrorMessages: process.env.NODE_ENV === 'production',
     }),
   );
-  app.enableCors({
-    origin: trustedOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Authorization',
-    credentials: true,
-    optionsSuccessStatus: 204,
-  });
   app.useLogger(app.get(AppLoggerService));
   app.use(cookieParser());
   const config = new DocumentBuilder()
