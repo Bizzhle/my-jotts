@@ -1,0 +1,4 @@
+tls:
+  certificates:
+    - certFile: /certs/myjotts.local+1.pem
+      keyFile: /certs/myjotts.local+1-key.pem

@@ -2,4 +2,6 @@
 .sh
 .env.development
 .env.production
+.env.local
 acme.json
+.pem

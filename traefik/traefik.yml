@@ -8,6 +8,23 @@ api:
   dashboard: true
   insecure: false
 
+http:
+  middlewares:
+    cors-headers:
+      headers:
+        accessControlAllowOriginList:
+          - "https://myjotts.com"
+        accessControlAllowMethods:
+          - "GET"
+          - "POST"
+          - "PUT"
+          - "DELETE"
+          - "OPTIONS"
+        accessControlAllowHeaders:
+          - "Content-Type"
+          - "Authorization"
+        accessControlAllowCredentials: true
+
 providers:
   docker:
     exposedByDefault: false

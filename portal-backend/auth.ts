@@ -9,7 +9,6 @@ import { BetterAuthLoggerPlugin } from './src/logger/services/log-plugin';
 import { ac, roles } from './src/permissions/permissions';
 import { loadTemplate } from './src/utils/services/load-template-config';
 import { sendEmail } from './src/utils/services/transporter';
-import { trustedOrigins } from './src/utils/trusted-origins';
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-09-30.clover', // Latest API version as of Stripe SDK v19
@@ -33,7 +32,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-
     sendResetPassword: async ({ user, url, token }) => {
       const frontendUrl = process.env.FRONTEND_URL;
       const callbackURL = `${frontendUrl}/reset-password?token=${token}`;
@@ -57,7 +55,7 @@ export const auth = betterAuth({
       await sendEmail(user.email, 'Verify your email', html);
     },
   },
-  trustedOrigins,
+  trustedOrigins: ['http://localhost:5173', 'https://myjotts.com', 'https://myjotts.local'],
   basePath: '/api/auth',
   exposeRoutes: false,
   plugins: [
@@ -119,10 +117,7 @@ export const auth = betterAuth({
           });
           await sendEmail(user.email, 'Subscription Created', html);
         },
-
         onSubscriptionUpdated: async ({ subscription, user }) => {
-          console.log(`Subscription updated for ${user.email}: ${subscription.plan}`);
-
           // Update user role when plan changes
           await auth.api.setRole({
             body: {
@@ -132,7 +127,6 @@ export const auth = betterAuth({
             headers: {},
           });
         },
-
         onSubscriptionCanceled: async ({ subscription, user }) => {
           const html = await loadTemplate('subscription-cancelled.template.html', {
             emailAddress: user.email,
@@ -161,18 +155,7 @@ export const auth = betterAuth({
       },
     }),
   ],
-  databaseHooks: {
-    // user: {
-    //   create: {
-    //     before: async (user) => {
-    //       if (process.env.ADMIN_EMAILS?.split(',').includes(user.email)) {
-    //         return { data: { ...user, role: 'admin' } };
-    //       }
-    //       return { data: user };
-    //     },
-    //   },
-    // },
-  },
+  databaseHooks: {},
 });
 
 export const initializeAuth = async () => {
