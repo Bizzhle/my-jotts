@@ -3,7 +3,7 @@ import { Box, IconButton, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ApiHandler, isApiError } from "../../api-service/ApiRequestManager";
-import { CategoryData } from "../../api-service/dtos/category.dto";
+import { CategoryResponseDto } from "../../api-service/dtos/category.dto";
 import CategoryForm from "../components/Category/CategoryForm";
 import { LayoutContext } from "../layout/LayoutContext";
 import { useActivities } from "../utils/contexts/hooks/useActivities";
@@ -13,9 +13,8 @@ export default function Category() {
   const { categories, fetchCategories } = useActivities();
   const { hideSearchBar } = useContext(LayoutContext);
   const [openCategoryForm, setOpenCategoryForm] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryData | null>(
-    null
-  );
+  const [selectedCategory, setSelectedCategory] =
+    useState<CategoryResponseDto | null>(null);
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<
     Record<number, string | null | undefined>
@@ -50,7 +49,7 @@ export default function Category() {
     }
   };
 
-  const handleEditCategory = (category: CategoryData) => {
+  const handleEditCategory = (category: CategoryResponseDto) => {
     setSelectedCategory(category);
     setOpenCategoryForm(true);
   };
