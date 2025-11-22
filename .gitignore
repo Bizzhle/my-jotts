@@ -4,4 +4,4 @@
 .env.production
 .env.local
 acme.json
-.pem
+*.pem
