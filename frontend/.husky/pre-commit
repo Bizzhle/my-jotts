@@ -1,0 +1,11 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run TypeScript typecheck and refuse commit if there are type errors.
+echo "Running lint-staged on staged files..."
+# run lint-staged to lint/auto-fix staged files (only .ts/.tsx as configured)
+npx lint-staged
+
+echo "Running pre-commit typecheck..."
+# keep project-wide typecheck to prevent committing type errors
+npm run typecheck

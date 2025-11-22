@@ -5,9 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
+    "dev:checked": "npm run check && vite --host",
+    "prepare": "husky install",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:ci": "eslint . --ext .ts,.tsx --report-unused-disable-directives --max-warnings 0 --format unix",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run lint:ci",
     "preview": "vite preview"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --cache --fix",
+      "git add"
+    ]
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.637.0",
@@ -39,6 +50,8 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.0",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.2.2",
     "vite": "^6.2.3"
