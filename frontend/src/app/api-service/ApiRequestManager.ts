@@ -8,7 +8,7 @@ import {
   ActivitiesResponseDto,
   ActivityResponseDto,
 } from "./dtos/activity.dto";
-import { CategoryData, CategoryDto } from "./dtos/category.dto";
+import { CategoryData, CategoryResponseDto } from "./dtos/category.dto";
 import { ChangePasswordDto } from "./dtos/change-password.dto";
 import { ForgotPasswordResponseDto } from "./dtos/forgotpassword.dto";
 import { LogoutUserDto } from "./dtos/logout-user.dto";
@@ -148,11 +148,13 @@ export class ApiHandler {
     const url = ENDPOINTS.DELETE_ACTIVITY(activityId);
     return ApiMethods.delete(url);
   };
-  static getCategories = (): Promise<CategoryDto[]> => {
+  static getCategories = (): Promise<CategoryResponseDto[]> => {
     const url = ENDPOINTS.GET_CATEGORIES();
     return ApiMethods.get(url);
   };
-  static getCategory = (categoryId: number | string): Promise<CategoryDto> => {
+  static getCategory = (
+    categoryId: number | string
+  ): Promise<CategoryResponseDto> => {
     const url = ENDPOINTS.GET_CATEGORY(categoryId);
     return ApiMethods.get(url);
   };

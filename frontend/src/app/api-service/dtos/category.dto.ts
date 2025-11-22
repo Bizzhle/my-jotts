@@ -1,11 +1,10 @@
-export interface CategoryDto {
+export interface CategoryResponseDto {
   id: number;
   categoryName: string;
   description?: string;
 }
 
 export interface CategoryData {
-  id: number;
   categoryName: string;
   description?: string;
 }
