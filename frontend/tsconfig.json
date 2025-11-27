@@ -5,6 +5,7 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "types": ["vitest/globals"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -12,6 +13,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "forceConsistentCasingInFileNames": true,
     "jsx": "react-jsx",
 
     /* Linting */
@@ -21,6 +23,6 @@
     "noFallthroughCasesInSwitch": true,
     "typeRoots": ["./node_modules/@types", "./src/vite-env.d.ts"]
   },
-  "include": ["src"],
+  "include": ["./node_modules", "./types", "./src", "__tests__"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

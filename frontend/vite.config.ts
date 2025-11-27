@@ -15,6 +15,20 @@ export default defineConfig(({ mode }) => {
     define: {
       "process.env": "{}",
     },
+    test: {
+      environment: "jsdom",
+      globals: true,
+      setupFiles: "./src/setupTests.ts",
+      // coverage: {
+      //   reporter: ["text", "json", "html"],
+      //   exclude: [
+      //     "src/app/webapp/utils/contexts/**",
+      //     "src/app/webapp/utils/hooks/**",
+      //     "src/app/webapp/utils/libs/**",
+      //     "**/__tests__/**",
+      //   ],
+      // },
+    },
   };
 
   if (mode === "development") {
