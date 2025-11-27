@@ -82,8 +82,15 @@ export default function HomePage() {
             </Typography>
           )}
         </Grid>
-        <ActivityDialogForm open={activityFormOpen} handleClose={handleClose} />
-        <CategoryForm open={categoryFormOpen} handleClose={handleClose} />
+        {activityFormOpen && (
+          <ActivityDialogForm
+            open={activityFormOpen}
+            handleClose={handleClose}
+          />
+        )}
+        {categoryFormOpen && (
+          <CategoryForm open={categoryFormOpen} handleClose={handleClose} />
+        )}
       </WithIntersectionObserver>
     </>
   );
