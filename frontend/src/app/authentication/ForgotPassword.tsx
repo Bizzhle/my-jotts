@@ -49,7 +49,8 @@ export const ForgotPassword = () => {
         setSuccessMessage(data?.message);
       }
     } catch (error) {
-      const errorMessage = isApiError(error);
+      const errorMessage =
+        isApiError(error) || "An unexpected error occurred. Please try again.";
       setError(errorMessage);
     }
   };
