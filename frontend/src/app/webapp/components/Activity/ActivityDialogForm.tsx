@@ -126,7 +126,9 @@ export default function ActivityDialogForm({
 
   return (
     <Dialog open={open} onClose={handleCloseDialog} fullWidth>
-      <DialogTitle sx={{ mb: -2 }}>Add Activity</DialogTitle>
+      <DialogTitle sx={{ mb: -2 }}>
+        {activityToEdit ? "Edit Activity" : "Add Activity"}
+      </DialogTitle>
       <Box sx={{ mt: -2 }} component="form" onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           {error && getErrorMessage(error)}
