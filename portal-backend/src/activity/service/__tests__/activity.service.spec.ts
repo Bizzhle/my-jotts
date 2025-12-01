@@ -126,6 +126,8 @@ describe('ActivityService', () => {
   let service: ActivityService;
   let activityRepository;
   let userAccountRepository;
+  let categoryService;
+  let imageFileService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -183,6 +185,7 @@ describe('ActivityService', () => {
           useValue: {
             storeImageFile: jest.fn(),
             getImageFileById: jest.fn(),
+            fetchImageFilesById: jest.fn(),
           },
         },
         {
@@ -205,6 +208,8 @@ describe('ActivityService', () => {
     service = module.get<ActivityService>(ActivityService);
     activityRepository = module.get<ActivityRepository>(ActivityRepository);
     userAccountRepository = module.get<UserAccountRepository>(UserAccountRepository);
+    categoryService = module.get<CategoryService>(CategoryService);
+    imageFileService = module.get<ImageFileService>(ImageFileService);
   });
 
   const req = {
@@ -228,7 +233,7 @@ describe('ActivityService', () => {
     expect(result).toEqual(activity);
   });
 
-  it.only('returns all activities related to a user', async () => {
+  it('returns all activities related to a user', async () => {
     jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(user);
     jest.spyOn(activityRepository, 'getAllUserActivities').mockResolvedValue(activities);
     const search = '';
@@ -241,47 +246,45 @@ describe('ActivityService', () => {
   it('returns an activity related to a user', async () => {
     jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(user);
     jest.spyOn(activityRepository, 'getActivityByUserIdAndActivityId').mockResolvedValue(activity);
+    jest.spyOn(imageFileService, 'fetchImageFilesById').mockResolvedValue([]);
 
     const result = await service.getUserActivity(activity.id, user.email);
     expect(result).toEqual({
-      activityTitle: 'Sample Activity',
-      categoryName: 'test',
-      dateCreated: new Date('2023-10-10'),
-      dateUpdated: new Date('2023-10-10'),
-      description: 'Sample Description',
-      id: 1,
-      imageUrls: undefined,
-      location: 'Sample Location',
-      price: 100,
-      rating: 5,
+      id: activity.id,
+      activityTitle: activity.activity_title,
+      categoryName: activity.category.category_name,
+      categoryId: activity.category.id,
+      location: activity.location,
+      price: activity.price,
+      rating: activity.rating,
+      description: activity.description,
+      dateCreated: activity.date_created,
+      dateUpdated: activity.date_updated,
+      imageUrls: [],
     });
   });
 
   it('updates an activity', async () => {
     jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(user);
-    //jest.spyOn(activityRepository, 'getActivityByUserIdAndActivityId').mockResolvedValue(activity);
+    jest.spyOn(activityRepository, 'getActivityByUserIdAndActivityId').mockResolvedValue(activity);
+    jest.spyOn(categoryService, 'getCategoryByName').mockResolvedValue(category);
+    jest.spyOn(categoryService, 'createCategory').mockResolvedValue(null);
     jest
-      .spyOn(service, 'updateActivity')
+      .spyOn(activityRepository, 'updateActivity')
       .mockResolvedValue({ ...activity, activity_title: 'Updated Sample' });
 
+    jest.spyOn(categoryService, 'createCategory').mockResolvedValue(null);
     const updateDto = {
       activityTitle: 'Updated Sample',
     };
 
-    const result = await service.updateActivity(activity.id, updateDto, user.email, req.headers);
-    expect(result).toEqual({
-      id: 1,
-      activity_title: 'Updated Sample',
-      price: 100,
-      location: 'Sample Location',
-      rating: 5,
-      description: 'Sample Description',
-      date_created: new Date('2023-10-10'),
-      date_updated: new Date('2023-10-10'),
-      category_id: 1,
-      user_id: 1,
-      category,
-      userAccount: null,
-    });
+    await service.updateActivity(activity.id, updateDto, user.email, req.headers);
+    expect(activityRepository.updateActivity).toHaveBeenCalled();
+    expect(activityRepository.updateActivity).toHaveBeenCalledWith(
+      activity,
+      expect.objectContaining({
+        activity_title: 'Updated Sample',
+      }),
+    );
   });
 });

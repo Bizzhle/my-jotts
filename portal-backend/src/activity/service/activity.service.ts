@@ -362,6 +362,10 @@ export class ActivityService extends WithTransactionService {
         },
       });
 
+      if (!user) {
+        throw new UnauthorizedException();
+      }
+
       const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
         activityId,
         user.id,
@@ -408,8 +412,6 @@ export class ActivityService extends WithTransactionService {
           ),
         );
       }
-
-      return updatedActivity;
     } catch (err) {
       await this.logService.debug(err);
       throw new InternalServerErrorException('Could not update activity');
