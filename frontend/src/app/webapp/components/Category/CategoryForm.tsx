@@ -10,14 +10,17 @@ import {
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
-import { CategoryData } from "../../../api-service/dtos/category.dto";
+import {
+  CategoryData,
+  CategoryResponseDto,
+} from "../../../api-service/dtos/category.dto";
 import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
 
 interface DialogFormProps {
   open: boolean;
   handleClose: () => void;
-  categoryToEdit?: CategoryData;
+  categoryToEdit?: CategoryResponseDto;
 }
 
 export default function CategoryForm({
@@ -47,8 +50,10 @@ export default function CategoryForm({
   }, [categoryToEdit, reset]);
 
   const onSubmit = async (data: CategoryData) => {
+    const { categoryName, description } = data;
     const categoryData = {
-      ...data,
+      categoryName,
+      description,
     };
 
     try {

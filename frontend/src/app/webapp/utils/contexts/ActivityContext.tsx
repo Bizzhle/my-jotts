@@ -5,7 +5,7 @@ import {
   ActivitiesResponseDto,
   ActivityResponseDto,
 } from "../../../api-service/dtos/activity.dto";
-import { CategoryDto } from "../../../api-service/dtos/category.dto";
+import { CategoryResponseDto } from "../../../api-service/dtos/category.dto";
 import { PageInfoDto } from "../../../api-service/dtos/pageInfo.dto";
 import { useObjectReducer } from "../shared/objectReducer";
 import { useDebounce } from "../shared/useDebounce";
@@ -19,14 +19,14 @@ interface ActivityProviderProps {
 
 interface ActivityContextState {
   activities: ActivitiesResponseDto[];
-  categories: CategoryDto[];
+  categories: CategoryResponseDto[];
   searchQuery: string;
   error?: string;
   loading: boolean;
   activityData: Activity | null;
   activityDataLoading: boolean;
   activityDataError?: string;
-  category: CategoryDto | null;
+  category: CategoryResponseDto | null;
   pageInfo: PageInfoDto;
 }
 

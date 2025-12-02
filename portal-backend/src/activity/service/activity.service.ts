@@ -363,7 +363,7 @@ export class ActivityService extends WithTransactionService {
       });
 
       if (!user) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('User not logged in');
       }
 
       const activity = await this.activityRepository.getActivityByUserIdAndActivityId(

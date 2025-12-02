@@ -149,10 +149,9 @@ export class ActivityController {
   async updateUserActivity(
     @Param('id') activityId: number,
     @Body() dto: UpdateActivityDto,
+    @Req() req: Request,
     @GetCurrentUserEmail() emailAddress: string,
     @UploadedFiles(new OptionalFileValidationPipe())
-    @Req()
-    req: Request,
     files?: Express.Multer.File[],
   ) {
     return this.activityService.updateActivity(activityId, dto, emailAddress, req.headers, files);
