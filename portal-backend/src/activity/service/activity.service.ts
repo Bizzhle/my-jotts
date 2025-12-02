@@ -412,8 +412,6 @@ export class ActivityService extends WithTransactionService {
           ),
         );
       }
-
-      return updatedActivity;
     } catch (err) {
       await this.logService.debug(err);
       throw new InternalServerErrorException('Could not update activity');

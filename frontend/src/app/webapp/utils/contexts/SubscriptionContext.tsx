@@ -32,7 +32,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     try {
       const { data: subscriptions } = await authClient.subscription.list();
 
-      const activeSubscription = subscriptions?.find(
+      const activeSubscription = await subscriptions?.find(
         (sub) => sub.status === "active" || sub.status === "trialing"
       );
       setSubscription(activeSubscription);

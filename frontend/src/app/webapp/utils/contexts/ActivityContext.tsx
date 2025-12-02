@@ -154,6 +154,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     try {
       setState("activityDataLoading", true);
       const activity = await ApiHandler.getActivity(id);
+
       setState("activityData", activity);
     } catch (err) {
       setState("activityDataError", isApiError(err));
@@ -167,7 +168,8 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     } catch (err) {
       setState("error", isApiError(err));
     }
-  }, [setState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -195,27 +197,20 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
 
   useEffect(() => {
     if (authenticatedUser && !id) {
-      loadActivities();
+      void loadActivities();
+      void fetchCategories();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    debouncedSearch,
-    categoryId,
-    id,
-    authenticatedUser,
-    state.pageInfo.limit,
-    state.pageInfo.offset,
-  ]);
+  }, [id, authenticatedUser, loadActivities]);
 
   useEffect(() => {
     if (authenticatedUser) {
-      fetchActivity();
+      void fetchActivity();
     }
   }, [fetchActivity, authenticatedUser]);
 
   useEffect(() => {
-    // fetchCategories();
-    fetchCategory();
+    void fetchCategory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId]);
 

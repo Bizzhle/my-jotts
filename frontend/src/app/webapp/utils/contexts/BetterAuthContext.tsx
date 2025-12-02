@@ -26,7 +26,7 @@ interface Session {
   ipAddress?: string | null | undefined;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   readonly isAuthenticated: boolean;
   readonly authenticatedUser: User | undefined;
   isLoading: boolean;

@@ -88,12 +88,6 @@ export default function CategoryForm({
             {...register("categoryName")}
             color="secondary"
           />
-          {/* <AutoCompleteElement
-            value={value}
-            setValue={setValue}
-            label="Category"
-            options={[]}
-          /> */}
 
           <TextField
             id="description"

@@ -42,7 +42,8 @@ export default function LoginForm() {
 
       navigate(from, { replace: true });
     } catch (err) {
-      const errorMessage = isApiError(err);
+      const errorMessage =
+        isApiError(err) || "An unexpected error occurred. Please try again.";
       setError(errorMessage);
     }
   };
@@ -60,6 +61,11 @@ export default function LoginForm() {
         noValidate
       >
         <Typography sx={{ mb: 2 }}>Log in</Typography>
+        {error && !loginError && (
+          <Typography sx={{ mb: 2 }} color="error" variant="body2">
+            {error}
+          </Typography>
+        )}
         <TextField
           fullWidth
           label="email address"
@@ -78,12 +84,11 @@ export default function LoginForm() {
           helperText={errors.password?.message}
           color="secondary"
         />
-        {error ||
-          (loginError && (
-            <Typography color="error" variant="body2">
-              {loginError}
-            </Typography>
-          ))}
+        {loginError && (
+          <Typography color="error" variant="body2">
+            {loginError}
+          </Typography>
+        )}
 
         <Button
           variant="contained"

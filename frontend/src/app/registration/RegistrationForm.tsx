@@ -39,7 +39,8 @@ export default function RegistrationForm() {
         await storeError(error.message);
       }
     } catch (err) {
-      const errorMessage = isApiError(err);
+      const errorMessage =
+        isApiError(err) || "An unexpected error occurred. Please try again.";
       setError(errorMessage);
     }
   };
@@ -94,6 +95,11 @@ export default function RegistrationForm() {
           }}
         >
           <Typography sx={{ mb: 2 }}>Create a new account</Typography>
+          {error && (
+            <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+              {error}
+            </Typography>
+          )}
           <TextField
             fullWidth
             label="email address"
@@ -146,11 +152,6 @@ export default function RegistrationForm() {
             helperText={errors.confirmPassword?.message}
             color="secondary"
           />
-          {error && (
-            <Typography color="error" variant="body2">
-              {error}
-            </Typography>
-          )}
           <Button
             variant="contained"
             size="medium"
