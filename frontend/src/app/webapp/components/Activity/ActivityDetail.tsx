@@ -122,11 +122,13 @@ export default function ActivityDetail() {
       >
         Edit Activity
       </Button>
-      <ActivityDialogForm
-        open={activityFormOpen}
-        handleClose={handleClose}
-        activityToEdit={activityData}
-      />
+      {activityFormOpen && (
+        <ActivityDialogForm
+          open={activityFormOpen}
+          handleClose={handleClose}
+          activityToEdit={activityData}
+        />
+      )}
     </Container>
   );
 }

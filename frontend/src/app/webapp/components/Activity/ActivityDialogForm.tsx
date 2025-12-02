@@ -52,7 +52,23 @@ export default function ActivityDialogForm({
 
   useEffect(() => {
     if (activityToEdit) {
-      reset(activityToEdit);
+      // Only reset with allowed fields
+      const {
+        activityTitle,
+        categoryName,
+        rating,
+        price,
+        location,
+        description,
+      } = activityToEdit;
+      reset({
+        activityTitle,
+        categoryName,
+        rating,
+        price,
+        location,
+        description,
+      });
     }
   }, [activityToEdit, reset]);
 
@@ -64,6 +80,7 @@ export default function ActivityDialogForm({
     reset({
       activityTitle: "",
       categoryName: "",
+      rating: 0,
       price: 0,
       location: "",
       description: "",
@@ -97,11 +114,14 @@ export default function ActivityDialogForm({
   };
 
   const onSubmit = async (data: ActivityData) => {
+    const { activityTitle, price, location, description } = data;
     const activityData = {
-      ...data,
+      activityTitle,
       categoryName: value,
-      price: data.price !== undefined ? Number(data.price) : 0,
+      price: price !== undefined ? Number(price) : 0,
       rating: Number(rating),
+      location,
+      description,
     };
 
     try {
@@ -126,7 +146,9 @@ export default function ActivityDialogForm({
 
   return (
     <Dialog open={open} onClose={handleCloseDialog} fullWidth>
-      <DialogTitle sx={{ mb: -2 }}>Add Activity</DialogTitle>
+      <DialogTitle sx={{ mb: -2 }}>
+        {activityToEdit ? "Edit Activity" : "Add Activity"}
+      </DialogTitle>
       <Box sx={{ mt: -2 }} component="form" onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           {error && getErrorMessage(error)}

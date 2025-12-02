@@ -1,5 +1,5 @@
 export interface SubscriptionDto {
-  limits: Record<string, number> | undefined;
+  limits: Record<string, unknown> | undefined;
   priceId: string | undefined;
   id: string;
   plan: string;

@@ -6,11 +6,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
-import { LayoutContext } from "../webapp/layout/LayoutContext";
+import { useLayoutContext } from "../webapp/layout/hooks/useLayoutContext";
 
 export interface ResetPasswordData {
   newPassword: string;
@@ -19,8 +19,8 @@ export interface ResetPasswordData {
 }
 
 export const ResetPassword = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const [error, setError] = useState<string | undefined>("");
   const [successMessage, setSuccessMessage] = useState<string | undefined>("");
@@ -30,8 +30,7 @@ export const ResetPassword = () => {
     watch,
     formState: { errors },
   } = useForm<ResetPasswordData>();
-  const { hideNavigation, hideSearchBar, hideHeader } =
-    useContext(LayoutContext);
+  const { hideNavigation, hideSearchBar, hideHeader } = useLayoutContext();
 
   useEffect(() => {
     hideNavigation();

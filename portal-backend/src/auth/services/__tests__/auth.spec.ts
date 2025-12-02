@@ -60,7 +60,7 @@ describe('User Auth', () => {
     });
   });
 
-  it.only('should throw an error on failed registration', async () => {
+  it('should throw an error on failed registration', async () => {
     (auth.api.signUpEmail as unknown as jest.Mock).mockRejectedValue(
       new Error('Email already exists'),
     );
