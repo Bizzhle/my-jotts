@@ -276,6 +276,10 @@ describe('ActivityService', () => {
     jest.spyOn(categoryService, 'createCategory').mockResolvedValue(null);
     const updateDto = {
       activityTitle: 'Updated Sample',
+      categoryName: 'test',
+      description: 'Updated Description',
+      rating: 4,
+      price: 100,
     };
 
     await service.updateActivity(activity.id, updateDto, user.email, req.headers);
