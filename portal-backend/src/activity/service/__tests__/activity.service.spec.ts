@@ -156,6 +156,7 @@ describe('ActivityService', () => {
             getActivityByUserIdAndActivityId: jest.fn(),
             updateActivity: jest.fn(),
             getActivityCount: jest.fn(),
+            count: jest.fn(),
           },
         },
         {
@@ -196,7 +197,7 @@ describe('ActivityService', () => {
         },
         {
           provide: UserAccountRepository,
-          useValue: { findOne: jest.fn() },
+          useValue: { findOne: jest.fn(), findUserRoleById: jest.fn() },
         },
         {
           provide: JwtSigningService,
@@ -290,5 +291,32 @@ describe('ActivityService', () => {
         activity_title: 'Updated Sample',
       }),
     );
+  });
+
+  it('allows admin to create more than 10 activities regardless of subscription status', async () => {
+    const adminUser = {
+      ...user,
+      role: 'admin',
+    };
+
+    const activityData: CreateActivityDto = {
+      activityTitle: 'Test Activity 11',
+      categoryName: 'category',
+      description: 'This is the 11th activity',
+      rating: 0,
+    };
+
+    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(adminUser);
+    jest.spyOn(userAccountRepository, 'findUserRoleById').mockResolvedValue('admin');
+    jest.spyOn(activityRepository, 'count').mockResolvedValue(10);
+    jest.spyOn(categoryService, 'getCategoryByName').mockResolvedValue(category);
+    jest.spyOn(activityRepository, 'findOne').mockResolvedValue(null);
+    jest.spyOn(activityRepository, 'create').mockReturnValue(activity);
+    jest.spyOn(activityRepository, 'save').mockResolvedValue(activity);
+
+    const result = await service.createActivity(adminUser.email, activityData, req.headers);
+
+    expect(result).toEqual(activity);
+    expect(activityRepository.save).toHaveBeenCalled();
   });
 });

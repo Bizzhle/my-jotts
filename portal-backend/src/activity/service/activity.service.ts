@@ -434,9 +434,10 @@ export class ActivityService extends WithTransactionService {
     // Count user's activities
     const activityCount = await this.activityRepository.count({ where: { user: { id: user.id } } });
 
-    // Restrict activity creation if subscription is not active and activity count is 10 or more
+    // Restrict activity creation only for 'user' role without active subscription
     if (
-      (userRole === 'user' || !isSubscriptionActive) &&
+      userRole === 'user' &&
+      !isSubscriptionActive &&
       activityCount >= UN_SUBSCRIBED_MAX_ACTIVITIES
     ) {
       throw new ForbiddenException({
