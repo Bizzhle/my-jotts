@@ -319,4 +319,61 @@ describe('ActivityService', () => {
     expect(result).toEqual(activity);
     expect(activityRepository.save).toHaveBeenCalled();
   });
+
+  it('prevents regular users from creating more than 10 activities without an active subscription', async () => {
+    const regularUser = {
+      ...user,
+      role: 'user',
+    };
+
+    const activityData: CreateActivityDto = {
+      activityTitle: 'Test Activity 11',
+      categoryName: 'category',
+      description: 'This is the 11th activity',
+      rating: 0,
+    };
+
+    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(regularUser);
+    jest.spyOn(userAccountRepository, 'findUserRoleById').mockResolvedValue(regularUser.role);
+    jest.spyOn(activityRepository, 'count').mockResolvedValue(10);
+    jest.spyOn(service['subscriptionService'], 'getActiveSubscription').mockResolvedValue(null);
+
+    await expect(
+      service.createActivity(regularUser.email, activityData, req.headers),
+    ).rejects.toThrow('Upgrade required to create more activities.');
+
+    expect(activityRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('allows regular users with customUsers role to create more than 10 activities', async () => {
+    const regularUser = {
+      ...user,
+      role: 'customUsers',
+    };
+
+    const activityData: CreateActivityDto = {
+      activityTitle: 'Test Activity 11',
+      categoryName: 'category',
+      description: 'This is the 11th activity',
+      rating: 0,
+    };
+
+    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(regularUser);
+    jest.spyOn(userAccountRepository, 'findUserRoleById').mockResolvedValue(regularUser.role);
+    jest.spyOn(activityRepository, 'count').mockResolvedValue(10);
+    jest.spyOn(service['subscriptionService'], 'getActiveSubscription').mockResolvedValue(null);
+
+    // jest
+    //   .spyOn(service['subscriptionService'], 'getActiveSubscription')
+    //   .mockResolvedValue({ id: 'sub_123', plan: 'pro', status: 'active' });
+    jest.spyOn(categoryService, 'getCategoryByName').mockResolvedValue(category);
+    jest.spyOn(activityRepository, 'findOne').mockResolvedValue(null);
+    jest.spyOn(activityRepository, 'create').mockReturnValue(activity);
+    jest.spyOn(activityRepository, 'save').mockResolvedValue(activity);
+
+    const result = await service.createActivity(regularUser.email, activityData, req.headers);
+
+    expect(result).toEqual(activity);
+    expect(activityRepository.save).toHaveBeenCalled();
+  });
 });

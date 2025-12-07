@@ -36,4 +36,11 @@ export const roles = {
     image: ['upload', 'delete'],
     subscription: ['view', 'manage', 'upgrade', 'cancel'],
   }),
+
+  // Add a new role for users who can bypass subscription requirements
+  customUser: ac.newRole({
+    // subscription: ['view', 'manage', 'upgrade', 'cancel'], // Allow subscription-related tasks
+    category: ['create', 'read', 'update', 'delete'],
+    activity: ['create', 'read', 'update', 'delete'],
+  }),
 };

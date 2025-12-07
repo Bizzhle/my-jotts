@@ -431,6 +431,9 @@ export class ActivityService extends WithTransactionService {
 
     const userRole = await this.userAccountRepository.findUserRoleById(user.id);
 
+    // Check if the user has the bypassSubscription role
+    const isCustomUser = userRole === 'customUsers';
+
     // Count user's activities
     const activityCount = await this.activityRepository.count({ where: { user: { id: user.id } } });
 
@@ -438,15 +441,16 @@ export class ActivityService extends WithTransactionService {
     if (
       userRole === 'user' &&
       !isSubscriptionActive &&
+      !isCustomUser &&
       activityCount >= UN_SUBSCRIBED_MAX_ACTIVITIES
     ) {
       throw new ForbiddenException({
-        message: 'Maximum activities',
+        message: 'Upgrade required to create more activities.',
       });
     }
 
     // Restrict file upload if subscription is not active and more than 1 file is uploaded
-    if (!isSubscriptionActive && file && file.length > 1) {
+    if (!isSubscriptionActive && !isCustomUser && file && file.length > 1) {
       throw new ForbiddenException({
         message: 'Maximum upload',
       });
