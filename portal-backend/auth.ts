@@ -63,7 +63,7 @@ export const auth = betterAuth({
     BetterAuthLoggerPlugin(),
     adminPlugin({
       ac,
-      roles: { admin: roles.admin, user: roles.user },
+      roles: { admin: roles.admin, user: roles.user, customUser: roles.customUser }, // Corrected the role name to match the `roles` object
       defaultRole: 'user',
       adminRoles: ['admin'],
     }),

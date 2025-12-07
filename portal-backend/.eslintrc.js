@@ -24,6 +24,7 @@ module.exports = {
       files: [],
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
+        'no-console': 'off',
       },
     },
   ],
