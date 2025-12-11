@@ -1,10 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Max } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max } from 'class-validator';
 
 export const PAGINATION_ITEMS_PER_PAGE = 50; // Default items per page for pagination
 
 export class PaginationQueryDto {
+  @ApiProperty({
+    description: 'Search query string',
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ message: 'Search must be a string value' })
+  search?: string;
+
   @ApiProperty({
     description: 'Limit the number of results returned',
     required: false,

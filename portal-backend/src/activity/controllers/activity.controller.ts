@@ -73,10 +73,9 @@ export class ActivityController {
   async getAllUserActivities(
     @GetCurrentUserEmail() emailAddress: string,
     @Req() req: Request,
-    @Query('search') search?: string,
     @Query() paginationDto?: PaginationQueryDto,
   ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
-    return await this.activityService.getAllUserActivities(emailAddress, search, paginationDto);
+    return await this.activityService.getAllUserActivities(emailAddress, paginationDto?.search, paginationDto);
   }
 
   @IsAuthorizedUser()
