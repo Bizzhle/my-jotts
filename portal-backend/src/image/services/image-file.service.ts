@@ -12,14 +12,14 @@ export class ImageFileService {
   ) {}
 
   async storeImageFile(imageUrl: string, imageKey: string, activityId: number, user: User) {
-    const data: Partial<ImageFile> = {
+    const imageFile = this.imageFileRepository.create({
       url: imageUrl,
       key: imageKey,
       activity_id: activityId,
       user,
-    };
-    const image = await this.imageFileRepository.save(data);
-    return image.url;
+    });
+    const image = await this.imageFileRepository.save(imageFile);
+    return image;
   }
 
   async deleteImageFile(userId: string, activityId: number): Promise<void> {

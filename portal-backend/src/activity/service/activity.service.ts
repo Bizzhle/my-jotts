@@ -85,7 +85,14 @@ export class ActivityService extends WithTransactionService {
 
       if (file && file.length > 0) {
         const uploadedFiles = await Promise.all(
-          file.map(async (file) => await this.imageUploadService.upload(file)),
+          file.map(
+            async (file) =>
+              await this.imageUploadService.upload({
+                file,
+                userId: user.id,
+                activityId: savedActivity.id,
+              }),
+          ),
         );
 
         await Promise.all(
@@ -397,7 +404,14 @@ export class ActivityService extends WithTransactionService {
       const updatedActivity = await this.activityRepository.updateActivity(activity, activityData);
       if (files && files.length > 0) {
         const uploadedFiles = await Promise.all(
-          files.map(async (file) => await this.imageUploadService.upload(file)),
+          files.map(
+            async (file) =>
+              await this.imageUploadService.upload({
+                file,
+                userId: user.id,
+                activityId: updatedActivity.id,
+              }),
+          ),
         );
 
         await Promise.all(

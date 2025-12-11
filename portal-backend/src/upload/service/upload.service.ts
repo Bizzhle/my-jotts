@@ -1,9 +1,25 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as AWS from 'aws-sdk';
+import { v4 as uuidv4 } from 'uuid';
 import { EnvVars } from '../../envvars';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
+import { FileUploadDto } from '../dto/upload.dto';
 
+interface S3UploadParams {
+  Bucket: string;
+  Key: string;
+  Body: Buffer;
+  ContentType: string;
+  ContentDisposition: string;
+}
+
+interface S3UploadResult {
+  Location: string;
+  ETag: string;
+  Bucket: string;
+  Key: string;
+}
 @Injectable()
 export class UploadService {
   private bucket: string;
@@ -21,12 +37,14 @@ export class UploadService {
     });
   }
 
-  async upload(file) {
+  async upload(data: FileUploadDto) {
+    const key = `users/${data.userId}/activities/${data.activityId}/${uuidv4()}-${data.file.originalname}`;
+
     const params = {
       Bucket: this.bucket,
-      Key: file.originalname,
-      Body: file.buffer,
-      ContentType: file.mimetype,
+      Key: key,
+      Body: data.file.buffer,
+      ContentType: data.file.mimetype,
       ContentDisposition: 'inline',
     };
 
