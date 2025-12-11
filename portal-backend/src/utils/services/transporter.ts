@@ -11,7 +11,7 @@ export const transporter = nodemailer.createTransport({
 
 export async function sendEmail(email: string, subject: string, html: string) {
   const mailOptions = {
-    from: 'MyJotts',
+    from: `Myjotts <${process.env.SMTP_USER}>`,
     to: email,
     subject,
     html,
