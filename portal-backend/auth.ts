@@ -156,6 +156,7 @@ export const auth = betterAuth({
     }),
   ],
   databaseHooks: {},
+  // middlewares: [betterAuthCorsMiddleware()],543
 });
 
 export const initializeAuth = async () => {
@@ -163,3 +164,47 @@ export const initializeAuth = async () => {
     await AppDataSource.initialize();
   }
 };
+
+function betterAuthCorsMiddleware() {
+  return async (request, ctx, next) => {
+    const allowedOrigins = [
+      'https://myjotts.com',
+      'https://www.myjotts.com',
+      'https://myjotts.local',
+      'http://localhost:5173',
+    ];
+    const origin =
+      typeof (request as any).headers?.get === 'function'
+        ? (request as any).headers.get('origin')
+        : (request as any).headers?.origin || undefined;
+
+    if (typeof origin === 'string' && allowedOrigins.includes(origin)) {
+      // Set CORS headers on ctx (BetterAuth context)
+      ctx.setHeader?.('Access-Control-Allow-Origin', origin);
+      ctx.setHeader?.('Access-Control-Allow-Credentials', 'true');
+      ctx.setHeader?.(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+      );
+      ctx.setHeader?.('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+      // Also set CORS headers on ctx.res (Node.js/Express response) if available
+      if (ctx.res?.setHeader) {
+        ctx.res.setHeader('Access-Control-Allow-Origin', origin);
+        ctx.res.setHeader('Access-Control-Allow-Credentials', 'true');
+        ctx.res.setHeader(
+          'Access-Control-Allow-Headers',
+          'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+        );
+        ctx.res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+      }
+    }
+
+    if (request.method === 'OPTIONS') {
+      ctx.status = 204;
+      ctx.body = '';
+      return;
+    }
+
+    await next();
+  };
+}
