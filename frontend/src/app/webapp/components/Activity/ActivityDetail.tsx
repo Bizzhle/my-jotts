@@ -87,7 +87,7 @@ export default function ActivityDetail() {
                 }}
               >
                 <img
-                  src={image}
+                  src={image.signedUrl}
                   alt={`Activity image ${index + 1}`}
                   className="activity-image"
                 />
