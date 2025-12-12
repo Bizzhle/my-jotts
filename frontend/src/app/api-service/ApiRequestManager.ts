@@ -4,10 +4,7 @@ import { ForgotPasswordData } from "../authentication/ForgotPassword";
 import { SessionState } from "../libs/SessionState";
 import { ActivityData } from "../webapp/components/Activity/ActivityDialogForm";
 import { ApiMethods } from "./ApiMethods";
-import {
-  ActivitiesResponseDto,
-  ActivityResponseDto,
-} from "./dtos/activity.dto";
+import { ActivityResponseDto } from "./dtos/activity.dto";
 import { CategoryData, CategoryResponseDto } from "./dtos/category.dto";
 import { ChangePasswordDto } from "./dtos/change-password.dto";
 import { ForgotPasswordResponseDto } from "./dtos/forgotpassword.dto";
@@ -108,26 +105,27 @@ export class ApiHandler {
     search?: string,
     limit?: number,
     offset?: number
-  ): Promise<PageDto<ActivitiesResponseDto>> => {
+  ): Promise<PageDto<ActivityResponseDto>> => {
     const url = ENDPOINTS.GET_ACTIVITIES(search, limit, offset);
-    return ApiMethods.get<PageDto<ActivitiesResponseDto>>(url);
+    return ApiMethods.get<PageDto<ActivityResponseDto>>(url);
   };
   static getActivitiesByCategoryName = (
     categoryName: string
-  ): Promise<PageDto<ActivitiesResponseDto>> => {
+  ): Promise<PageDto<ActivityResponseDto>> => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_NAME(categoryName);
-    return ApiMethods.get<PageDto<ActivitiesResponseDto>>(url);
+    return ApiMethods.get<PageDto<ActivityResponseDto>>(url);
   };
   static getActivitiesByCategory = (
     categoryId: string | number
-  ): Promise<PageDto<ActivitiesResponseDto>> => {
+  ): Promise<PageDto<ActivityResponseDto>> => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_ID(categoryId);
-    return ApiMethods.get<PageDto<ActivitiesResponseDto>>(url);
+    return ApiMethods.get<PageDto<ActivityResponseDto>>(url);
   };
   static updateActivity = (
     activityId: number,
     dto: ActivityData,
-    files?: File[]
+    files?: File[],
+    imagesToDelete?: string[]
   ): Promise<void> => {
     const formData = new FormData();
 
@@ -140,6 +138,13 @@ export class ApiHandler {
         formData.append(`files`, file);
       });
     }
+
+    if (imagesToDelete && imagesToDelete.length > 0) {
+      imagesToDelete.forEach((url) => {
+        formData.append("imagesToDelete[]", url);
+      });
+    }
+
     const url = ENDPOINTS.UPDATE_ACTIVITY(activityId);
 
     return ApiMethods.patchFormData(url, formData);

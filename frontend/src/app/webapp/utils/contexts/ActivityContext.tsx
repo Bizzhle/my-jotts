@@ -1,10 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
-import {
-  ActivitiesResponseDto,
-  ActivityResponseDto,
-} from "../../../api-service/dtos/activity.dto";
+import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
 import { CategoryResponseDto } from "../../../api-service/dtos/category.dto";
 import { PageInfoDto } from "../../../api-service/dtos/pageInfo.dto";
 import { useObjectReducer } from "../shared/objectReducer";
@@ -18,7 +15,7 @@ interface ActivityProviderProps {
 }
 
 interface ActivityContextState {
-  activities: ActivitiesResponseDto[];
+  activities: ActivityResponseDto[];
   categories: CategoryResponseDto[];
   searchQuery: string;
   error?: string;
