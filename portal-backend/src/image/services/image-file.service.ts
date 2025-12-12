@@ -56,4 +56,8 @@ export class ImageFileService {
 
     return file;
   }
+
+  async deleteSingleImageFile(imageFile: ImageFile): Promise<void> {
+    await this.imageFileRepository.remove(imageFile);
+  }
 }

@@ -151,11 +151,13 @@ export class ActivityService extends WithTransactionService {
       let activityResponse: ActivityResponseDto[] = [];
 
       for (const activity of activities) {
-        const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
-        const imageUrl = imageFile
-          ? await this.imageUploadService.getImageStreamFromS3(imageFile.key)
-          : '';
-
+        const imageFiles = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
+        const imageUrls = await Promise.all(
+          imageFiles.map(async (img) => ({
+            signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
+            rawUrl: img.url,
+          })),
+        );
         activityResponse.push({
           id: activity.id,
           activityTitle: activity.activity_title,
@@ -167,7 +169,7 @@ export class ActivityService extends WithTransactionService {
           description: activity.description,
           dateCreated: activity.date_created,
           dateUpdated: activity.date_updated,
-          imageUrls: imageUrl,
+          imageUrls: imageUrls,
         });
       }
 
@@ -202,12 +204,13 @@ export class ActivityService extends WithTransactionService {
         throw new NotFoundException('Activity not found.');
       }
 
-      const imageUrls: string[] | null = [];
-      const imageFile = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
-      for (const image of imageFile) {
-        const url = await this.imageUploadService.getImageStreamFromS3(image.key);
-        imageUrls.push(url);
-      }
+      const imageFiles = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
+      const imageUrls = await Promise.all(
+        imageFiles.map(async (img) => ({
+          signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
+          rawUrl: img.url,
+        })),
+      );
 
       return {
         id: activity.id,
@@ -262,11 +265,13 @@ export class ActivityService extends WithTransactionService {
       let activityResponse: ActivityResponseDto[] = [];
 
       for (const activity of activities) {
-        const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
-        const imageUrl = imageFile
-          ? await this.imageUploadService.getImageStreamFromS3(imageFile.key)
-          : null;
-
+        const imageFiles = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
+        const imageUrls = await Promise.all(
+          imageFiles.map(async (img) => ({
+            signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
+            rawUrl: img.url,
+          })),
+        );
         activityResponse.push({
           id: activity.id,
           activityTitle: activity.activity_title,
@@ -278,7 +283,7 @@ export class ActivityService extends WithTransactionService {
           description: activity.description,
           dateCreated: activity.date_created,
           dateUpdated: activity.date_updated,
-          imageUrls: imageUrl,
+          imageUrls: imageUrls,
         });
       }
 
@@ -327,9 +332,13 @@ export class ActivityService extends WithTransactionService {
       let activityResponse: ActivityResponseDto[] = [];
 
       for (const activity of activities) {
-        const imageFile = await this.imageFileService.getImageFileById(activity.id, user.id);
-        const imageUrl = await this.imageUploadService.getImageStreamFromS3(imageFile.key);
-
+        const imageFiles = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
+        const imageUrls = await Promise.all(
+          imageFiles.map(async (img) => ({
+            signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
+            rawUrl: img.url,
+          })),
+        );
         activityResponse.push({
           id: activity.id,
           activityTitle: activity.activity_title,
@@ -341,7 +350,7 @@ export class ActivityService extends WithTransactionService {
           description: activity.description,
           dateCreated: activity.date_created,
           dateUpdated: activity.date_updated,
-          imageUrls: imageUrl,
+          imageUrls: imageUrls,
         });
       }
 
@@ -402,6 +411,28 @@ export class ActivityService extends WithTransactionService {
       };
 
       const updatedActivity = await this.activityRepository.updateActivity(activity, activityData);
+
+      // Handle image deletion
+      if (dto.imagesToDelete && dto.imagesToDelete.length > 0) {
+        // Get all image files for this activity
+        const imageFiles = await this.imageFileService.fetchImageFilesById(
+          updatedActivity.id,
+          user.id,
+        );
+
+        // Filter images to delete
+        const imagesToRemove = imageFiles.filter((img) => dto.imagesToDelete.includes(img.url));
+
+        // Delete from S3 and database
+        await Promise.all(
+          imagesToRemove.map(async (imageFile) => {
+            await this.imageUploadService.deleteUploadFile(imageFile.key);
+            await this.imageFileService.deleteSingleImageFile(imageFile);
+          }),
+        );
+      }
+
+      // Handle new file uploads
       if (files && files.length > 0) {
         const uploadedFiles = await Promise.all(
           files.map(
