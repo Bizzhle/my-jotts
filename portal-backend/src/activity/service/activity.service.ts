@@ -3,17 +3,17 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { User } from 'src/users/entities/User.entity';
 import { DataSource } from 'typeorm';
 import { WithTransactionService } from '../../app/services/with-transaction.services';
 import { CategoryService } from '../../category/services/category.service';
+import { ImageFile } from '../../image/entities/image-file.entity';
 import { ImageFileService } from '../../image/services/image-file.service';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
 import { UploadService } from '../../upload/service/upload.service';
-import { UserAccountRepository } from '../../users/repositories/user-account.repository';
+import { UsersService } from '../../users/services/user-service/users.service';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { PAGINATION_ITEMS_PER_PAGE, PaginationQueryDto } from '../dto/paginationQuery.dto';
 import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
@@ -22,11 +22,14 @@ import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { Activity } from '../entities/activity.entity';
 import { ActivityRepository } from '../repositories/activity.repository';
 
+interface ImageUrlDto {
+  signedUrl: string;
+  rawUrl: string;
+}
 const UN_SUBSCRIBED_MAX_ACTIVITIES = 10;
 @Injectable()
 export class ActivityService extends WithTransactionService {
   constructor(
-    private readonly userAccountRepository: UserAccountRepository,
     private readonly activityRepository: ActivityRepository,
     private readonly imageUploadService: UploadService,
     private readonly categoryService: CategoryService,
@@ -34,6 +37,7 @@ export class ActivityService extends WithTransactionService {
     private readonly subscriptionService: SubscriptionService,
     private readonly logService: AppLoggerService,
     private readonly datasource: DataSource,
+    private readonly usersService: UsersService,
   ) {
     super();
   }
@@ -47,11 +51,7 @@ export class ActivityService extends WithTransactionService {
     const transaction = await this.createTransaction(this.datasource);
 
     try {
-      const user = await this.userAccountRepository.findOne({
-        where: {
-          email: emailAddress,
-        },
-      });
+      const user = await this.usersService.getUserByEmail(emailAddress);
 
       await this.validateActivityCreation(user, dto, file, headers);
 
@@ -127,104 +127,49 @@ export class ActivityService extends WithTransactionService {
     const startOffset = paginationDto?.offset ?? 0;
     const activityLimit = paginationDto?.limit ?? PAGINATION_ITEMS_PER_PAGE;
     let activityCount = null;
-    try {
-      const user = await this.userAccountRepository.findOne({
-        where: {
-          email: emailAddress,
-        },
-      });
 
-      if (!user) {
-        throw new UnauthorizedException('User not logged in');
-      }
+    const user = await this.usersService.getUserByEmail(emailAddress);
 
-      const activities = await this.activityRepository.getAllUserActivities(
-        user.id,
-        search,
-        startOffset,
-        activityLimit,
-      );
+    const activities = await this.activityRepository.getAllUserActivities(
+      user.id,
+      search,
+      startOffset,
+      activityLimit,
+    );
 
-      if (startOffset === 0) {
-        activityCount = await this.activityRepository.getActivityCount(search, user.id);
-      }
-      let activityResponse: ActivityResponseDto[] = [];
-
-      for (const activity of activities) {
-        const imageFiles = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
-        const imageUrls = await Promise.all(
-          imageFiles.map(async (img) => ({
-            signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
-            rawUrl: img.url,
-          })),
-        );
-        activityResponse.push({
-          id: activity.id,
-          activityTitle: activity.activity_title,
-          categoryName: activity.category.category_name,
-          categoryId: activity.category.id,
-          location: activity.location,
-          price: activity.price,
-          rating: activity.rating,
-          description: activity.description,
-          dateCreated: activity.date_created,
-          dateUpdated: activity.date_updated,
-          imageUrls: imageUrls,
-        });
-      }
-
-      return {
-        offset: startOffset,
-        limit: activityLimit,
-        count: activityCount,
-        data: activityResponse,
-      };
-    } catch (err) {
-      await this.logService.debug(err);
-      if (err instanceof UnauthorizedException) {
-        throw err;
-      }
-      throw err;
+    if (startOffset === 0) {
+      activityCount = await this.activityRepository.getActivityCount(search, user.id);
     }
+
+    const activityResponse = await this.batchFetchAndMapActivityImagesToResponses(
+      activities,
+      user.id,
+    );
+
+    return {
+      offset: startOffset,
+      limit: activityLimit,
+      count: activityCount,
+      data: activityResponse,
+    };
   }
 
   async getUserActivity(activityId: number, emailAddress: string): Promise<ActivityResponseDto> {
+    const user = await this.usersService.getUserByEmail(emailAddress);
+
+    const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
+      activityId,
+      user.id,
+    );
+
+    if (!activity) {
+      throw new NotFoundException(`Activity with ID ${activityId} not found.`);
+    }
+
     try {
-      const user = await this.userAccountRepository.findOne({
-        where: {
-          email: emailAddress,
-        },
-      });
-      const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
-        activityId,
-        user.id,
-      );
+      const imageUrls = await this.fetchActivityImages(activity.id, user.id);
 
-      if (!activity) {
-        throw new NotFoundException('Activity not found.');
-      }
-
-      const imageFiles = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
-      const imageUrls = await Promise.all(
-        imageFiles.map(async (img) => ({
-          signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
-          rawUrl: img.url,
-        })),
-      );
-
-      return {
-        id: activity.id,
-        activityTitle: activity.activity_title,
-        categoryName: activity.category.category_name,
-        categoryId: activity.category.id,
-        location: activity.location,
-        price: activity.price,
-        rating: activity.rating,
-        description: activity.description,
-        dateCreated: activity.date_created,
-        dateUpdated: activity.date_updated,
-        imageUrls: imageUrls,
-      };
+      return this.mapToActivityResponse(activity, imageUrls);
     } catch (err) {
       await this.logService.debug(err);
       if (err instanceof NotFoundException) {
@@ -239,67 +184,32 @@ export class ActivityService extends WithTransactionService {
     emailAddress: string,
     paginationDto?: PaginationQueryDto,
   ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
-    try {
-      const startOffset = paginationDto?.offset ?? 0;
-      const activityLimit = paginationDto?.limit ?? PAGINATION_ITEMS_PER_PAGE;
-      let activityCount = null;
-      const user = await this.userAccountRepository.findOne({
-        where: {
-          email: emailAddress,
-        },
-      });
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+    const startOffset = paginationDto?.offset ?? 0;
+    const activityLimit = paginationDto?.limit ?? PAGINATION_ITEMS_PER_PAGE;
+    let activityCount = null;
+    const user = await this.usersService.getUserByEmail(emailAddress);
 
-      const activities = await this.activityRepository.getUserActivitiesByCategory(
-        categoryId,
-        user.id,
-        startOffset,
-        activityLimit,
-      );
-      if (startOffset === 0) {
-        activityCount = await this.activityRepository.getActivityCount('', user.id);
-      }
-
-      let activityResponse: ActivityResponseDto[] = [];
-
-      for (const activity of activities) {
-        const imageFiles = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
-        const imageUrls = await Promise.all(
-          imageFiles.map(async (img) => ({
-            signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
-            rawUrl: img.url,
-          })),
-        );
-        activityResponse.push({
-          id: activity.id,
-          activityTitle: activity.activity_title,
-          categoryName: activity.category.category_name,
-          categoryId: activity.category.id,
-          location: activity.location,
-          price: activity.price,
-          rating: activity.rating,
-          description: activity.description,
-          dateCreated: activity.date_created,
-          dateUpdated: activity.date_updated,
-          imageUrls: imageUrls,
-        });
-      }
-
-      return {
-        offset: startOffset,
-        limit: activityLimit,
-        count: activityCount,
-        data: activityResponse,
-      };
-    } catch (err) {
-      await this.logService.debug(err);
-      if (err instanceof NotFoundException) {
-        throw err;
-      }
-      throw new InternalServerErrorException('Could not fetch activities by category');
+    const activities = await this.activityRepository.getUserActivitiesByCategory(
+      categoryId,
+      user.id,
+      startOffset,
+      activityLimit,
+    );
+    if (startOffset === 0) {
+      activityCount = await this.activityRepository.getActivityCount('', user.id);
     }
+
+    const activityResponse = await this.batchFetchAndMapActivityImagesToResponses(
+      activities,
+      user.id,
+    );
+
+    return {
+      offset: startOffset,
+      limit: activityLimit,
+      count: activityCount,
+      data: activityResponse,
+    };
   }
 
   async getUserActivitiesByCategoryName(
@@ -307,12 +217,7 @@ export class ActivityService extends WithTransactionService {
     emailAddress: string,
   ): Promise<ActivityResponseDto[]> {
     try {
-      const user = await this.userAccountRepository.findOne({
-        where: { email: emailAddress },
-      });
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+      const user = await this.usersService.getUserByEmail(emailAddress);
 
       const category = await this.categoryService.getCategoryByName(categoryName, user.id);
 
@@ -329,41 +234,20 @@ export class ActivityService extends WithTransactionService {
         relations: ['category'],
       });
 
-      let activityResponse: ActivityResponseDto[] = [];
-
-      for (const activity of activities) {
-        const imageFiles = await this.imageFileService.fetchImageFilesById(activity.id, user.id);
-        const imageUrls = await Promise.all(
-          imageFiles.map(async (img) => ({
-            signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
-            rawUrl: img.url,
-          })),
-        );
-        activityResponse.push({
-          id: activity.id,
-          activityTitle: activity.activity_title,
-          categoryName: activity.category.category_name,
-          categoryId: activity.category.id,
-          location: activity.location,
-          price: activity.price,
-          rating: activity.rating,
-          description: activity.description,
-          dateCreated: activity.date_created,
-          dateUpdated: activity.date_updated,
-          imageUrls: imageUrls,
-        });
-      }
+      const activityResponse = await this.batchFetchAndMapActivityImagesToResponses(
+        activities,
+        user.id,
+      );
 
       return activityResponse;
     } catch (err) {
       await this.logService.debug(err);
-      if (err instanceof NotFoundException) {
-        throw err;
-      }
+
       throw new InternalServerErrorException('Could not fetch activities');
     }
   }
 
+  // @Transactional()
   async updateActivity(
     activityId: number,
     dto: UpdateActivityDto,
@@ -372,15 +256,7 @@ export class ActivityService extends WithTransactionService {
     files?: Express.Multer.File[],
   ) {
     try {
-      const user = await this.userAccountRepository.findOne({
-        where: {
-          email: emailAddress,
-        },
-      });
-
-      if (!user) {
-        throw new UnauthorizedException('User not logged in');
-      }
+      const user = await this.usersService.getUserByEmail(emailAddress);
 
       const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
         activityId,
@@ -400,62 +276,21 @@ export class ActivityService extends WithTransactionService {
         );
       }
 
-      const activityData: Partial<Activity> = {
-        activity_title: dto.activityTitle,
-        category_id: category.id,
-        price: dto.price,
-        location: dto.location,
-        rating: dto.rating,
-        description: dto.description,
-        date_updated: new Date(),
-      };
-
-      const updatedActivity = await this.activityRepository.updateActivity(activity, activityData);
+      const updatedActivity = await this.activityRepository.updateActivity(
+        activity,
+        dto,
+        category.id,
+      );
 
       // Handle image deletion
       if (dto.imagesToDelete && dto.imagesToDelete.length > 0) {
         // Get all image files for this activity
-        const imageFiles = await this.imageFileService.fetchImageFilesById(
-          updatedActivity.id,
-          user.id,
-        );
-
-        // Filter images to delete
-        const imagesToRemove = imageFiles.filter((img) => dto.imagesToDelete.includes(img.url));
-
-        // Delete from S3 and database
-        await Promise.all(
-          imagesToRemove.map(async (imageFile) => {
-            await this.imageUploadService.deleteUploadFile(imageFile.key);
-            await this.imageFileService.deleteSingleImageFile(imageFile);
-          }),
-        );
+        await this.deleteActivityImages(updatedActivity.id, user.id, dto.imagesToDelete);
       }
 
       // Handle new file uploads
       if (files && files.length > 0) {
-        const uploadedFiles = await Promise.all(
-          files.map(
-            async (file) =>
-              await this.imageUploadService.upload({
-                file,
-                userId: user.id,
-                activityId: updatedActivity.id,
-              }),
-          ),
-        );
-
-        await Promise.all(
-          uploadedFiles.map(
-            async (uploadedFile) =>
-              await this.imageFileService.storeImageFile(
-                uploadedFile.Location,
-                uploadedFile.Key,
-                updatedActivity.id,
-                user,
-              ),
-          ),
-        );
+        await this.uploadActivityImages(updatedActivity.id, user.id, files, user);
       }
     } catch (err) {
       await this.logService.debug(err);
@@ -463,7 +298,219 @@ export class ActivityService extends WithTransactionService {
     }
   }
 
-  async deleteActivity(activityId: number, emailAddress: string) {}
+  async deleteActivity(activityId: number, emailAddress: string) {
+    const user = await this.usersService.getUserByEmail(emailAddress);
+
+    const activity = await this.activityRepository.getActivityByUserIdAndActivityId(
+      activityId,
+      user.id,
+    );
+
+    if (!activity) {
+      throw new NotFoundException(`Activity with ID ${activityId} not found.`);
+    }
+
+    try {
+      // Fetch associated images
+      const imageFiles =
+        (await this.imageFileService.fetchImageFilesById(activity.id, user.id)) || [];
+
+      // Delete images from S3 and database
+      const deletePromises = imageFiles.map(async (imageFile) => {
+        try {
+          await Promise.all([
+            this.imageUploadService.deleteUploadFile(imageFile.key),
+            this.imageFileService.deleteSingleImageFile(imageFile),
+          ]);
+        } catch (err) {
+          this.logService.error(`Failed to delete image ${imageFile.key}`, err.stack);
+          // Continue with other deletions even if one fails
+        }
+      });
+
+      await Promise.all(deletePromises);
+
+      // Finally, delete the activity
+      await this.activityRepository.delete({ id: activity.id });
+    } catch (err) {
+      this.logService.error('Failed to delete activity', err.stack);
+      throw new InternalServerErrorException('Failed to delete activity');
+    }
+  }
+
+  private async deleteActivityImages(
+    activityId: number,
+    userId: string,
+    imagesToDelete: string[],
+  ): Promise<void> {
+    try {
+      // Fetch current images
+      const imageFiles =
+        (await this.imageFileService.fetchImageFilesById(activityId, userId)) || [];
+
+      // Validate that images belong to this activity
+      const imagesToRemove = imageFiles.filter((img) => imagesToDelete.includes(img.url));
+
+      if (imagesToRemove.length !== imagesToDelete.length) {
+        const foundUrls = imagesToRemove.map((img) => img.url);
+        const notFound = imagesToDelete.filter((url) => !foundUrls.includes(url));
+        this.logService.warn(`Some images not found for deletion: ${notFound.join(', ')}`);
+      }
+
+      // Delete from S3 and database in parallel
+      const deletePromises = imagesToRemove.map(async (imageFile) => {
+        try {
+          await Promise.all([
+            this.imageUploadService.deleteUploadFile(imageFile.key),
+            this.imageFileService.deleteSingleImageFile(imageFile),
+          ]);
+        } catch (err) {
+          this.logService.error(`Failed to delete image ${imageFile.key}`, err.stack);
+          // Continue with other deletions even if one fails
+        }
+      });
+
+      await Promise.all(deletePromises);
+    } catch (err) {
+      this.logService.error('Failed to delete activity images', err.stack);
+      throw new InternalServerErrorException('Failed to delete some images');
+    }
+  }
+
+  private async uploadActivityImages(
+    activityId: number,
+    userId: string,
+    files: Express.Multer.File[],
+    user: User,
+  ): Promise<void> {
+    try {
+      // Upload files to S3
+      const uploadPromises = files.map((file) =>
+        this.imageUploadService.upload({
+          file,
+          userId,
+          activityId,
+        }),
+      );
+
+      const uploadedFiles = await Promise.all(uploadPromises);
+
+      // Store metadata in database
+      const storePromises = uploadedFiles.map((uploadedFile) =>
+        this.imageFileService.storeImageFile(
+          uploadedFile.Location,
+          uploadedFile.Key,
+          activityId,
+          user,
+        ),
+      );
+
+      await Promise.all(storePromises);
+    } catch (err) {
+      this.logService.error('Failed to upload activity images', err.stack);
+
+      // Attempt cleanup of uploaded files
+      // await this.cleanupFailedUploads(files, activityId, userId);
+
+      throw new InternalServerErrorException('Failed to upload images');
+    }
+  }
+
+  // private async cleanupFailedUploads(
+  //   files: Express.Multer.File[],
+  //   activityId: number,
+  //   userId: string,
+  // ): Promise<void> {
+  //   try {
+  //     // Attempt to delete any partially uploaded files from S3
+  //     const cleanupPromises = files.map(async (file) => {
+  //       const key = this.imageUploadService.generateKey(userId, activityId, file.originalname);
+  //       try {
+  //         await this.imageUploadService.deleteUploadFile(key);
+  //       } catch (err) {
+  //         // Log but don't throw - this is best effort cleanup
+  //         this.logService.warn(`Failed to cleanup file ${key}`, err);
+  //       }
+  //     });
+
+  //     await Promise.all(cleanupPromises);
+  //   } catch (err) {
+  //     this.logService.error('Failed to cleanup after upload failure', err);
+  //   }
+  // }
+
+  private async batchFetchAndMapActivityImagesToResponses(
+    activities: Activity[],
+    userId: string,
+  ): Promise<ActivityResponseDto[]> {
+    // Fetch all activity IDs at once
+    const activityIds = activities.map((a) => a.id);
+
+    const imageFiles =
+      (await this.imageFileService.fetchImageFilesByActivityIds(activityIds, userId)) || [];
+
+    // Map activity IDs to their corresponding image files
+    const groupedImagesByActivityId = await this.groupImagesByActivityId(imageFiles);
+
+    return activities.map((activity, index) => {
+      const imageFiles = groupedImagesByActivityId.get(activity.id) || [];
+      return this.mapToActivityResponse(activity, imageFiles);
+    });
+  }
+
+  private async groupImagesByActivityId(
+    imageFiles: ImageFile[],
+  ): Promise<Map<number, ImageUrlDto[]>> {
+    const grouped = new Map<number, { signedUrl: string; rawUrl: string }[]>();
+
+    for (const img of imageFiles) {
+      if (!grouped.has(img.activity_id)) {
+        grouped.set(img.activity_id, []);
+      }
+      grouped.get(img.activity_id)!.push({
+        signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
+        rawUrl: img.url,
+      });
+    }
+
+    return grouped;
+  }
+
+  private async fetchActivityImages(activityId: number, userId: string): Promise<ImageUrlDto[]> {
+    try {
+      const imageFiles =
+        (await this.imageFileService.fetchImageFilesById(activityId, userId)) || [];
+      const imageUrls = await Promise.all(
+        imageFiles.map(async (img) => ({
+          signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
+          rawUrl: img.url,
+        })),
+      );
+      return imageUrls;
+    } catch (err) {
+      await this.logService.debug(err);
+      return [];
+    }
+  }
+
+  private mapToActivityResponse(
+    activity: Activity,
+    imageUrls: { signedUrl: string; rawUrl: string }[],
+  ): ActivityResponseDto {
+    return {
+      id: activity.id,
+      activityTitle: activity.activity_title,
+      categoryName: activity.category.category_name,
+      categoryId: activity.category.id,
+      location: activity.location,
+      price: activity.price,
+      rating: activity.rating,
+      description: activity.description,
+      dateCreated: activity.date_created,
+      dateUpdated: activity.date_updated,
+      imageUrls,
+    };
+  }
 
   private async validateActivityCreation(
     user: User,
@@ -474,7 +521,7 @@ export class ActivityService extends WithTransactionService {
     // Check subscription status
     const isSubscriptionActive = await this.subscriptionService.getActiveSubscription(headers);
 
-    const userRole = await this.userAccountRepository.findUserRoleById(user.id);
+    const userRole = await this.usersService.findUserRoleById(user.id);
 
     // Check if the user has the bypassSubscription role
     const isCustomUser = userRole === 'customUsers';

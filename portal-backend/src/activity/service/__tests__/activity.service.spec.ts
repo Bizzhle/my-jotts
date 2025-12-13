@@ -5,7 +5,7 @@ import { ImageFileService } from '../../../image/services/image-file.service';
 import { AppLoggerService } from '../../../logger/services/app-logger.service';
 import { SubscriptionService } from '../../../subscription/services/subscription.service';
 import { UploadService } from '../../../upload/service/upload.service';
-import { UserAccountRepository } from '../../../users/repositories/user-account.repository';
+import { UsersService } from '../../../users/services/user-service/users.service';
 import { JwtSigningService } from '../../../utils/services/jwt-signing.services';
 import { ActivityController } from '../../controllers/activity.controller';
 import { CreateActivityDto } from '../../dto/create-activity.dto';
@@ -88,7 +88,7 @@ const returnedActivities = [
     dateUpdated: new Date('2023-10-10'),
     categoryId: 1,
     categoryName: 'test',
-    imageUrls: '',
+    imageUrls: [],
   },
   {
     id: 2,
@@ -101,7 +101,7 @@ const returnedActivities = [
     dateUpdated: new Date('2023-10-10'),
     categoryId: 1,
     categoryName: 'test',
-    imageUrls: '',
+    imageUrls: [],
   },
 ];
 
@@ -125,10 +125,10 @@ const activity = {
 describe('ActivityService', () => {
   let service: ActivityService;
   let activityRepository;
-  let userAccountRepository;
   let categoryService;
   let imageFileService;
   let uploadService;
+  let usersService;
   let module: TestingModule;
 
   beforeEach(async () => {
@@ -160,6 +160,7 @@ describe('ActivityService', () => {
             updateActivity: jest.fn(),
             getActivityCount: jest.fn(),
             count: jest.fn(),
+            delete: jest.fn(),
           },
         },
         {
@@ -191,6 +192,7 @@ describe('ActivityService', () => {
             storeImageFile: jest.fn(),
             getImageFileById: jest.fn(),
             fetchImageFilesById: jest.fn(),
+            fetchImageFilesByActivityIds: jest.fn(),
           },
         },
         {
@@ -200,8 +202,8 @@ describe('ActivityService', () => {
           },
         },
         {
-          provide: UserAccountRepository,
-          useValue: { findOne: jest.fn(), findUserRoleById: jest.fn() },
+          provide: UsersService,
+          useValue: { getUserByEmail: jest.fn(), findUserRoleById: jest.fn() },
         },
         {
           provide: JwtSigningService,
@@ -212,7 +214,7 @@ describe('ActivityService', () => {
 
     service = module.get<ActivityService>(ActivityService);
     activityRepository = module.get<ActivityRepository>(ActivityRepository);
-    userAccountRepository = module.get<UserAccountRepository>(UserAccountRepository);
+    usersService = module.get<UsersService>(UsersService);
     categoryService = module.get<CategoryService>(CategoryService);
     imageFileService = module.get<ImageFileService>(ImageFileService);
     uploadService = module.get<UploadService>(UploadService);
@@ -231,7 +233,7 @@ describe('ActivityService', () => {
       description: 'This is a test activity',
       rating: 0,
     };
-    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(user);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest.spyOn(service, 'createActivity').mockResolvedValue(activity);
 
     const result = await service.createActivity(user.email, activityData, req.headers);
@@ -284,8 +286,8 @@ describe('ActivityService', () => {
       },
     ];
 
-    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(user);
-    jest.spyOn(userAccountRepository, 'findUserRoleById').mockResolvedValue(user.role);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
+    jest.spyOn(usersService, 'findUserRoleById').mockResolvedValue(user.role);
     jest.spyOn(activityRepository, 'count').mockResolvedValue(5);
     jest.spyOn(service['subscriptionService'], 'getActiveSubscription').mockResolvedValue({
       id: 'sub_123',
@@ -336,7 +338,7 @@ describe('ActivityService', () => {
   });
 
   it('returns all activities related to a user', async () => {
-    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(user);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest.spyOn(activityRepository, 'getAllUserActivities').mockResolvedValue(activities);
     const search = '';
 
@@ -346,7 +348,7 @@ describe('ActivityService', () => {
   });
 
   it('returns an activity related to a user', async () => {
-    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(user);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest.spyOn(activityRepository, 'getActivityByUserIdAndActivityId').mockResolvedValue(activity);
     jest.spyOn(imageFileService, 'fetchImageFilesById').mockResolvedValue([]);
 
@@ -367,7 +369,7 @@ describe('ActivityService', () => {
   });
 
   it('updates an activity', async () => {
-    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(user);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest.spyOn(activityRepository, 'getActivityByUserIdAndActivityId').mockResolvedValue(activity);
     jest.spyOn(categoryService, 'getCategoryByName').mockResolvedValue(category);
     jest.spyOn(categoryService, 'createCategory').mockResolvedValue(null);
@@ -388,9 +390,14 @@ describe('ActivityService', () => {
     expect(activityRepository.updateActivity).toHaveBeenCalled();
     expect(activityRepository.updateActivity).toHaveBeenCalledWith(
       activity,
-      expect.objectContaining({
-        activity_title: 'Updated Sample',
-      }),
+      {
+        activityTitle: 'Updated Sample',
+        categoryName: 'test',
+        description: 'Updated Description',
+        price: 100,
+        rating: 4,
+      },
+      category.id,
     );
   });
 
@@ -439,7 +446,7 @@ describe('ActivityService', () => {
       },
     ];
 
-    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(user);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest.spyOn(activityRepository, 'getActivityByUserIdAndActivityId').mockResolvedValue(activity);
     jest.spyOn(categoryService, 'getCategoryByName').mockResolvedValue(category);
     jest
@@ -495,8 +502,8 @@ describe('ActivityService', () => {
       rating: 0,
     };
 
-    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(adminUser);
-    jest.spyOn(userAccountRepository, 'findUserRoleById').mockResolvedValue('admin');
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(adminUser);
+    jest.spyOn(usersService, 'findUserRoleById').mockResolvedValue('admin');
     jest.spyOn(activityRepository, 'count').mockResolvedValue(10);
     jest.spyOn(categoryService, 'getCategoryByName').mockResolvedValue(category);
     jest.spyOn(activityRepository, 'findOne').mockResolvedValue(null);
@@ -522,8 +529,8 @@ describe('ActivityService', () => {
       rating: 0,
     };
 
-    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(regularUser);
-    jest.spyOn(userAccountRepository, 'findUserRoleById').mockResolvedValue(regularUser.role);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(regularUser);
+    jest.spyOn(usersService, 'findUserRoleById').mockResolvedValue(regularUser.role);
     jest.spyOn(activityRepository, 'count').mockResolvedValue(10);
     jest.spyOn(service['subscriptionService'], 'getActiveSubscription').mockResolvedValue(null);
 
@@ -547,8 +554,8 @@ describe('ActivityService', () => {
       rating: 0,
     };
 
-    jest.spyOn(userAccountRepository, 'findOne').mockResolvedValue(regularUser);
-    jest.spyOn(userAccountRepository, 'findUserRoleById').mockResolvedValue(regularUser.role);
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(regularUser);
+    jest.spyOn(usersService, 'findUserRoleById').mockResolvedValue(regularUser.role);
     jest.spyOn(activityRepository, 'count').mockResolvedValue(10);
     jest.spyOn(service['subscriptionService'], 'getActiveSubscription').mockResolvedValue(null);
 
@@ -564,5 +571,15 @@ describe('ActivityService', () => {
 
     expect(result).toEqual(activity);
     expect(activityRepository.save).toHaveBeenCalled();
+  });
+
+  it('deletes activity', async () => {
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
+    jest.spyOn(activityRepository, 'getActivityByUserIdAndActivityId').mockResolvedValue(activity);
+    jest.spyOn(activityRepository, 'delete').mockResolvedValue(undefined);
+
+    await service.deleteActivity(activity.id, user.email);
+
+    expect(activityRepository.delete).toHaveBeenCalledWith({ id: activity.id });
   });
 });
