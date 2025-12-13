@@ -1,15 +1,6 @@
-export interface ActivitiesResponseDto {
-  id: number;
-  activityTitle: string;
-  categoryName: string;
-  categoryId: number;
-  price?: number;
-  location?: string;
-  rating: number;
-  description?: string;
-  dateCreated?: Date;
-  dateUpdated?: Date;
-  imageUrls?: string;
+export interface ImageUrl {
+  signedUrl: string;
+  rawUrl: string;
 }
 
 export interface ActivityResponseDto {
@@ -23,5 +14,5 @@ export interface ActivityResponseDto {
   description: string;
   dateCreated: Date;
   dateUpdated: Date;
-  imageUrls: string[];
+  imageUrls: ImageUrl[];
 }

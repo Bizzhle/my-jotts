@@ -13,7 +13,10 @@ import {
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
-import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
+import {
+  ActivityResponseDto,
+  ImageUrl,
+} from "../../../api-service/dtos/activity.dto";
 import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
 import { useSubscription } from "../../utils/contexts/hooks/useSubscription";
@@ -46,7 +49,12 @@ export default function ActivityDialogForm({
   const [value, setValue] = useState(activityToEdit?.categoryName || "");
   const [error, setError] = useState<string | undefined>("");
   const [files, setFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<ImageUrl[]>(
+    activityToEdit?.imageUrls?.map((img) => img) || []
+  );
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [rating, setRating] = useState<number>(activityToEdit?.rating || 0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleSubmit, register, reset } = useForm<ActivityData>();
   const { subscription } = useSubscription();
 
@@ -60,6 +68,7 @@ export default function ActivityDialogForm({
         price,
         location,
         description,
+        imageUrls,
       } = activityToEdit;
       reset({
         activityTitle,
@@ -69,12 +78,16 @@ export default function ActivityDialogForm({
         location,
         description,
       });
+      setExistingImages(imageUrls?.map((img) => img) || []);
+      setImagesToDelete([]);
     }
   }, [activityToEdit, reset]);
 
   const handleCloseDialog = () => {
     setError("");
     setFiles([]);
+    setExistingImages([]);
+    setImagesToDelete([]);
     setRating(0);
     setValue("");
     reset({
@@ -94,7 +107,10 @@ export default function ActivityDialogForm({
     if (event.target.files) {
       const selectedFiles = Array.from(event.target.files);
 
-      const totalFiles = files.length + selectedFiles.length;
+      const remainingExistingImages =
+        existingImages.length - imagesToDelete.length;
+      const totalFiles =
+        files.length + selectedFiles.length + remainingExistingImages;
       if (subscription?.status !== "active" && totalFiles > 2) {
         setError("You can only upload 1 image");
         return;
@@ -114,6 +130,11 @@ export default function ActivityDialogForm({
   };
 
   const onSubmit = async (data: ActivityData) => {
+    if (isSubmitting) return; // Prevent double submission
+
+    setIsSubmitting(true);
+    setError(""); // Clear previous errors
+
     const { activityTitle, price, location, description } = data;
     const activityData = {
       activityTitle,
@@ -126,7 +147,12 @@ export default function ActivityDialogForm({
 
     try {
       if (activityToEdit) {
-        await ApiHandler.updateActivity(activityToEdit.id, activityData, files);
+        await ApiHandler.updateActivity(
+          activityToEdit.id,
+          activityData,
+          files,
+          imagesToDelete
+        );
         await fetchActivity();
       } else {
         await ApiHandler.createActivity(activityData, files);
@@ -137,6 +163,8 @@ export default function ActivityDialogForm({
     } catch (err) {
       const errorMessage = isApiError(err);
       setError(errorMessage || "");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -144,12 +172,17 @@ export default function ActivityDialogForm({
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  const handleRemoveExistingImage = (imageUrl: ImageUrl) => {
+    setExistingImages((prev) => prev.filter((url) => url !== imageUrl));
+    setImagesToDelete((prev) => [...prev, imageUrl.rawUrl]);
+  };
+
   return (
     <Dialog open={open} onClose={handleCloseDialog} fullWidth>
       <DialogTitle sx={{ mb: -2 }}>
         {activityToEdit ? "Edit Activity" : "Add Activity"}
       </DialogTitle>
-      <Box sx={{ mt: -2 }} component="form" onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           {error && getErrorMessage(error)}
           <TextField
@@ -198,6 +231,36 @@ export default function ActivityDialogForm({
             color="secondary"
           />
           <Box mt={2}>
+            {/* Existing Images Section */}
+            {activityToEdit && existingImages.length > 0 && (
+              <Box mb={2}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Existing Images
+                </Typography>
+                {existingImages.map((imageUrl, index) => (
+                  <Box
+                    key={imageUrl.signedUrl}
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={1}
+                  >
+                    <Typography variant="body2">
+                      Image {index + 1} (
+                      {imageUrl.signedUrl.split("/").pop()?.substring(0, 20)}
+                      ...)
+                    </Typography>
+                    <IconButton
+                      onClick={() => handleRemoveExistingImage(imageUrl)}
+                    >
+                      <HighlightOff />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
+
+            {/* New Images Upload Section */}
             <input
               accept="image/*"
               id="image-upload"
@@ -232,10 +295,22 @@ export default function ActivityDialogForm({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button type="submit">{activityToEdit ? "Update" : "Submit"}</Button>
+          <Button
+            type="button"
+            onClick={handleCloseDialog}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting
+              ? "Submitting..."
+              : activityToEdit
+              ? "Update"
+              : "Submit"}
+          </Button>
         </DialogActions>
-      </Box>
+      </form>
     </Dialog>
   );
 }

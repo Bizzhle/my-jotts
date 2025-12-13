@@ -12,18 +12,18 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ActivitiesResponseDto } from "../../api-service/dtos/activity.dto";
+import { ActivityResponseDto } from "../../api-service/dtos/activity.dto";
 import { ConfirmDeletionDialog } from "../utils/Dialog/confirmDeletion";
 
 interface CardProps {
-  value: ActivitiesResponseDto;
+  value: ActivityResponseDto;
   onDelete: (activityId: number) => void;
   error: Record<number, string | null | undefined>;
 }
 
 export default function ActivityCard({ value, onDelete, error }: CardProps) {
   const navigate = useNavigate();
-  const imageUrl = value.imageUrls;
+  const imageUrl = value.imageUrls?.[0]?.signedUrl;
   const [open, setOpen] = useState(false);
 
   const handleCardClick = () => {

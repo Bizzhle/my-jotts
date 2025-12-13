@@ -1,8 +1,6 @@
-import { Body, Controller, Delete, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadService } from '../service/upload.service';
+import { Body, Controller, Delete } from '@nestjs/common';
 import { IsString } from 'class-validator';
-import { Express } from 'express';
+import { UploadService } from '../service/upload.service';
 
 class DeleteDTO {
   @IsString()
@@ -12,15 +10,6 @@ class DeleteDTO {
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
-
-  @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  public async uploadFile(
-    @UploadedFile()
-    file: Express.Multer.File,
-  ) {
-    return await this.uploadService.upload(file);
-  }
 
   @Delete()
   public async deleteFile(@Body() dto: DeleteDTO) {
