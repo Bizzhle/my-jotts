@@ -22,6 +22,7 @@ import {
   SubscriptionDto,
   SubscriptionResponseDto,
 } from "./dtos/subscription/subscription.dto";
+import { SupportDto } from "./dtos/support.dto";
 import { ENDPOINTS } from "./EndPoints";
 
 interface ApiError {
@@ -196,6 +197,10 @@ export class ApiHandler {
   static getPaymentPlans = (): Promise<PaymentPlanDto[]> => {
     const url = ENDPOINTS.GET_PAYMENT_PLANS();
     return ApiMethods.get(url);
+  };
+  static sendSupportRequest = (params: SupportDto): Promise<void> => {
+    const url = ENDPOINTS.SEND_SUPPORT_REQUEST();
+    return ApiMethods.post(url, params);
   };
 }
 
