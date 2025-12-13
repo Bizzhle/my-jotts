@@ -41,11 +41,15 @@ describe("Login", () => {
 
   it("should render the LoginForm component", () => {
     render(<LoginForm />);
-    const button = screen.getByRole("button");
+    const submitButton = screen.getByRole("button", { name: /submit/i });
+    const registerButton = screen.getByRole("button", {
+      name: /create an account/i,
+    });
+
     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(button).toBeInTheDocument();
-    expect(button).toHaveTextContent(/Submit/i);
+    expect(submitButton).toBeInTheDocument();
+    expect(registerButton).toBeInTheDocument();
   });
 
   it("should call startSession on form submit", async () => {

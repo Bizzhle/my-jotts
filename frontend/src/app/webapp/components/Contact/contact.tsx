@@ -7,15 +7,15 @@ import { useBetterAuth } from "../../utils/contexts/hooks/useBetterAuth";
 
 const contactEmail = import.meta.env.VITE_DOMAIN_EMAIL;
 export const Contact = () => {
-  const { user } = useBetterAuth();
+  const { authenticatedUser } = useBetterAuth();
   const [error, setError] = useState<string | undefined>("");
   const { handleSubmit, register, reset } = useForm<SupportDto>();
 
   useEffect(() => {
-    if (user) {
-      reset({ email: user.email, subject: "", description: "" });
+    if (authenticatedUser) {
+      reset({ email: authenticatedUser.email, subject: "", description: "" });
     }
-  }, [user, reset]);
+  }, [authenticatedUser, reset]);
 
   const onSubmit = async (data: SupportDto) => {
     try {
