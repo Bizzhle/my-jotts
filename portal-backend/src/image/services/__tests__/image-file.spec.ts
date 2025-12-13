@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm/dist/common/typeorm.utils';
 import { Repository } from 'typeorm/repository/Repository';
+import { UploadService } from '../../../upload/service/upload.service';
 import { ImageFile } from '../../entities/image-file.entity';
 import { ImageFileService } from '../image-file.service';
 
@@ -20,6 +21,14 @@ describe('ImageFileService', () => {
             findOneBy: jest.fn(),
             remove: jest.fn(),
             create: jest.fn(),
+          },
+        },
+        {
+          provide: UploadService,
+          useValue: {
+            upload: jest.fn(),
+            deleteUploadFile: jest.fn(),
+            getImageStreamFromS3: jest.fn(),
           },
         },
       ],

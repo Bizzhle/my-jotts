@@ -7,11 +7,19 @@ export class UsersService {
   constructor(private readonly userAccountRepository: UserAccountRepository) {}
 
   public async getUserByEmail(emailAddress): Promise<User | null> {
-    return await this.userAccountRepository.findUserByEmail(emailAddress);
+    const user = await this.userAccountRepository.findUserByEmail(emailAddress);
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+    return user;
   }
 
   public async getUserById(userId: number) {
     return await this.userAccountRepository.findUserById(userId);
+  }
+
+  public async findUserRoleById(userId: string) {
+    return await this.userAccountRepository.findUserRoleById(userId);
   }
 
   private async getUserDetails(userCondition: UserCondition): Promise<User> {

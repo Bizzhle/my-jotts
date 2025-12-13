@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event/dist/cjs/setup/index.js";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, Mock } from "vitest";
 import ActivityDialogForm from "../ActivityDialogForm";
 
 vi.mock("../../../../api-service/ApiRequestManager", () => ({
@@ -26,6 +26,10 @@ vi.mock("../../../utils/contexts/hooks/useSubscription", () => ({
     subscription: { plan: "free" },
   }),
 }));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("Activity Component", () => {
   it("should render Activity component", () => {
@@ -104,5 +108,34 @@ describe("Activity Component", () => {
     await user.click(screen.getByRole("button", { name: /update/i }));
 
     expect(ApiHandler.updateActivity).toHaveBeenCalled();
+  });
+
+  it("should prevent double submission", async () => {
+    const { ApiHandler } = await import(
+      "../../../../api-service/ApiRequestManager"
+    );
+    const createActivityMock = ApiHandler.createActivity as Mock;
+
+    // Override the existing mock with a slow async fn
+    createActivityMock.mockImplementation(
+      () => new Promise((res) => setTimeout(res, 500))
+    );
+    const user = userEvent.setup();
+    render(<ActivityDialogForm open={true} handleClose={vi.fn()} />);
+
+    await user.type(screen.getByLabelText("Activity *"), "New Activity");
+    await user.type(screen.getByLabelText("Category"), "New Category");
+
+    const submitButton = screen.getByRole("button", { name: /submit/i });
+
+    // Simulate double click
+    await user.click(submitButton);
+    await waitFor(() => {
+      expect(submitButton).toBeDisabled();
+    });
+
+    await waitFor(() => {
+      expect(ApiHandler.createActivity).toHaveBeenCalledTimes(1);
+    });
   });
 });

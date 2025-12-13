@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { pick } from 'lodash';
 import { DataSource, Repository } from 'typeorm';
 import { CreateActivityDto } from '../dto/create-activity.dto';
+import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { Activity } from '../entities/activity.entity';
 
 type CreateActivity = Omit<CreateActivityDto, 'category'>;
@@ -79,24 +79,22 @@ export class ActivityRepository extends Repository<Activity> {
       .getMany();
   }
 
-  async updateActivity(activity: Activity, data: Partial<Activity>): Promise<Activity> {
-    const updatableFields = [
-      'activity_title',
-      'category_id',
-      'price',
-      'rating',
-      'description',
-      'image',
-      'location',
-      'date_updated',
-    ];
-    const updatedData = pick(data, updatableFields);
+  async updateActivity(
+    activity: Activity,
+    dto: UpdateActivityDto,
+    categoryId: number,
+  ): Promise<Activity> {
+    const activityData: Partial<Activity> = {
+      activity_title: dto.activityTitle,
+      category_id: categoryId,
+      price: dto.price,
+      location: dto.location,
+      rating: dto.rating,
+      description: dto.description,
+      date_updated: new Date(),
+    };
 
-    if (data.category_id !== undefined) {
-      activity.category_id = data.category_id;
-    }
-
-    Object.assign(activity, updatedData);
+    Object.assign(activity, activityData);
     activity.date_updated = new Date();
 
     return this.save(activity);

@@ -14,28 +14,34 @@ export class ActivityResponseDto {
   categoryId?: number;
 
   @ApiProperty({ description: 'Price of activity or item' })
-  price?: number;
+  price: number | null;
 
   @ApiProperty({ description: 'Title of the activity' })
-  location?: string;
+  location: string | null;
 
   @ApiProperty({ description: 'Rating' })
-  rating?: number;
+  rating: number | null;
 
   @ApiProperty({ description: 'Text that describes activity' })
-  description?: string;
+  description: string | null;
 
   @ApiProperty({ description: 'Date activity was created' })
-  dateCreated?: Date;
+  dateCreated: Date;
 
   @ApiProperty({ description: 'Last update of activity' })
-  dateUpdated?: Date;
+  dateUpdated: Date;
 
   @ApiProperty({
-    description: 'image of activity',
-    type: [String],
-    isArray: true,
-    oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+    description: 'Array of image objects with signed and raw URLs',
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: {
+        signedUrl: { type: 'string' },
+        rawUrl: { type: 'string' },
+      },
+    },
+    required: false,
   })
-  imageUrls?: string | string[];
+  imageUrls: { signedUrl: string; rawUrl: string }[];
 }
