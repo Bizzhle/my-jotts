@@ -17,5 +17,9 @@ export async function sendEmail(email: string, subject: string, html: string) {
     html,
   };
 
-  return transporter.sendMail(mailOptions);
+  try {
+    return await transporter.sendMail(mailOptions);
+  } catch (error) {
+    throw new Error(`Failed to send email`);
+  }
 }
