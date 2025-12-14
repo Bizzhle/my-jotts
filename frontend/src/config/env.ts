@@ -12,4 +12,5 @@ export const env: Envvars = import.meta.env.PROD
       REACT_APP_API_URL: import.meta.env.VITE_API_URL,
       REACT_APP_API_STRIPE_PUBLISHABLE_KEY: import.meta.env
         .VITE_API_STRIPE_PUBLISHABLE_KEY as string,
+      REACT_APP_CONTACT_EMAIL: import.meta.env.VITE_DOMAIN_EMAIL,
     };

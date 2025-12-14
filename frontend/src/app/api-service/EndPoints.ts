@@ -52,4 +52,5 @@ export const ENDPOINTS = {
   CANCEL_SUBSCRIPTION: (subscriptionId: string): string =>
     `/subscription/${subscriptionId}`,
   GET_PAYMENT_PLANS: (): string => `/payment-plan`,
+  SEND_SUPPORT_REQUEST: (): string => `/support/request`,
 };

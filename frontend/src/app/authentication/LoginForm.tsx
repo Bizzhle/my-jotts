@@ -90,39 +90,66 @@ export default function LoginForm() {
           </Typography>
         )}
 
+        <Typography sx={{ textAlign: "left", my: 2 }}>
+          <Link
+            href="/forgot-password"
+            color="#108BE3"
+            sx={{ textDecoration: "none" }}
+          >
+            Forgot password
+          </Link>{" "}
+        </Typography>
+
         <Button
           variant="contained"
           size="medium"
           color="primary"
           fullWidth={true}
           type="submit"
-          sx={{ textAlign: "center", mt: 1 }}
+          sx={{ textAlign: "center" }}
         >
           Submit
         </Button>
 
-        <Typography sx={{ textAlign: "center", mt: 2 }}>
-          <Link href="/forgot-password" color="#108BE3">
-            Forgot password
-          </Link>{" "}
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          flexGrow: 1,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          mt: 2,
-        }}
-      >
-        <Typography sx={{ textAlign: "center", mt: 2 }}>
-          Do not have an account?{" "}
-        </Typography>
-        <Link href="/register" color="primary">
-          Create an account
-        </Link>
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Typography sx={{ textAlign: "center", my: 2 }}>
+            Do not have an account?{" "}
+          </Typography>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => navigate("/register")}
+            color="secondary"
+            sx={{
+              borderColor: "#0268B0",
+              color: "#0268B0",
+              fontWeight: 600,
+              backgroundColor: "rgba(16, 139, 227, 0.04)",
+              "&:hover": {
+                borderColor: "#0268B0",
+                color: "#0268B0",
+
+                backgroundColor: "rgba(16, 139, 227, 0.04)",
+              },
+            }}
+          >
+            Create an account
+          </Button>
+          <Typography
+            onClick={() => navigate("/contact-us")}
+            sx={{ cursor: "pointer", mt: 2 }}
+          >
+            Contact Us
+          </Typography>
+        </Box>
       </Box>
     </>
   );

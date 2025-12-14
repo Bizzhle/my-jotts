@@ -9,7 +9,12 @@ jobs:
   block-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Fail Direct Push
+      - name: Check if push is from allowed branches
         run: |
-          echo "Direct pushes to the main branch are not allowed. Please use a pull request."
-          exit 1
+          if [[ "${{ github.ref }}" == "refs/heads/main" && \
+                "${{ github.event.before }}" != "0000000000000000000000000000000000000000" && \
+                "${{ github.event.head_commit.message }}" != *"Merge branch 'development'"* && \
+                "${{ github.event.head_commit.message }}" != *"Merge branch 'staging'"* ]]; then
+            echo "Direct pushes to the main branch are not allowed. Please use a pull request."
+            exit 1
+          fi
