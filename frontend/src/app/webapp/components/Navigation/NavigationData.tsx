@@ -1,6 +1,7 @@
 import {
   AccountCircleRounded,
   CardMembership,
+  ContactMail,
   Dashboard,
   Home,
   PlaylistAddCheckCircleRounded,
@@ -62,5 +63,14 @@ export const NavigationData: NavigationDataList[] = [
       </IconButton>
     ),
     requiredPermission: "admin",
+  },
+  {
+    title: "Contact Us",
+    path: "/contact-us",
+    icon: (
+      <IconButton color="secondary" size="large">
+        <ContactMail />
+      </IconButton>
+    ),
   },
 ];

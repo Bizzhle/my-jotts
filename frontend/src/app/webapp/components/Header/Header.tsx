@@ -286,6 +286,9 @@ export default function Header({
                     Dashboard
                   </MenuItem>
                 )}
+                <MenuItem onClick={() => handleAccountMenuClose("/contact-us")}>
+                  Contact Us
+                </MenuItem>
 
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>

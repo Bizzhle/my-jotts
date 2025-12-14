@@ -11,6 +11,7 @@ import { ImageModule } from '../image/image.module';
 import { LogsModule } from '../logger/logs.module';
 import { LogsMiddleware } from '../logger/middlewares/log.middleware';
 import { SubscriptionModule } from '../subscription/subscription.module';
+import { SupportModule } from '../support/support.module';
 import { UploadModule } from '../upload/upload.module';
 import { RolesGuard } from '../users/guards/role.guard';
 import { UsersModule } from '../users/users.module';
@@ -37,6 +38,7 @@ import { ExceptionsFilter } from './exceptions.filter';
     AuthenticationModule,
     UtilsModule,
     SubscriptionModule,
+    SupportModule,
     AuthModule.forRoot({
       auth,
     }),

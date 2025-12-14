@@ -18,6 +18,7 @@ import AccountPage from "./AccountInfo/AccountPage";
 import { ChangePassword } from "./AccountInfo/ChangePassword";
 import ActivityDetail from "./Activity/ActivityDetail";
 import CategoryDetail from "./Category/CategoryDetail";
+import { Contact } from "./Contact/contact";
 import AdminDashboard from "./Dashboard/Admin-Dashboard";
 import WrappedCheckoutForm from "./Subscription/CheckoutForm";
 import SubscribePage from "./Subscription/SubscribePage";
@@ -157,6 +158,16 @@ const router = createBrowserRouter([
       <LayoutProvider>
         <Layout>
           <ConfirmRegistration />
+        </Layout>
+      </LayoutProvider>
+    ),
+  },
+  {
+    path: "/contact-us",
+    Component: () => (
+      <LayoutProvider>
+        <Layout>
+          <Contact />
         </Layout>
       </LayoutProvider>
     ),
