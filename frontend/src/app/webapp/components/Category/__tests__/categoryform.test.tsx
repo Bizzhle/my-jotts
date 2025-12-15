@@ -15,13 +15,7 @@ vi.mock("../../../../api-service/ApiRequestManager", () => {
 
 vi.mock("../../../utils/contexts/hooks/useActivities", () => ({
   useActivities: () => ({
-    reloadCategories: vi.fn().mockResolvedValue({}),
-  }),
-}));
-
-vi.mock("../../../utils/contexts/hooks/useActivities", () => ({
-  useActivities: () => ({
-    reloadCategories: vi.fn().mockResolvedValue({}),
+    fetchCategories: vi.fn().mockResolvedValue({}),
   }),
 }));
 

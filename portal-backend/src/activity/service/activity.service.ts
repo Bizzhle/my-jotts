@@ -443,6 +443,11 @@ export class ActivityService extends WithTransactionService {
     activities: Activity[],
     userId: string,
   ): Promise<ActivityResponseDto[]> {
+    // Handle empty activity array
+    if (!activities || activities.length === 0) {
+      return [];
+    }
+
     // Fetch all activity IDs at once
     const activityIds = activities.map((a) => a.id);
 
@@ -452,7 +457,7 @@ export class ActivityService extends WithTransactionService {
     // Map activity IDs to their corresponding image files
     const groupedImagesByActivityId = await this.groupImagesByActivityId(imageFiles);
 
-    return activities.map((activity, index) => {
+    return activities.map((activity) => {
       const imageFiles = groupedImagesByActivityId.get(activity.id) || [];
       return this.mapToActivityResponse(activity, imageFiles);
     });

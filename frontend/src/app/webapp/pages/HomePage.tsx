@@ -22,7 +22,7 @@ export default function HomePage() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [activityFormOpen, setActivityFormOpen] = useState<boolean>(false);
   const [categoryFormOpen, setCategoryFormOpen] = useState<boolean>(false);
-  const { activities, reloadActivity, searchQuery } = useActivities();
+  const { activities, loadActivities, searchQuery } = useActivities();
   const [error, setError] = useState<responseError>({});
   const { showSearchBar } = useContext(LayoutContext);
 
@@ -35,7 +35,7 @@ export default function HomePage() {
     setError({});
     try {
       await ApiHandler.deleteActivity(activityId);
-      await reloadActivity();
+      await loadActivities();
       setError((prevErrors) => ({
         ...prevErrors,
         [activityId]: null,
