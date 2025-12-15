@@ -116,7 +116,7 @@ export class ApiHandler {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_NAME(categoryName);
     return ApiMethods.get<PageDto<ActivityResponseDto>>(url);
   };
-  static getActivitiesByCategory = (
+  static getActivitiesByCategoryId = (
     categoryId: string | number
   ): Promise<PageDto<ActivityResponseDto>> => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_ID(categoryId);

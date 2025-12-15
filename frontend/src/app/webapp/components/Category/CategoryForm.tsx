@@ -29,7 +29,7 @@ export default function CategoryForm({
   categoryToEdit,
 }: DialogFormProps) {
   const [error, setError] = useState<string | undefined>("");
-  const { reloadCategories } = useActivities();
+  const { fetchCategories } = useActivities();
   const { handleSubmit, register, reset } = useForm<CategoryData>();
 
   function onClose() {
@@ -62,7 +62,7 @@ export default function CategoryForm({
       } else {
         await ApiHandler.createCategory(categoryData);
       }
-      await reloadCategories();
+      await fetchCategories();
       onClose();
     } catch (err) {
       const errorMessage = isApiError(err);
