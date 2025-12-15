@@ -1,6 +1,6 @@
 import { Box, Breadcrumbs, Grid, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { LayoutContext } from "../../layout/LayoutContext";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
@@ -12,12 +12,23 @@ export interface responseError {
 }
 
 export default function CategoryDetail() {
-  const { activities, reloadActivity, category } = useActivities();
+  const { categoryId } = useParams();
+  const {
+    activities,
+    loadActivities,
+    category,
+    fetchCategory,
+    loadActivitiesByCategory,
+  } = useActivities();
   const { hideSearchBar } = useContext(LayoutContext);
   const [error, setError] = useState<responseError>({});
 
   useEffect(() => {
     hideSearchBar();
+    if (categoryId) {
+      fetchCategory(categoryId);
+      loadActivitiesByCategory(categoryId);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -25,7 +36,7 @@ export default function CategoryDetail() {
     setError({});
     try {
       await ApiHandler.deleteActivity(activityId);
-      await reloadActivity(); // Reload category whenever the page is rendered
+      await loadActivities(); // Reload category whenever the page is rendered
       setError((prevErrors) => ({
         ...prevErrors,
         [activityId]: null,

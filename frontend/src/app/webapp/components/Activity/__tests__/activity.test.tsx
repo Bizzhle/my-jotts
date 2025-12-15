@@ -15,7 +15,7 @@ vi.mock("../../../../api-service/ApiRequestManager", () => ({
 vi.mock("../../../utils/contexts/hooks/useActivities", () => ({
   useActivities: () => ({
     categories: [],
-    reloadActivity: vi.fn(),
+    loadActivities: vi.fn(),
     fetchActivity: vi.fn(),
     reloadCategories: vi.fn(),
   }),

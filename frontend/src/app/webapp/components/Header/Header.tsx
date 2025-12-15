@@ -45,7 +45,7 @@ export default function Header({
   handleSearchBar,
 }: HeaderProps) {
   const { logoutUser, authenticatedUser } = useBetterAuth();
-  const { categories, searchQuery, findActivity, reloadActivity } =
+  const { categories, searchQuery, findActivity, loadActivities } =
     useActivities();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -99,7 +99,7 @@ export default function Header({
   };
 
   const handleReloadActivity = async () => {
-    await reloadActivity();
+    await loadActivities();
     setSelectedIndex(null);
   };
 

@@ -15,7 +15,7 @@ import { useActivities } from "../../utils/contexts/hooks/useActivities";
 import ActivityDialogForm from "./ActivityDialogForm";
 
 export default function ActivityDetail() {
-  const { activityData } = useActivities();
+  const { activityData, fetchActivity } = useActivities();
   const [activityFormOpen, setActivityFormOpen] = useState<boolean>(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = activityData?.imageUrls;
@@ -23,6 +23,7 @@ export default function ActivityDetail() {
 
   useEffect(() => {
     hideSearchBar();
+    fetchActivity();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

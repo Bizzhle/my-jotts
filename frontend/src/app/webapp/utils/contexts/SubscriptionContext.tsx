@@ -10,6 +10,7 @@ interface SubscriptionContextType {
   paymentPlans?: PaymentPlanDto[];
   loading: boolean;
   fetchSubscriptionStatus: () => Promise<void>;
+  error: string | null;
 }
 
 interface SubscriptionProviderProps {
@@ -24,6 +25,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const [subscription, setSubscription] = useState<SubscriptionDto>();
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlanDto[]>();
   const { authenticatedUser } = useBetterAuth();
+  const [error, setError] = useState<string | null>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -37,7 +39,8 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       );
       setSubscription(activeSubscription);
     } catch (error) {
-      console.error("Error fetching subscription status:", error);
+      // console.error("Error fetching subscription status:", error);
+      setError("Failed to fetch subscription status.");
     } finally {
       setLoading(false);
     }
@@ -62,6 +65,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
         loading,
         fetchSubscriptionStatus,
         paymentPlans,
+        error,
       }}
     >
       {children}
