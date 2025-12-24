@@ -60,7 +60,6 @@ export const ActivityContext = createContext<ActivityContextValue>(
 export function ActivityProvider({ children }: ActivityProviderProps) {
   const { id } = useParams<{
     id?: string;
-    categoryId?: string;
   }>();
   const [state, setState] = useObjectReducer(initialState);
   const debouncedSearch = useDebounce(state.searchQuery);
@@ -113,8 +112,10 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     try {
       setState("loading", true);
       const { data } = await ApiHandler.getActivitiesByCategoryId(categoryId);
+
       setState({
-        activities: data,
+        activities: data.activities,
+        category: data.category,
       });
     } catch (err) {
       setState("error", isApiError(err));
@@ -141,7 +142,6 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   const fetchCategories = useCallback(async () => {
     try {
       const response = await ApiHandler.getCategories();
-
       setState("categories", response);
     } catch (err) {
       setState("error", isApiError(err));
@@ -156,6 +156,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     }
     try {
       const category = await ApiHandler.getCategory(categoryId);
+
       setState("category", category);
     } catch (err) {
       setState("activityDataError", isApiError(err));

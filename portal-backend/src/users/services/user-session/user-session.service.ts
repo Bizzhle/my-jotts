@@ -67,9 +67,9 @@ export class UserSessionService {
 
     if (session) {
       session.session_end = new Date();
-      (session.access_token = null),
-        (session.refresh_token = null),
-        await this.userSessionRepository.save(session);
+      session.access_token = null;
+      session.refresh_token = null;
+      await this.userSessionRepository.save(session);
     }
   }
 

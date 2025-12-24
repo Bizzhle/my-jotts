@@ -7,6 +7,7 @@ import {
 import { User } from 'src/users/entities/User.entity';
 import { DataSource } from 'typeorm';
 import { WithTransactionService } from '../../app/services/with-transaction.services';
+import { Category } from '../../category/entities/category.entity';
 import { CategoryService } from '../../category/services/category.service';
 import { ImageFile } from '../../image/entities/image-file.entity';
 import { ImageFileService } from '../../image/services/image-file.service';
@@ -16,7 +17,7 @@ import { UploadService } from '../../upload/service/upload.service';
 import { UsersService } from '../../users/services/user-service/users.service';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { PAGINATION_ITEMS_PER_PAGE, PaginationQueryDto } from '../dto/paginationQuery.dto';
-import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
+import { ActivityDTO, ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
 import { ListWithActivityPaginationResponseDto } from '../dto/response-dto/ListWithActivityPaginationResponse.dto';
 import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { Activity } from '../entities/activity.entity';
@@ -56,15 +57,24 @@ export class ActivityService extends WithTransactionService {
       await this.validateActivityCreation(user, dto, file, headers);
 
       let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
+      let subCategory = await this.categoryService.getCategoryByName(dto.subCategoryName, user.id);
 
       if (!category) {
         // Apply transaction to category creation
         category = await this.datasource.transaction(async (entityManager) => {
           return await this.categoryService.createCategory(
-            { categoryName: dto.categoryName },
+            { categoryName: dto.categoryName, subCategoryName: dto.subCategoryName },
             user.email,
             headers,
             entityManager, // Pass the entity manager to handle the transaction
+          );
+        });
+      } else if (dto.subCategoryName && !subCategory) {
+        // Create sub-category under existing category
+        subCategory = await this.datasource.transaction(async (entityManager) => {
+          return await this.categoryService.createSubCategory(
+            { parentCategoryId: category.id, subCategoryName: dto.subCategoryName },
+            user.email,
           );
         });
       }
@@ -76,7 +86,7 @@ export class ActivityService extends WithTransactionService {
         rating: dto.rating,
         description: dto.description,
         user: user,
-        category_id: category.id,
+        category_id: subCategory ? subCategory.id : category.id,
         date_created: new Date(),
         date_updated: new Date(),
       });
@@ -123,7 +133,7 @@ export class ActivityService extends WithTransactionService {
     emailAddress: string,
     search: string,
     paginationDto?: PaginationQueryDto,
-  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
+  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto[]>> {
     const startOffset = paginationDto?.offset ?? 0;
     const activityLimit = paginationDto?.limit ?? PAGINATION_ITEMS_PER_PAGE;
     let activityCount = null;
@@ -150,7 +160,7 @@ export class ActivityService extends WithTransactionService {
       offset: startOffset,
       limit: activityLimit,
       count: activityCount,
-      data: activityResponse,
+      data: activityResponse.activities,
     };
   }
 
@@ -161,7 +171,6 @@ export class ActivityService extends WithTransactionService {
       activityId,
       user.id,
     );
-
     if (!activity) {
       throw new NotFoundException(`Activity with ID ${activityId} not found.`);
     }
@@ -183,13 +192,13 @@ export class ActivityService extends WithTransactionService {
     categoryId: number,
     emailAddress: string,
     paginationDto?: PaginationQueryDto,
-  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
+  ): Promise<ListWithActivityPaginationResponseDto<ActivityDTO>> {
     const startOffset = paginationDto?.offset ?? 0;
     const activityLimit = paginationDto?.limit ?? PAGINATION_ITEMS_PER_PAGE;
     let activityCount = null;
     const user = await this.usersService.getUserByEmail(emailAddress);
 
-    const activities = await this.activityRepository.getUserActivitiesByCategory(
+    const { category, activities } = await this.activityRepository.getUserActivitiesByCategoryId(
       categoryId,
       user.id,
       startOffset,
@@ -202,6 +211,7 @@ export class ActivityService extends WithTransactionService {
     const activityResponse = await this.batchFetchAndMapActivityImagesToResponses(
       activities,
       user.id,
+      category,
     );
 
     return {
@@ -221,7 +231,6 @@ export class ActivityService extends WithTransactionService {
 
       const category = await this.categoryService.getCategoryByName(categoryName, user.id);
 
-      //const category = await this.categoryRepository.findOne({ where: { name: categoryName } });
       if (!category) {
         throw new NotFoundException(`Category with name ${categoryName} not found`);
       }
@@ -239,7 +248,7 @@ export class ActivityService extends WithTransactionService {
         user.id,
       );
 
-      return activityResponse;
+      return activityResponse.activities;
     } catch (err) {
       await this.logService.debug(err);
 
@@ -268,12 +277,21 @@ export class ActivityService extends WithTransactionService {
       }
 
       let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
+      let subCategory = await this.categoryService.getCategoryByName(dto.subCategoryName, user.id);
       if (!category) {
         category = await this.categoryService.createCategory(
           { categoryName: dto.categoryName },
           user.email,
           headers,
         );
+      } else if (dto.subCategoryName && !subCategory) {
+        // Create sub-category under existing category
+        subCategory = await this.datasource.transaction(async (entityManager) => {
+          return await this.categoryService.createSubCategory(
+            { parentCategoryId: category.id, subCategoryName: dto.subCategoryName },
+            user.email,
+          );
+        });
       }
 
       const updatedActivity = await this.activityRepository.updateActivity(
@@ -442,10 +460,11 @@ export class ActivityService extends WithTransactionService {
   private async batchFetchAndMapActivityImagesToResponses(
     activities: Activity[],
     userId: string,
-  ): Promise<ActivityResponseDto[]> {
+    category?: Category,
+  ): Promise<ActivityDTO> {
     // Handle empty activity array
     if (!activities || activities.length === 0) {
-      return [];
+      return { category: null, activities: [] };
     }
 
     // Fetch all activity IDs at once
@@ -457,10 +476,12 @@ export class ActivityService extends WithTransactionService {
     // Map activity IDs to their corresponding image files
     const groupedImagesByActivityId = await this.groupImagesByActivityId(imageFiles);
 
-    return activities.map((activity) => {
+    const data = activities.map((activity) => {
       const imageFiles = groupedImagesByActivityId.get(activity.id) || [];
       return this.mapToActivityResponse(activity, imageFiles);
     });
+
+    return { category, activities: data };
   }
 
   private async groupImagesByActivityId(
@@ -506,7 +527,9 @@ export class ActivityService extends WithTransactionService {
       id: activity.id,
       activityTitle: activity.activity_title,
       categoryName: activity.category.category_name,
+      parentCategoryName: activity.category.parentCategory?.category_name ?? null,
       categoryId: activity.category.id,
+      parentCategoryId: activity.category.parentCategory?.id ?? null,
       location: activity.location,
       price: activity.price,
       rating: activity.rating,

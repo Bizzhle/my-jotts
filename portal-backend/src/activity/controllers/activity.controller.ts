@@ -26,7 +26,7 @@ import { Permissions } from '../../auth/decorators/permission.decorator';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { PaginationQueryDto } from '../dto/paginationQuery.dto';
-import { ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
+import { ActivityDTO, ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
 import { ListWithActivityPaginationResponseDto } from '../dto/response-dto/ListWithActivityPaginationResponse.dto';
 import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { ActivityService } from '../service/activity.service';
@@ -74,8 +74,12 @@ export class ActivityController {
     @GetCurrentUserEmail() emailAddress: string,
     @Req() req: Request,
     @Query() paginationDto?: PaginationQueryDto,
-  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
-    return await this.activityService.getAllUserActivities(emailAddress, paginationDto?.search, paginationDto);
+  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto[]>> {
+    return await this.activityService.getAllUserActivities(
+      emailAddress,
+      paginationDto?.search,
+      paginationDto,
+    );
   }
 
   @IsAuthorizedUser()
@@ -91,7 +95,7 @@ export class ActivityController {
     @Param('categoryId', ParseIntPipe) categoryId: number,
     @GetCurrentUserEmail() emailAddress: string,
     @Query() paginationDto?: PaginationQueryDto,
-  ): Promise<ListWithActivityPaginationResponseDto<ActivityResponseDto>> {
+  ): Promise<ListWithActivityPaginationResponseDto<ActivityDTO>> {
     return this.activityService.getUserActivitiesByCategory(
       categoryId,
       emailAddress,

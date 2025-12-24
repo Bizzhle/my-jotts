@@ -8,10 +8,8 @@ export class CreateCategoryDto {
   @IsString()
   @IsOptional()
   description?: string;
-}
 
-export class CategoryResponseDto {
-  id: number;
-  categoryName: string;
-  description?: string;
+  @IsOptional()
+  @IsString()
+  subCategoryName?: string;
 }

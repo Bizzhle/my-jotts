@@ -45,6 +45,20 @@ describe('CategoryService', () => {
     updatedAt: null,
     activities: null,
     user: user,
+    parentCategory: null,
+    subCategories: null,
+  };
+
+  const categoryResponse = {
+    id: 1,
+    categoryName: 'test',
+    description: '',
+    createdAt: null,
+    updatedAt: null,
+    activities: null,
+    user: user,
+    parentCategory: null,
+    subCategories: null,
   };
 
   beforeEach(async () => {
@@ -114,12 +128,25 @@ describe('CategoryService', () => {
     expect(result).toEqual(category);
   });
 
+  it('creates a category with subcategory', async () => {
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
+    jest.spyOn(service, 'createCategory').mockResolvedValue(category);
+
+    const createDto = {
+      categoryName: 'test category',
+      description: 'Test',
+      subCategoryName: 'sub category',
+    };
+    const result = await service.createCategory(createDto, user.email, req.headers);
+    expect(result).toEqual(category);
+  });
+
   it('returns all user categories related to user', async () => {
     jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
-    jest.spyOn(service, 'getAllUserCategories').mockResolvedValue([category]);
+    jest.spyOn(service, 'getAllUserCategories').mockResolvedValue([categoryResponse]);
 
     const res = await service.getAllUserCategories(user.email);
-    expect(res).toEqual([category]);
+    expect(res).toEqual([categoryResponse]);
   });
 
   it('updates a category', async () => {
@@ -141,21 +168,9 @@ describe('CategoryService', () => {
       createdAt: null,
       updatedAt: null,
       activities: null,
-      user: {
-        id: '7e5e-eb89-4610-ad58-a50023',
-        name: 'test',
-        email: 'test@test.com',
-        emailVerified: true,
-        image: '',
-        createdAt: MOCK_DATE,
-        updatedAt: MOCK_DATE,
-        role: 'user',
-        stripeCustomerId: '',
-        categories: null,
-        activities: null,
-        imageFiles: null,
-        invoices: null,
-      },
+      user: user,
+      parentCategory: null,
+      subCategories: null,
     });
   });
 

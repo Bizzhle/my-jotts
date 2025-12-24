@@ -47,6 +47,8 @@ const category = {
   createdAt: null,
   updatedAt: null,
   user: user,
+  parentCategory: null,
+  subCategories: null,
 };
 
 const activities = [
@@ -60,7 +62,11 @@ const activities = [
     date_created: new Date('2023-10-10'),
     date_updated: new Date('2023-10-10'),
     category_id: 1,
-    category: category,
+    category: {
+      id: 1,
+      category_name: 'test',
+      parentCategory: null,
+    },
   },
   {
     id: 2,
@@ -72,7 +78,11 @@ const activities = [
     date_created: new Date('2023-10-10'),
     date_updated: new Date('2023-10-10'),
     category_id: 1,
-    category: category,
+    category: {
+      id: 1,
+      category_name: 'test',
+      parentCategory: null,
+    },
   },
 ];
 
@@ -89,6 +99,8 @@ const returnedActivities = [
     categoryId: 1,
     categoryName: 'test',
     imageUrls: [],
+    parentCategoryId: null,
+    parentCategoryName: null,
   },
   {
     id: 2,
@@ -102,6 +114,8 @@ const returnedActivities = [
     categoryId: 1,
     categoryName: 'test',
     imageUrls: [],
+    parentCategoryId: null,
+    parentCategoryName: null,
   },
 ];
 
@@ -117,7 +131,17 @@ const activity = {
   category_id: 1,
   user_id: 1,
   user: user,
-  category,
+  category: {
+    id: 1,
+    category_name: 'test',
+    description: '',
+    createdAt: new Date('2023-10-10'),
+    updatedAt: new Date('2023-10-10'),
+    user,
+    activities: null,
+    parentCategory: null,
+    subCategories: null,
+  },
   userAccount: null,
   imageFiles: null,
 };
@@ -176,6 +200,7 @@ describe('ActivityService', () => {
             getAllUserCategories: jest.fn(),
             getCategoryByName: jest.fn(),
             updateCategory: jest.fn(),
+            createSubCategory: jest.fn(),
           },
         },
         {
@@ -337,6 +362,23 @@ describe('ActivityService', () => {
     );
   });
 
+  it('creates an activity with sub-category', async () => {
+    const activityData: CreateActivityDto = {
+      activityTitle: 'Test Activity with Sub-category',
+      categoryName: 'parentCategory',
+      description: 'This is a test activity with sub-category',
+      rating: 3,
+      subCategoryName: 'subCategory',
+    };
+
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
+    jest.spyOn(service, 'createActivity').mockResolvedValue(activity);
+
+    const result = await service.createActivity(user.email, activityData, req.headers);
+
+    expect(result).toEqual(activity);
+  });
+
   it('returns all activities related to a user', async () => {
     jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
     jest.spyOn(activityRepository, 'getAllUserActivities').mockResolvedValue(activities);
@@ -365,6 +407,8 @@ describe('ActivityService', () => {
       dateCreated: activity.date_created,
       dateUpdated: activity.date_updated,
       imageUrls: [],
+      parentCategoryId: null,
+      parentCategoryName: null,
     });
   });
 
@@ -396,6 +440,43 @@ describe('ActivityService', () => {
         description: 'Updated Description',
         price: 100,
         rating: 4,
+      },
+      category.id,
+    );
+  });
+
+  it.only('updates an activity with sub-category', async () => {
+    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user);
+    jest.spyOn(activityRepository, 'getActivityByUserIdAndActivityId').mockResolvedValue(activity);
+    jest.spyOn(categoryService, 'getCategoryByName').mockResolvedValue(category);
+    jest.spyOn(categoryService, 'createCategory').mockResolvedValue(null);
+    jest
+      .spyOn(categoryService, 'createSubCategory')
+      .mockResolvedValue({ ...category, parent_category_id: 1 });
+    jest
+      .spyOn(activityRepository, 'updateActivity')
+      .mockResolvedValue({ ...activity, activity_title: 'Updated Sample' });
+
+    const updateDto = {
+      activityTitle: 'Updated Sample',
+      categoryName: 'test',
+      description: 'Updated Description',
+      rating: 4,
+      price: 100,
+      subCategoryName: 'subCategory',
+    };
+
+    await service.updateActivity(activity.id, updateDto, user.email, req.headers);
+    expect(activityRepository.updateActivity).toHaveBeenCalled();
+    expect(activityRepository.updateActivity).toHaveBeenCalledWith(
+      activity,
+      {
+        activityTitle: 'Updated Sample',
+        categoryName: 'test',
+        description: 'Updated Description',
+        price: 100,
+        rating: 4,
+        subCategoryName: 'subCategory',
       },
       category.id,
     );

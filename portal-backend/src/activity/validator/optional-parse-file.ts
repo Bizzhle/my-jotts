@@ -1,12 +1,11 @@
 import {
-  PipeTransform,
-  Injectable,
-  BadRequestException,
   ArgumentMetadata,
-  MaxFileSizeValidator,
+  BadRequestException,
   FileTypeValidator,
+  Injectable,
+  MaxFileSizeValidator,
+  PipeTransform,
 } from '@nestjs/common';
-import { Express } from 'express';
 
 @Injectable()
 export class OptionalFileValidationPipe implements PipeTransform {

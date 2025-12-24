@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { CreateActivityDto } from '../dto/create-activity.dto';
+import { Category } from '../../category/entities/category.entity';
 import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { Activity } from '../entities/activity.entity';
-
-type CreateActivity = Omit<CreateActivityDto, 'category'>;
 
 @Injectable()
 export class ActivityRepository extends Repository<Activity> {
@@ -19,8 +17,14 @@ export class ActivityRepository extends Repository<Activity> {
     activityLimit: number,
   ) {
     const query = await this.createQueryBuilder('activity')
-      .leftJoin('activity.category', 'category')
-      .select(['activity', 'category.category_name', 'category.id'])
+      .leftJoin('activity.category', 'parentCategory')
+      .leftJoin('parentCategory.parentCategory', 'subCategory')
+      .addSelect([
+        'subCategory.category_name',
+        'subCategory.id',
+        'parentCategory.category_name',
+        'parentCategory.id',
+      ])
       .skip(startOffset)
       .take(activityLimit)
       .orderBy('activity.date_created', 'DESC')
@@ -46,28 +50,53 @@ export class ActivityRepository extends Repository<Activity> {
   }
 
   async getActivityByUserIdAndActivityId(activityId: number, userId: string) {
-    return this.createQueryBuilder('activity')
-      .leftJoin('activity.category', 'category')
-      .select(['activity', 'category.category_name'])
+    const query = await this.createQueryBuilder('activity')
+      .leftJoin('activity.category', 'parentCategory')
+      .leftJoin('parentCategory.parentCategory', 'subCategory')
+      .addSelect([
+        'subCategory.category_name',
+        'subCategory.id',
+        'parentCategory.category_name',
+        'parentCategory.id',
+      ])
       .where('activity.userId = :userId', { userId })
       .andWhere('activity.id = :activityId', { activityId })
       .getOne();
+
+    return query;
   }
 
-  async getUserActivitiesByCategory(
+  async getUserActivitiesByCategoryId(
     categoryId: number,
     userId: string,
     startOffset: number,
     activityLimit: number,
   ) {
-    return this.createQueryBuilder('activity')
+    // Fetch the category with its parent
+    const category = await this.manager
+      .getRepository(Category)
+      .createQueryBuilder('category')
+      .leftJoinAndSelect('category.parentCategory', 'parentCategory')
+      .where('category.id = :categoryId', { categoryId })
+      .getOne();
+
+    // Fetch activities for this category
+    const activities = await this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
-      .select(['activity', 'category.category_name'])
+      .leftJoin('category.parentCategory', 'parentCategory')
+      .addSelect([
+        'parentCategory.category_name',
+        'parentCategory.id',
+        'category.category_name',
+        'category.id',
+      ])
       .where('activity.userId = :userId', { userId })
       .andWhere('category.id = :categoryId', { categoryId })
       .skip(startOffset)
       .take(activityLimit)
       .getMany();
+
+    return { category, activities };
   }
 
   async getUserActivitiesByCategoryName(categoryName: string, userId: number) {

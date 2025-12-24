@@ -5,6 +5,7 @@ interface AutoCompleteProps {
   setValue: (value: string) => void;
   label: string;
   options: string[];
+  onSelect?: (value: string) => void;
 }
 
 export default function AutoCompleteElement({
@@ -12,22 +13,28 @@ export default function AutoCompleteElement({
   setValue,
   label,
   options,
+  onSelect,
 }: AutoCompleteProps) {
+  const uniqueOptions = Array.from(new Set(options.filter(Boolean)));
   return (
     <Autocomplete
-      freeSolo
+      // freeSolo
       disablePortal
       id="combo-box-demo"
       value={value}
-      inputValue={value}
+      // inputValue={value}
       onChange={(_, newValue) => {
         setValue(newValue || "");
+        if (onSelect) {
+          onSelect(newValue || "");
+        }
       }}
-      options={options}
+      options={uniqueOptions}
       onInputChange={(_, newInputValue) => {
         setValue(newInputValue);
       }}
       isOptionEqualToValue={(option, value) => option === value || value === ""}
+      getOptionLabel={(option) => (typeof option === "string" ? option : "")}
       renderInput={(params) => (
         <TextField
           margin="normal"

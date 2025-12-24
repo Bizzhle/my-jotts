@@ -18,8 +18,8 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import checkUserPermission from "../../../libs/auth/CheckUserPermission";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
 import { useBetterAuth } from "../../utils/contexts/hooks/useBetterAuth";
@@ -44,9 +44,15 @@ export default function Header({
   openSearchBar,
   handleSearchBar,
 }: HeaderProps) {
+  const { categoryId } = useParams<{ categoryId: string }>();
   const { logoutUser, authenticatedUser } = useBetterAuth();
-  const { categories, searchQuery, findActivity, loadActivities } =
-    useActivities();
+  const {
+    categories,
+    searchQuery,
+    findActivity,
+    loadActivities,
+    loadActivitiesByCategory,
+  } = useActivities();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -62,6 +68,13 @@ export default function Header({
     setSelectedIndex(index);
     setOpen(false);
   };
+
+  useEffect(() => {
+    if (categoryId) {
+      loadActivitiesByCategory(categoryId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryId]);
 
   const hasPermission = checkUserPermission(authenticatedUser, "admin");
   const handleToggle = () => {

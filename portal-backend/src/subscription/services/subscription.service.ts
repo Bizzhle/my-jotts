@@ -87,19 +87,22 @@ export class SubscriptionService {
 
     // Handle the event
     switch (event.type) {
-      case 'invoice.payment_succeeded':
+      case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
         await this.invoiceService.handleUpdateInvoice(invoice); // Handle successful payment
         break;
-      case 'invoice.payment_failed':
+      }
+      case 'invoice.payment_failed': {
         const failedInvoice = event.data.object as Stripe.Invoice;
         await this.invoiceService.handleUpdateInvoice(failedInvoice);
         break;
-      case 'customer.subscription.updated':
+      }
+      case 'customer.subscription.updated': {
         const updatedSubscription = event.data.object as Stripe.Subscription;
         // Handle subscription updates (renewals, changes)
         await this.handleSubscriptionUpdated(updatedSubscription);
         break;
+      }
       // case 'customer.subscription.deleted':
       //   const canceledSubscription = event.data.object as Stripe.Subscription;
       //   await this.cancelSubscription(canceledSubscription.id);
