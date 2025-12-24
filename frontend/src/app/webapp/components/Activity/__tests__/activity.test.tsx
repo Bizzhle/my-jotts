@@ -84,7 +84,8 @@ describe("Activity Component", () => {
     const activityToEdit = {
       id: 1,
       activityTitle: "Test Activity",
-      categoryName: "Test Category",
+      categoryName: "Test Sub Category",
+      parentCategoryName: "Test Category",
       categoryId: 1,
       rating: 4,
       price: 10,
@@ -110,6 +111,33 @@ describe("Activity Component", () => {
     expect(ApiHandler.updateActivity).toHaveBeenCalled();
   });
 
+  it("should show category and sub-category when editing activity", async () => {
+    const activityToEdit = {
+      id: 1,
+      activityTitle: "Test Activity",
+      categoryName: "Test Sub Category",
+      categoryId: 1,
+      rating: 4,
+      price: 10,
+      location: "Test Location",
+      description: "Test Description",
+      dateCreated: new Date(),
+      dateUpdated: new Date(),
+      imageUrls: [],
+      parentCategoryName: "Test Category",
+    };
+    render(
+      <ActivityDialogForm
+        open={true}
+        handleClose={vi.fn()}
+        activityToEdit={activityToEdit}
+      />
+    );
+
+    expect(screen.getByDisplayValue("Test Category")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Test Sub Category")).toBeInTheDocument();
+  });
+
   it("should prevent double submission", async () => {
     const { ApiHandler } = await import(
       "../../../../api-service/ApiRequestManager"
@@ -125,6 +153,7 @@ describe("Activity Component", () => {
 
     await user.type(screen.getByLabelText("Activity *"), "New Activity");
     await user.type(screen.getByLabelText("Category"), "New Category");
+    await user.type(screen.getByLabelText(/price/i), "20");
 
     const submitButton = screen.getByRole("button", { name: /submit/i });
 

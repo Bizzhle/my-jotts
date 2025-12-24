@@ -26,6 +26,11 @@ export default function HomePage() {
   const [error, setError] = useState<responseError>({});
   const { showSearchBar } = useContext(LayoutContext);
 
+  useEffect(() => {
+    loadActivities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function handleClose() {
     setActivityFormOpen(false);
     setCategoryFormOpen(false);

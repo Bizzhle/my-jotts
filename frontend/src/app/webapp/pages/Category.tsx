@@ -9,13 +9,20 @@ import { LayoutContext } from "../layout/LayoutContext";
 import { useActivities } from "../utils/contexts/hooks/useActivities";
 import { ConfirmDeletionDialog } from "../utils/Dialog/confirmDeletion";
 
+interface DialogProps {
+  open: boolean;
+  categoryId: number | null;
+}
 export default function Category() {
   const { categories, fetchCategories } = useActivities();
   const { hideSearchBar } = useContext(LayoutContext);
   const [openCategoryForm, setOpenCategoryForm] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryResponseDto | null>(null);
-  const [open, setOpen] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<DialogProps>({
+    open: false,
+    categoryId: null,
+  });
   const [errors, setErrors] = useState<
     Record<number, string | null | undefined>
   >({});
@@ -108,17 +115,12 @@ export default function Category() {
                 </IconButton>
                 <IconButton
                   aria-label="delete category"
-                  onClick={() => setOpen(true)}
+                  onClick={() =>
+                    setDeleteDialog({ open: true, categoryId: category.id })
+                  }
                 >
                   <Delete />
                 </IconButton>
-                <ConfirmDeletionDialog
-                  open={open}
-                  setOpen={setOpen}
-                  value={category.id}
-                  onDelete={handleDeleteCategory}
-                  section="category"
-                />
               </Box>
               {errors[category.id] && (
                 <Typography variant="body2" color="error.main">
@@ -127,6 +129,18 @@ export default function Category() {
               )}
             </Box>
           ))}
+          <ConfirmDeletionDialog
+            open={deleteDialog.open}
+            setOpen={(open: boolean) =>
+              setDeleteDialog({
+                open,
+                categoryId: deleteDialog.categoryId,
+              })
+            }
+            value={deleteDialog.categoryId!}
+            onDelete={handleDeleteCategory}
+            section="category"
+          />
         </Box>
       )}
       {selectedCategory && (

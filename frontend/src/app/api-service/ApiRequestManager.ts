@@ -5,7 +5,11 @@ import { SessionState } from "../libs/SessionState";
 import { ActivityData } from "../webapp/components/Activity/ActivityDialogForm";
 import { ApiMethods } from "./ApiMethods";
 import { ActivityResponseDto } from "./dtos/activity.dto";
-import { CategoryData, CategoryResponseDto } from "./dtos/category.dto";
+import {
+  CategoryData,
+  CategoryResponseDto,
+  SubCategoryData,
+} from "./dtos/category.dto";
 import { ChangePasswordDto } from "./dtos/change-password.dto";
 import { ForgotPasswordResponseDto } from "./dtos/forgotpassword.dto";
 import { LogoutUserDto } from "./dtos/logout-user.dto";
@@ -106,9 +110,9 @@ export class ApiHandler {
     search?: string,
     limit?: number,
     offset?: number
-  ): Promise<PageDto<ActivityResponseDto>> => {
+  ): Promise<PageDto<ActivityResponseDto[]>> => {
     const url = ENDPOINTS.GET_ACTIVITIES(search, limit, offset);
-    return ApiMethods.get<PageDto<ActivityResponseDto>>(url);
+    return ApiMethods.get<PageDto<ActivityResponseDto[]>>(url);
   };
   static getActivitiesByCategoryName = (
     categoryName: string
@@ -118,9 +122,19 @@ export class ApiHandler {
   };
   static getActivitiesByCategoryId = (
     categoryId: string | number
-  ): Promise<PageDto<ActivityResponseDto>> => {
+  ): Promise<
+    PageDto<{
+      category: CategoryResponseDto;
+      activities: ActivityResponseDto[];
+    }>
+  > => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_ID(categoryId);
-    return ApiMethods.get<PageDto<ActivityResponseDto>>(url);
+    return ApiMethods.get<
+      PageDto<{
+        category: CategoryResponseDto;
+        activities: ActivityResponseDto[];
+      }>
+    >(url);
   };
   static updateActivity = (
     activityId: number,
@@ -201,6 +215,12 @@ export class ApiHandler {
   static sendSupportRequest = (params: SupportDto): Promise<void> => {
     const url = ENDPOINTS.SEND_SUPPORT_REQUEST();
     return ApiMethods.post(url, params);
+  };
+  static getSubCategoriesByParentId = (
+    parentId: number
+  ): Promise<SubCategoryData[]> => {
+    const url = ENDPOINTS.GET_SUBCATEGORIES_BY_PARENT_ID(parentId);
+    return ApiMethods.get(url);
   };
 }
 
