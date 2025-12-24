@@ -17,7 +17,7 @@ export default function CategoryDetail() {
     activities,
     loadActivities,
     category,
-    fetchCategory,
+
     loadActivitiesByCategory,
   } = useActivities();
   const { hideSearchBar } = useContext(LayoutContext);
@@ -26,7 +26,6 @@ export default function CategoryDetail() {
   useEffect(() => {
     hideSearchBar();
     if (categoryId) {
-      fetchCategory(categoryId);
       loadActivitiesByCategory(categoryId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

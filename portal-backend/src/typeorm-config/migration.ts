@@ -35,7 +35,10 @@ export function DevMigration<T extends Constructor>(constructorFunc: T): T {
 export class UpdateMigration implements MigrationInterface {
   readonly logger: Logger = new Logger();
 
-  constructor(readonly version: number, readonly filename: string) {}
+  constructor(
+    readonly version: number,
+    readonly filename: string,
+  ) {}
   name?: string;
   transaction?: boolean;
   down(queryRunner: QueryRunner): Promise<any> {
@@ -61,6 +64,6 @@ export class UpdateMigration implements MigrationInterface {
 
     this.logger.log(`Running legacy update "${updateFile}"`);
     const updateScript = await fs.readFile(updateFile);
-    await queryRunner.query(updateScript.toString())
+    await queryRunner.query(updateScript.toString());
   }
 }

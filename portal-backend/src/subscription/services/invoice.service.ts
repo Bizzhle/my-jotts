@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Invoice } from '../entities/invoice.entity';
-import { Repository } from 'typeorm';
 import Stripe from 'stripe';
+import { Repository } from 'typeorm';
+import { Invoice } from '../entities/invoice.entity';
 import { InvoiceStatus } from '../enum/invoice.enum';
 
 @Injectable()
@@ -37,8 +37,8 @@ export class InvoiceService {
       existingInvoice.status = InvoiceStatus[invoice.status];
       existingInvoice.dueDate = new Date(invoice.due_date);
       existingInvoice.paidAt = new Date();
-      (existingInvoice.updatedAt = new Date(invoice.created * 1000)),
-        await this.invoiceRepository.save(existingInvoice);
+      existingInvoice.updatedAt = new Date(invoice.created * 1000);
+      await this.invoiceRepository.save(existingInvoice);
     }
   }
 }

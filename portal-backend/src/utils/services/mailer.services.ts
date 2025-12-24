@@ -80,12 +80,6 @@ export class MailerService {
         emailAddress: to,
         token: confirmationLink,
       });
-      const mailOptions = {
-        from: 'MyJotts',
-        to,
-        subject: 'Registration request',
-        html,
-      };
       return await this.sendMail(to, 'Registration request', html);
     } catch (error) {
       throw new Error(`Failed to send registration email: ${error.message}`);

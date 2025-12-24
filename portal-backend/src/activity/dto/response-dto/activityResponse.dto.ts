@@ -1,4 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Category } from '../../../category/entities/category.entity';
+
+export type ActivityDTO = {
+  category: Category;
+  activities: ActivityResponseDto[];
+};
 
 export class ActivityResponseDto {
   @ApiProperty({ description: 'id of the activity' })
@@ -10,8 +16,14 @@ export class ActivityResponseDto {
   @ApiProperty({ description: 'name of category activity is assigned to' })
   categoryName: string;
 
+  @ApiProperty({ description: 'name of sub-category activity is assigned to' })
+  parentCategoryName?: string;
+
   @ApiProperty({ description: 'id of activity category' })
   categoryId?: number;
+
+  @ApiProperty({ description: 'id of activity sub-category' })
+  parentCategoryId?: number;
 
   @ApiProperty({ description: 'Price of activity or item' })
   price: number | null;

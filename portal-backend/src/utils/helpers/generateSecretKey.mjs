@@ -1,5 +1,6 @@
+/* eslint-disable no-undef */
+
 import * as crypto from 'crypto';
-import * as fs from 'fs';
 
 const generateSecret = () => crypto.randomBytes(64).toString('hex');
 

@@ -25,4 +25,8 @@ export class CreateActivityDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  subCategoryName?: string;
 }

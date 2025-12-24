@@ -21,6 +21,7 @@ import {
 import { GetCurrentUserEmail } from '../../app/decorators/jwt.decorators';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
 import { CreateCategoryDto } from '../dto/create-category.dto';
+import { CreateSubCategoryDto } from '../dto/sub-create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { CategoryService } from '../services/category.service';
 @ApiTags('Category')
@@ -52,6 +53,20 @@ export class CategoryController {
   }
 
   @IsAuthorizedUser()
+  @Get('sub-categories/:parentId')
+  @ApiOperation({
+    summary: 'Get sub-categories by parent category ID',
+    description: 'Fetches sub-categories for a given parent category ID for the authorized user',
+  })
+  @ApiOkResponse({ description: 'Sub-categories found successfully.' })
+  @ApiNotFoundResponse({ description: 'Parent category not found' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
+  @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
+  async getSubCategoriesByParentId(@Param('parentId', ParseIntPipe) parentId: number) {
+    return this.categoryService.getSubCategoriesByParentId(parentId);
+  }
+
+  @IsAuthorizedUser()
   @Post()
   @ApiOperation({
     summary: 'Creates a category',
@@ -68,6 +83,24 @@ export class CategoryController {
     @Req() req: Request,
   ) {
     return await this.categoryService.createCategory(dto, emailAddress, req.headers);
+  }
+
+  @IsAuthorizedUser()
+  @Post('sub-category')
+  @ApiOperation({
+    summary: 'Creates a sub category',
+    description: 'A sub category is created by a user',
+  })
+  @ApiOkResponse({ description: 'The Category has been successfully created.' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
+  @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
+  @ApiServiceUnavailableResponse()
+  async createSubCategory(
+    @GetCurrentUserEmail() emailAddress: string,
+    @Body() dto: CreateSubCategoryDto,
+  ) {
+    return await this.categoryService.createSubCategory(dto, emailAddress);
   }
 
   @IsAuthorizedUser()

@@ -13,6 +13,8 @@ import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
 import { UsersService } from '../../users/services/user-service/users.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
+import { CategoryResponseDto } from '../dto/response-dto/category-response.dto';
+import { CreateSubCategoryDto } from '../dto/sub-create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 import { Category } from '../entities/category.entity';
 import { CategoryRepository } from '../repositories/category.repository';
@@ -66,6 +68,15 @@ export class CategoryService {
           createdAt: new Date(),
         });
         createdCategory = await entityManager.save(Category, category);
+        if (dto.subCategoryName) {
+          const subCategory = await this.categoryRepository.create({
+            user: { id: user.id },
+            category_name: dto.subCategoryName,
+            parentCategory: createdCategory,
+            createdAt: new Date(),
+          });
+          await entityManager.save(Category, subCategory);
+        }
       } else {
         createdCategory = await this.categoryRepository.createCategory(dto, user.id);
       }
@@ -79,7 +90,44 @@ export class CategoryService {
     }
   }
 
-  public async getAllUserCategories(emailAddress: string): Promise<Category[]> {
+  public async createSubCategory(
+    dto: CreateSubCategoryDto,
+    emailAddress: string,
+  ): Promise<Category> {
+    const user = await this.usersService.getUserByEmail(emailAddress);
+    if (!user) {
+      throw new UnauthorizedException('User not logged in');
+    }
+
+    const parentCategory = await this.categoryRepository.findUserCategoryById(
+      dto.parentCategoryId,
+      user.id,
+    );
+    if (!parentCategory) {
+      throw new NotFoundException('Parent category not found');
+    }
+
+    const existingSubCategory = await this.categoryRepository.findCategoryByName(
+      dto.subCategoryName,
+      user.id,
+    );
+    if (existingSubCategory) {
+      throw new ConflictException('Sub-category with this name already exists.');
+    }
+
+    const subCategory = this.categoryRepository.create({
+      user: { id: user.id },
+      category_name: dto.subCategoryName,
+      parentCategory: parentCategory,
+      createdAt: new Date(),
+    });
+
+    await this.categoryRepository.save<Category>(subCategory);
+    await this.loggerService.log('Sub-category created');
+    return subCategory;
+  }
+
+  public async getAllUserCategories(emailAddress: string): Promise<CategoryResponseDto[]> {
     const user = await this.usersService.getUserByEmail(emailAddress);
     if (!user) {
       throw new BadRequestException('User not logged in');
@@ -92,11 +140,16 @@ export class CategoryService {
     if (!user) {
       throw new UnauthorizedException('User not logged in');
     }
-    return this.categoryRepository.findUserCategoryById(id, user.id);
+    const category = await this.categoryRepository.findUserCategoryById(id, user.id);
+    return category;
   }
 
   public async getCategoryByName(name: string, userId: string) {
     return await this.categoryRepository.findCategoryByName(name, userId);
+  }
+
+  public async getSubCategoriesByParentId(parentId: number): Promise<Category[]> {
+    return await this.categoryRepository.findSubCategoriesByParentId(parentId);
   }
 
   async updateCategory(id: number, dto: UpdateCategoryDto, emailAddress: string) {

@@ -53,4 +53,6 @@ export const ENDPOINTS = {
     `/subscription/${subscriptionId}`,
   GET_PAYMENT_PLANS: (): string => `/payment-plan`,
   SEND_SUPPORT_REQUEST: (): string => `/support/request`,
+  GET_SUBCATEGORIES_BY_PARENT_ID: (parentId: number): string =>
+    `/category/sub-categories/${parentId}`,
 };

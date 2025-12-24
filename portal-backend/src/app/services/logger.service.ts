@@ -20,6 +20,5 @@ export class ErrorLogger implements LoggerService {
 
   private writeToFile(message: string) {
     // Implement the logic to write logs to a file here.
-    console.log(message); // For demonstration purposes, we'll just log to the console.
   }
 }

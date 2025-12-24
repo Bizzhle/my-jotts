@@ -39,4 +39,11 @@ export class Category {
 
   @OneToMany(() => Activity, (activity) => activity.category)
   activities: Activity[];
+
+  @ManyToOne(() => Category, (category) => category.subCategories, { nullable: true })
+  @JoinColumn({ name: 'parent_category_id' })
+  parentCategory: Category;
+
+  @OneToMany(() => Category, (category) => category.parentCategory)
+  subCategories: Category[];
 }

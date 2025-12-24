@@ -17,6 +17,7 @@ import {
   ActivityResponseDto,
   ImageUrl,
 } from "../../../api-service/dtos/activity.dto";
+import { SubCategoryData } from "../../../api-service/dtos/category.dto";
 import { getErrorMessage } from "../../../libs/error-handling/gerErrorMessage";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
 import { useSubscription } from "../../utils/contexts/hooks/useSubscription";
@@ -37,6 +38,7 @@ export interface ActivityData {
   price: number;
   location?: string;
   description?: string;
+  parentCategoryName?: string;
 }
 
 export default function ActivityDialogForm({
@@ -46,7 +48,13 @@ export default function ActivityDialogForm({
 }: DialogFormProps) {
   const { categories, loadActivities, fetchActivity, fetchCategories } =
     useActivities();
-  const [value, setValue] = useState(activityToEdit?.categoryName || "");
+  const [value, setValue] = useState(
+    activityToEdit?.parentCategoryName ?? activityToEdit?.categoryName ?? ""
+  );
+
+  const [subCategory, setSubCategory] = useState(
+    activityToEdit?.parentCategoryName ? activityToEdit?.categoryName : ""
+  );
   const [error, setError] = useState<string | undefined>("");
   const [files, setFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<ImageUrl[]>(
@@ -55,6 +63,7 @@ export default function ActivityDialogForm({
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [rating, setRating] = useState<number>(activityToEdit?.rating || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [subCategories, setSubCategories] = useState<SubCategoryData[]>([]);
   const { handleSubmit, register, reset } = useForm<ActivityData>();
   const { subscription } = useSubscription();
 
@@ -64,6 +73,7 @@ export default function ActivityDialogForm({
       const {
         activityTitle,
         categoryName,
+        parentCategoryName,
         rating,
         price,
         location,
@@ -73,6 +83,7 @@ export default function ActivityDialogForm({
       reset({
         activityTitle,
         categoryName,
+        parentCategoryName,
         rating,
         price,
         location,
@@ -82,6 +93,18 @@ export default function ActivityDialogForm({
       setImagesToDelete([]);
     }
   }, [activityToEdit, reset]);
+
+  const fetchSubCategories = async (parentCategoryId: number) => {
+    try {
+      const subCategoriesData = await ApiHandler.getSubCategoriesByParentId(
+        parentCategoryId
+      );
+      setSubCategories(subCategoriesData);
+    } catch (err) {
+      setError("Could not fetch sub categories");
+      return;
+    }
+  };
 
   const handleCloseDialog = () => {
     setError("");
@@ -139,6 +162,7 @@ export default function ActivityDialogForm({
     const activityData = {
       activityTitle,
       categoryName: value,
+      subCategoryName: subCategory,
       price: price !== undefined ? Number(price) : 0,
       rating: Number(rating),
       location,
@@ -201,6 +225,25 @@ export default function ActivityDialogForm({
             setValue={setValue}
             options={categories.map((category) => category.categoryName)}
             label="Category"
+            onSelect={async (selectedCategoryName: string) => {
+              setValue(selectedCategoryName);
+              const selectedCategory = categories.find(
+                (cat) => cat.categoryName === selectedCategoryName
+              );
+              if (selectedCategory) {
+                await fetchSubCategories(selectedCategory.id);
+              } else {
+                setSubCategories([]);
+              }
+            }}
+          />
+          <AutoCompleteElement
+            value={subCategory}
+            setValue={setSubCategory}
+            options={subCategories.map(
+              (subCategory) => subCategory.categoryName
+            )}
+            label="Sub category"
           />
           <TextField
             id="price"

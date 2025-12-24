@@ -5,5 +5,5 @@ export interface PageInfoDto {
 }
 
 export interface PageDto<T = unknown> extends PageInfoDto {
-  data: T[]; // Array of items for the current page
+  data: T; // Array of items for the current page
 }
