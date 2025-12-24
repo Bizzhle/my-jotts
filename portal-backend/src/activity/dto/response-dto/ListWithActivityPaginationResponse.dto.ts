@@ -19,5 +19,5 @@ export class ListWithActivityPaginationResponseDto<T> {
   })
   count: number | null;
 
-  data: T[];
+  data: T;
 }
