@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import * as Express from 'express';
 import { DataSource } from 'typeorm';
 import { CategoryService } from '../../../category/services/category.service';
 import { ImageFileService } from '../../../image/services/image-file.service';
