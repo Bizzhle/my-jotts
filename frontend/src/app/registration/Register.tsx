@@ -19,7 +19,7 @@ export default function Register() {
           flexDirection: { xs: "column", lg: "row" },
           justifyContent: "space-between",
           alignItems: "center",
-          gap: 2,
+          gap: 1,
           width: "100%",
         }}
       >
