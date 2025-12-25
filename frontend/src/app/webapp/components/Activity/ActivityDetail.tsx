@@ -8,16 +8,15 @@ import {
   Typography,
 } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
-import Carousel from "react-material-ui-carousel";
 import { Link } from "react-router-dom";
 import { LayoutContext } from "../../layout/LayoutContext";
 import { useActivities } from "../../utils/contexts/hooks/useActivities";
 import ActivityDialogForm from "./ActivityDialogForm";
+import ImageGallery from "./ImageGallery";
 
 export default function ActivityDetail() {
   const { activityData, fetchActivity } = useActivities();
   const [activityFormOpen, setActivityFormOpen] = useState<boolean>(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = activityData?.imageUrls;
   const { hideSearchBar } = useContext(LayoutContext);
 
@@ -48,55 +47,7 @@ export default function ActivityDetail() {
           </Link>
         </Breadcrumbs>
       </Box>
-      {images && images?.length > 0 && (
-        <Box
-          mb={2}
-          position="relative"
-          height={500}
-          sx={{ overflow: "hidden" }}
-        >
-          <Box
-            sx={{
-              backgroundImage: `url(${images[currentImageIndex]})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              filter: "blur(10px)", // Blur effect only for background
-              opacity: 0.3,
-              transform: "scale(1.1)", // Slightly zoom the background for effect
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 1, // Ensure it's behind the main image
-            }}
-          />
-          <Carousel
-            index={currentImageIndex}
-            onChange={(index: number | undefined) =>
-              setCurrentImageIndex(index ?? 0)
-            }
-          >
-            {images.map((image, index) => (
-              <Box
-                key={index}
-                sx={{
-                  height: 500,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <img
-                  src={image.signedUrl}
-                  alt={`Activity image ${index + 1}`}
-                  className="activity-image"
-                />
-              </Box>
-            ))}
-          </Carousel>
-        </Box>
-      )}
+      {images && images.length > 0 && <ImageGallery images={images} />}
       <Paper variant="outlined" sx={{ maxWidth: 600, p: 2, mb: 2 }}>
         <Typography>{activityData?.activityTitle}</Typography>
         <Rating
