@@ -92,7 +92,7 @@ export default function ActivityDialogForm({
       setExistingImages(imageUrls?.map((img) => img) || []);
       setImagesToDelete([]);
     }
-  }, [activityToEdit, reset, value, categories]);
+  }, [activityToEdit, reset]);
 
   useEffect(() => {
     // Fetch sub-categories if editing an activity with a parent category
