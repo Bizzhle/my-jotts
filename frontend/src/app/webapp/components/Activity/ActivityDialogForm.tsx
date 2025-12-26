@@ -94,6 +94,22 @@ export default function ActivityDialogForm({
     }
   }, [activityToEdit, reset]);
 
+  useEffect(() => {
+    // Fetch sub-categories if editing an activity with a parent category
+    const fetchInitialSubCategories = async () => {
+      if (activityToEdit && value) {
+        const selectedCategory = categories.find(
+          (cat) => cat.categoryName === value
+        );
+        if (selectedCategory) {
+          await fetchSubCategories(selectedCategory.id);
+        }
+      }
+    };
+
+    fetchInitialSubCategories();
+  }, [activityToEdit, categories, value]);
+
   const fetchSubCategories = async (parentCategoryId: number) => {
     try {
       const subCategoriesData = await ApiHandler.getSubCategoriesByParentId(
@@ -244,6 +260,7 @@ export default function ActivityDialogForm({
               (subCategory) => subCategory.categoryName
             )}
             label="Sub category"
+            disabled={!value}
           />
           <TextField
             id="price"
