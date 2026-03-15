@@ -49,16 +49,16 @@ export default function ActivityDialogForm({
   const { categories, loadActivities, fetchActivity, fetchCategories } =
     useActivities();
   const [value, setValue] = useState(
-    activityToEdit?.parentCategoryName ?? activityToEdit?.categoryName ?? ""
+    activityToEdit?.parentCategoryName ?? activityToEdit?.categoryName ?? "",
   );
 
   const [subCategory, setSubCategory] = useState(
-    activityToEdit?.parentCategoryName ? activityToEdit?.categoryName : ""
+    activityToEdit?.parentCategoryName ? activityToEdit?.categoryName : "",
   );
   const [error, setError] = useState<string | undefined>("");
   const [files, setFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<ImageUrl[]>(
-    activityToEdit?.imageUrls?.map((img) => img) || []
+    activityToEdit?.imageUrls?.map((img) => img) || [],
   );
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [rating, setRating] = useState<number>(activityToEdit?.rating || 0);
@@ -99,7 +99,7 @@ export default function ActivityDialogForm({
     const fetchInitialSubCategories = async () => {
       if (activityToEdit && value) {
         const selectedCategory = categories.find(
-          (cat) => cat.categoryName === value
+          (cat) => cat.categoryName === value,
         );
         if (selectedCategory) {
           await fetchSubCategories(selectedCategory.id);
@@ -112,9 +112,8 @@ export default function ActivityDialogForm({
 
   const fetchSubCategories = async (parentCategoryId: number) => {
     try {
-      const subCategoriesData = await ApiHandler.getSubCategoriesByParentId(
-        parentCategoryId
-      );
+      const subCategoriesData =
+        await ApiHandler.getSubCategoriesByParentId(parentCategoryId);
       setSubCategories(subCategoriesData);
     } catch (err) {
       setError("Could not fetch sub categories");
@@ -141,7 +140,7 @@ export default function ActivityDialogForm({
   };
 
   const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (event.target.files) {
       const selectedFiles = Array.from(event.target.files);
@@ -158,7 +157,7 @@ export default function ActivityDialogForm({
         return;
       }
       const compressedFiles = await Promise.all(
-        selectedFiles.map((element) => handleFileCompression(element))
+        selectedFiles.map((element) => handleFileCompression(element)),
       );
 
       setFiles((prevFiles) => [
@@ -191,7 +190,7 @@ export default function ActivityDialogForm({
           activityToEdit.id,
           activityData,
           files,
-          imagesToDelete
+          imagesToDelete,
         );
         await fetchActivity();
       } else {
@@ -244,7 +243,7 @@ export default function ActivityDialogForm({
             onSelect={async (selectedCategoryName: string) => {
               setValue(selectedCategoryName);
               const selectedCategory = categories.find(
-                (cat) => cat.categoryName === selectedCategoryName
+                (cat) => cat.categoryName === selectedCategoryName,
               );
               if (selectedCategory) {
                 await fetchSubCategories(selectedCategory.id);
@@ -257,7 +256,7 @@ export default function ActivityDialogForm({
             value={subCategory}
             setValue={setSubCategory}
             options={subCategories.map(
-              (subCategory) => subCategory.categoryName
+              (subCategory) => subCategory.categoryName,
             )}
             label="Sub category"
             disabled={!value}
@@ -292,11 +291,26 @@ export default function ActivityDialogForm({
           />
           <Box mt={2}>
             {/* Existing Images Section */}
+            <input
+              accept="image/*"
+              id="image-upload"
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              hidden
+            />
+            <label htmlFor="image-upload">
+              <Button variant="outlined" component="span" fullWidth>
+                {subscription?.status === "active"
+                  ? "Upload Images"
+                  : "Upload Image"}
+              </Button>
+            </label>
             {activityToEdit && existingImages.length > 0 && (
               <Box mb={2}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Existing Images
-                </Typography>
+                {/* <Typography variant="subtitle2" gutterBottom>
+                  Images
+                </Typography> */}
                 {existingImages.map((imageUrl, index) => (
                   <Box
                     key={imageUrl.signedUrl}
@@ -306,7 +320,7 @@ export default function ActivityDialogForm({
                     mb={1}
                   >
                     <Typography variant="body2">
-                      Image {index + 1} (
+                      Image {index + 1}(
                       {imageUrl.signedUrl.split("/").pop()?.substring(0, 20)}
                       ...)
                     </Typography>
@@ -321,20 +335,7 @@ export default function ActivityDialogForm({
             )}
 
             {/* New Images Upload Section */}
-            <input
-              accept="image/*"
-              id="image-upload"
-              type="file"
-              multiple
-              onChange={handleFileChange}
-            />
-            <label htmlFor="image-upload">
-              <Button variant="outlined" component="span">
-                {subscription?.status === "active"
-                  ? "Upload Images"
-                  : "Upload Image"}
-              </Button>
-            </label>
+
             {files.length > 0 && (
               <Box mt={1}>
                 {files.map((file, index) => (
@@ -366,8 +367,8 @@ export default function ActivityDialogForm({
             {isSubmitting
               ? "Submitting..."
               : activityToEdit
-              ? "Update"
-              : "Submit"}
+                ? "Update"
+                : "Submit"}
           </Button>
         </DialogActions>
       </form>
