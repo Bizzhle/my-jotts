@@ -24,6 +24,7 @@ interface S3UploadResult {
 export class UploadService {
   private bucket: string;
   private s3: AWS.S3;
+  private environment: string;
 
   constructor(
     private configService: ConfigService<EnvVars>,
@@ -35,10 +36,14 @@ export class UploadService {
       accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID'),
       secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY'),
     });
+    this.environment = this.configService.get<string>('NODE_ENV');
   }
 
   async upload(data: FileUploadDto) {
-    const key = `users/${data.userId}/activities/${data.activityId}/${uuidv4()}-${data.file.originalname}`;
+    const isProduction = this.environment === 'production';
+    const key = isProduction
+      ? `users/${data.userId}/activities/${data.activityId}/${uuidv4()}-${data.file.originalname}`
+      : `users/${data.userId}/activities/dev/${data.activityId}/${uuidv4()}-${data.file.originalname}`;
 
     const params = {
       Bucket: this.bucket,

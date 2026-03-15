@@ -308,29 +308,39 @@ export default function ActivityDialogForm({
             </label>
             {activityToEdit && existingImages.length > 0 && (
               <Box mb={2}>
-                {/* <Typography variant="subtitle2" gutterBottom>
-                  Images
-                </Typography> */}
-                {existingImages.map((imageUrl, index) => (
-                  <Box
-                    key={imageUrl.signedUrl}
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    mb={1}
-                  >
-                    <Typography variant="body2">
-                      Image {index + 1}(
-                      {imageUrl.signedUrl.split("/").pop()?.substring(0, 20)}
-                      ...)
-                    </Typography>
-                    <IconButton
-                      onClick={() => handleRemoveExistingImage(imageUrl)}
+                <Typography variant="subtitle2" gutterBottom>
+                  Existing Images
+                </Typography>
+                <Box display="flex" gap={2} flexWrap="wrap">
+                  {existingImages.map((imageUrl, index) => (
+                    <Box
+                      key={imageUrl.signedUrl}
+                      position="relative"
+                      width={100}
+                      height={100}
                     >
-                      <HighlightOff />
-                    </IconButton>
-                  </Box>
-                ))}
+                      <img
+                        src={imageUrl.signedUrl}
+                        alt={`Activity image ${index + 1}`}
+                        className="activity-form-image"
+                      />
+                      <IconButton
+                        onClick={() => handleRemoveExistingImage(imageUrl)}
+                        sx={{
+                          position: "absolute",
+                          top: -8,
+                          right: -8,
+                          backgroundColor: "white",
+                          "&:hover": { backgroundColor: "#f5f5f5" },
+                          boxShadow: 1,
+                        }}
+                        size="small"
+                      >
+                        <HighlightOff fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Box>
               </Box>
             )}
 
