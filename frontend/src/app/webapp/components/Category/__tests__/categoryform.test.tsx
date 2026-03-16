@@ -27,8 +27,6 @@ describe("CategoryForm", () => {
     expect(heading).toBeInTheDocument();
     expect(screen.getByLabelText("Category *")).toBeInTheDocument();
     expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
-
-    screen.debug();
   });
 
   it("should create a new category on form submit", async () => {

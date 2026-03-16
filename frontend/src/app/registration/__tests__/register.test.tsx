@@ -44,7 +44,7 @@ describe("Registration", () => {
     await user.type(screen.getByLabelText("Password"), "password123");
     await user.type(screen.getByLabelText(/confirm password/i), "password123");
     await user.click(submitButton);
-    screen.debug();
+
     const heading = screen.getByRole("heading", {
       name: /Registration successful, check your email to verify your account/i,
     });

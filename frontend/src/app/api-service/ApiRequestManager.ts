@@ -49,16 +49,16 @@ export class ApiHandler {
     return ApiMethods.post<void, LogoutUserDto>(url);
   };
   static forgotPassword = (
-    params: ForgotPasswordData
+    params: ForgotPasswordData,
   ): Promise<ForgotPasswordResponseDto> => {
     const url = ENDPOINTS.FORGOT_PASSWORD();
     return ApiMethods.post<ForgotPasswordResponseDto, ForgotPasswordData>(
       url,
-      params
+      params,
     );
   };
   static resetPassword = (
-    params: ResetPasswordDataRequestDto
+    params: ResetPasswordDataRequestDto,
   ): Promise<void> => {
     const url = ENDPOINTS.RESET_PASSWORD();
     return ApiMethods.post<void, ResetPasswordDataRequestDto>(url, params);
@@ -69,7 +69,7 @@ export class ApiHandler {
   };
   static verifyRegistration = (
     emailAddress: string,
-    verificationToken: string
+    verificationToken: string,
   ): Promise<{ message: string }> => {
     const url = ENDPOINTS.VERIFY_REGISTRATION();
     return ApiMethods.post(url, { emailAddress, verificationToken });
@@ -91,12 +91,12 @@ export class ApiHandler {
       {
         refreshToken,
       },
-      { withCredentials: true }
+      { withCredentials: true },
     );
   };
   static createActivity = (
     dto: ActivityData,
-    files?: File[]
+    files?: File[],
   ): Promise<void> => {
     const formData = createActivityFormData(dto, files);
     const url = ENDPOINTS.CREATE_ACTIVITY();
@@ -109,19 +109,19 @@ export class ApiHandler {
   static getActivities = (
     search?: string,
     limit?: number,
-    offset?: number
+    offset?: number,
   ): Promise<PageDto<ActivityResponseDto[]>> => {
     const url = ENDPOINTS.GET_ACTIVITIES(search, limit, offset);
     return ApiMethods.get<PageDto<ActivityResponseDto[]>>(url);
   };
   static getActivitiesByCategoryName = (
-    categoryName: string
+    categoryName: string,
   ): Promise<PageDto<ActivityResponseDto>> => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_NAME(categoryName);
     return ApiMethods.get<PageDto<ActivityResponseDto>>(url);
   };
   static getActivitiesByCategoryId = (
-    categoryId: string | number
+    categoryId: string | number,
   ): Promise<
     PageDto<{
       category: CategoryResponseDto;
@@ -140,7 +140,7 @@ export class ApiHandler {
     activityId: number,
     dto: ActivityData,
     files?: File[],
-    imagesToDelete?: string[]
+    imagesToDelete?: string[],
   ): Promise<void> => {
     const formData = new FormData();
 
@@ -173,7 +173,7 @@ export class ApiHandler {
     return ApiMethods.get(url);
   };
   static getCategory = (
-    categoryId: number | string
+    categoryId: number | string,
   ): Promise<CategoryResponseDto> => {
     const url = ENDPOINTS.GET_CATEGORY(categoryId);
     return ApiMethods.get(url);
@@ -188,14 +188,14 @@ export class ApiHandler {
   };
   static updateCategory = (
     categoryId: number,
-    params: CategoryData
+    params: CategoryData,
   ): Promise<void> => {
     const url = ENDPOINTS.UPDATE_CATEGORY(categoryId);
     return ApiMethods.patch(url, params);
   };
   static createSubscription = (
     priceId: string,
-    paymentPlanId: number
+    paymentPlanId: number,
   ): Promise<SubscriptionResponseDto> => {
     const url = ENDPOINTS.CREATE_SUBSCRIPTION();
     return ApiMethods.post(url, { priceId, paymentPlanId });
@@ -217,7 +217,7 @@ export class ApiHandler {
     return ApiMethods.post(url, params);
   };
   static getSubCategoriesByParentId = (
-    parentId: number
+    parentId: number,
   ): Promise<SubCategoryData[]> => {
     const url = ENDPOINTS.GET_SUBCATEGORIES_BY_PARENT_ID(parentId);
     return ApiMethods.get(url);
@@ -226,7 +226,7 @@ export class ApiHandler {
 
 export function createActivityFormData(
   dto: ActivityData,
-  files?: File[]
+  files?: File[],
 ): FormData {
   const formData = new FormData();
 
@@ -239,7 +239,7 @@ export function createActivityFormData(
 
   if (files?.length) {
     files.forEach((file) => {
-      formData.append("file", file);
+      formData.append("files", file);
     });
   }
 

@@ -6,6 +6,7 @@ interface AutoCompleteProps {
   label: string;
   options: string[];
   onSelect?: (value: string) => void;
+  disabled?: boolean;
 }
 
 export default function AutoCompleteElement({
@@ -14,11 +15,13 @@ export default function AutoCompleteElement({
   label,
   options,
   onSelect,
+  disabled,
 }: AutoCompleteProps) {
   const uniqueOptions = Array.from(new Set(options.filter(Boolean)));
   return (
     <Autocomplete
       // freeSolo
+      disabled={disabled}
       disablePortal
       id="combo-box-demo"
       value={value}
