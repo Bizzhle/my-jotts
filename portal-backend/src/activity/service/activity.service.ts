@@ -4,11 +4,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config/dist/config.service';
 import { User } from 'src/users/entities/User.entity';
 import { DataSource } from 'typeorm';
 import { WithTransactionService } from '../../app/services/with-transaction.services';
 import { Category } from '../../category/entities/category.entity';
 import { CategoryService } from '../../category/services/category.service';
+import { EnvVars } from '../../envvars';
 import { ImageFile } from '../../image/entities/image-file.entity';
 import { ImageFileService } from '../../image/services/image-file.service';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
@@ -27,9 +29,12 @@ interface ImageUrlDto {
   signedUrl: string;
   rawUrl: string;
 }
-const UN_SUBSCRIBED_MAX_ACTIVITIES = 10;
+// const UN_SUBSCRIBED_MAX_ACTIVITIES = process.env.UN_SUBSCRIBED_MAX_ACTIVITIES;
 @Injectable()
 export class ActivityService extends WithTransactionService {
+  private readonly maxActivitiesForUnsubscribedUsers: number;
+  private readonly maxImageUploads: number;
+  private readonly minimumImageUploads: number;
   constructor(
     private readonly activityRepository: ActivityRepository,
     private readonly imageUploadService: UploadService,
@@ -39,8 +44,15 @@ export class ActivityService extends WithTransactionService {
     private readonly logService: AppLoggerService,
     private readonly datasource: DataSource,
     private readonly usersService: UsersService,
+    private readonly configService: ConfigService<EnvVars>,
   ) {
     super();
+    this.maxActivitiesForUnsubscribedUsers = this.configService.get<number>(
+      'UN_SUBSCRIBED_MAX_ACTIVITIES',
+      10,
+    );
+    this.maxImageUploads = this.configService.get<number>('MAX_IMAGE_UPLOADS', 2);
+    this.minimumImageUploads = this.configService.get<number>('MINIMUM_IMAGE_UPLOADS', 1);
   }
 
   async createActivity(
@@ -562,21 +574,22 @@ export class ActivityService extends WithTransactionService {
       userRole === 'user' &&
       !isSubscriptionActive &&
       !isCustomUser &&
-      activityCount >= UN_SUBSCRIBED_MAX_ACTIVITIES
+      activityCount >= this.maxActivitiesForUnsubscribedUsers
     ) {
       throw new ForbiddenException({
         message: 'Upgrade required to create more activities.',
       });
     }
 
-    // Restrict file upload if subscription is not active and more than 1 file is uploaded
-    if (!isSubscriptionActive && !isCustomUser && file && file.length > 1) {
-      throw new ForbiddenException({
-        message: 'Maximum upload',
-      });
+    const maxAllowed =
+      !isSubscriptionActive && !isCustomUser && userRole !== 'admin'
+        ? this.minimumImageUploads
+        : this.maxImageUploads;
+
+    if (file && file.length > maxAllowed) {
+      throw new ForbiddenException({ message: 'Maximum upload' });
     }
 
-    // Check for existing activity with the same title
     const existingActivity = await this.activityRepository.findOne({
       where: {
         activity_title: dto.activityTitle,

@@ -12,6 +12,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config/dist/config.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiInternalServerErrorResponse,
@@ -24,6 +25,7 @@ import {
 import { GetCurrentUserEmail } from '../../app/decorators/jwt.decorators';
 import { Permissions } from '../../auth/decorators/permission.decorator';
 import { IsAuthorizedUser } from '../../auth/guards/auth.guard';
+import { EnvVars } from '../../envvars';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { PaginationQueryDto } from '../dto/paginationQuery.dto';
 import { ActivityDTO, ActivityResponseDto } from '../dto/response-dto/activityResponse.dto';
@@ -31,10 +33,17 @@ import { ListWithActivityPaginationResponseDto } from '../dto/response-dto/ListW
 import { UpdateActivityDto } from '../dto/update-activity.dto';
 import { ActivityService } from '../service/activity.service';
 import { OptionalFileValidationPipe } from '../validator/optional-parse-file';
+
+const maxAllowedFileUploads = process.env.MAX_IMAGE_UPLOADS
+  ? Number(process.env.MAX_IMAGE_UPLOADS)
+  : 2;
 @ApiTags('Activities')
 @Controller('activities')
 export class ActivityController {
-  constructor(private readonly activityService: ActivityService) {}
+  constructor(
+    private readonly activityService: ActivityService,
+    private readonly configService: ConfigService<EnvVars>,
+  ) {}
 
   @IsAuthorizedUser()
   @Permissions({ activity: ['create'] })
@@ -47,7 +56,7 @@ export class ActivityController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
-  @UseInterceptors(FilesInterceptor('files', 3))
+  @UseInterceptors(FilesInterceptor('files', maxAllowedFileUploads))
   async createActivity(
     @GetCurrentUserEmail() emailAddress: string,
     @Req() req: Request,
@@ -148,7 +157,7 @@ export class ActivityController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
-  @UseInterceptors(FilesInterceptor('files', 5))
+  @UseInterceptors(FilesInterceptor('files', 3))
   async updateUserActivity(
     @Param('id') activityId: number,
     @Body() dto: UpdateActivityDto,
