@@ -65,7 +65,6 @@ export class ActivityService extends WithTransactionService {
 
     try {
       const user = await this.usersService.getUserByEmail(emailAddress);
-
       await this.validateActivityCreation(user, dto, file, headers);
 
       let category = await this.categoryService.getCategoryByName(dto.categoryName, user.id);
@@ -560,7 +559,6 @@ export class ActivityService extends WithTransactionService {
   ) {
     // Check subscription status
     const isSubscriptionActive = await this.subscriptionService.getActiveSubscription(headers);
-
     const userRole = await this.usersService.findUserRoleById(user.id);
 
     // Check if the user has the bypassSubscription role
@@ -587,7 +585,9 @@ export class ActivityService extends WithTransactionService {
         : this.maxImageUploads;
 
     if (file && file.length > maxAllowed) {
-      throw new ForbiddenException({ message: 'Maximum upload' });
+      throw new ForbiddenException({
+        message: `You can upload a maximum of ${maxAllowed} images.`,
+      });
     }
 
     const existingActivity = await this.activityRepository.findOne({
@@ -598,7 +598,7 @@ export class ActivityService extends WithTransactionService {
     });
 
     if (existingActivity) {
-      throw new ForbiddenException('Activity with this title already exists.');
+      throw new ForbiddenException({ message: 'Activity with this title already exists.' });
     }
   }
 }
