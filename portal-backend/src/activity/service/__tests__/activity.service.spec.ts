@@ -625,10 +625,10 @@ describe('ActivityService', () => {
     expect(activityRepository.save).not.toHaveBeenCalled();
   });
 
-  it('allows regular users with customUsers role to create more than 10 activities', async () => {
+  it('allows regular users with customUser role to create more than 10 activities', async () => {
     const regularUser = {
       ...user,
-      role: 'customUsers',
+      role: 'customUser',
     };
 
     const activityData: CreateActivityDto = {

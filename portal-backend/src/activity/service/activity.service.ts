@@ -562,7 +562,7 @@ export class ActivityService extends WithTransactionService {
     const userRole = await this.usersService.findUserRoleById(user.id);
 
     // Check if the user has the bypassSubscription role
-    const isCustomUser = userRole === 'customUsers';
+    const isCustomUser = userRole === 'customUser';
 
     // Count user's activities
     const activityCount = await this.activityRepository.count({ where: { user: { id: user.id } } });
