@@ -16,6 +16,8 @@ export const handleFileCompression = async (file: File) => {
     });
     return compressedFile;
   } catch (error) {
-    console.error("Compression error:", error);
+    throw new Error(
+      `Compression error: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 };

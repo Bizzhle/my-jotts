@@ -6,9 +6,6 @@ on:
       - "feature/*"
       - "bugfix/*"
       - "*"
-  pull_request:
-    branches:
-      - development
 
 jobs:
   frontend:
