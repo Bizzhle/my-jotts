@@ -1,10 +1,13 @@
+import { ConfigService } from '@nestjs/config/dist/config.service';
 import { hash } from 'bcryptjs';
 import { DataSource } from 'typeorm';
 import { auth } from '../../auth';
+import { AppLoggerService } from '../../src/logger/services/app-logger.service';
 import { AppDataSource } from '../data-source';
 
 export const seedLocalUsers = async () => {
-  console.log('Attempting to seed user');
+  const logger = new AppLoggerService('BetterAuth', null, new ConfigService());
+  logger.log('Attempting to seed user');
 
   const isProduction = process.env.NODE_ENV === 'production';
   if (isProduction) {
@@ -15,7 +18,8 @@ export const seedLocalUsers = async () => {
   if (!ds.isInitialized) {
     await ds.initialize();
   }
-  console.log('Connected to database:', AppDataSource.options.database);
+  logger.log('Connected to database:');
+
   const dummyUsers = [
     {
       id: '11111111-1111-1111-1111-111111111111',
@@ -35,12 +39,12 @@ export const seedLocalUsers = async () => {
   const passwordHash = await hash('password', 10);
 
   for (const user of dummyUsers) {
-    console.log('Connected to database:', AppDataSource.options.database);
+    logger.log('Connected to database:');
     try {
       const existing = await ds.query(`SELECT * FROM "user" WHERE email = $1`, [user.email]);
 
       if (existing.length > 0) {
-        console.log(`⚠️ User already exists: ${user.email}`);
+        logger.warn(`⚠️ User already exists: ${user.email}`);
         continue;
       }
 
@@ -69,9 +73,9 @@ export const seedLocalUsers = async () => {
         user.email,
       ]);
 
-      console.log(`✅ Seeded: ${user.email} (${user.role})`);
+      logger.log(`✅ Seeded: ${user.email} (${user.role})`);
     } catch (err: any) {
-      console.error(`❌ Error seeding ${user.email}:`, err.message);
+      logger.error(`❌ Error seeding ${user.email}: ${err.message}`);
     }
   }
 };

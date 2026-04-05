@@ -47,7 +47,7 @@ export default function useS3Image(keys: string | string[] | undefined) {
             const urlKey = key.split("/").pop();
             if (urlKey) return await getSignedUrlWithCache(urlKey);
           } catch (error) {
-            console.error("Error fetching signed URL:", error);
+            throw new Error(`Error fetching signed URL: ${error instanceof Error ? error.message : String(error)}`);
           }
         })
       );

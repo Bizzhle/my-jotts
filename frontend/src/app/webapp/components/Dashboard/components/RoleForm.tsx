@@ -38,7 +38,6 @@ export default function RoleForm() {
       setUsers(data?.users || []);
     }
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSubmit = async () => {

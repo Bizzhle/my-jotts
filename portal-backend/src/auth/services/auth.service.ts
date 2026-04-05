@@ -23,9 +23,7 @@ export class AuthService {
         throw new ConflictException('User already exists');
       }
 
-      const betterAuth = await auth;
-
-      await betterAuth.api.signUpEmail({
+      await auth.api.signUpEmail({
         body: {
           email,
           password,
@@ -43,10 +41,9 @@ export class AuthService {
 
   async signin(dto: SignInDto) {
     const { email, password } = dto;
-    const betterAuth = await auth;
 
     try {
-      const result = await betterAuth.api.signInEmail({
+      const result = await auth.api.signInEmail({
         body: {
           email,
           password,
@@ -75,8 +72,7 @@ export class AuthService {
   }
 
   async signout(headers: HeadersInit) {
-    const betterAuth = await auth;
-    await betterAuth.api.signOut({
+    await auth.api.signOut({
       headers,
     });
 
@@ -90,8 +86,7 @@ export class AuthService {
       if (!user) {
         throw new NotFoundException('User does not exist');
       }
-      const betterAuth = await auth;
-      const result = await betterAuth.api.sendVerificationEmail({
+      const result = await auth.api.sendVerificationEmail({
         body: { email },
       });
       if (!result.status) {
@@ -106,8 +101,7 @@ export class AuthService {
   }
   async requestResetPassword(dto: ForgotPasswordDto) {
     const { emailAddress } = dto;
-    const betterAuth = await auth;
-    await betterAuth.api.requestPasswordReset({
+    await auth.api.requestPasswordReset({
       body: {
         email: emailAddress,
       },

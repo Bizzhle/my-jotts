@@ -145,12 +145,9 @@ export const auth = betterAuth({
         },
       },
       onEvent: async (event) => {
-        console.log(`Stripe event: ${event.type}`);
-
         // Handle custom events if needed
         if (event.type === 'invoice.payment_failed') {
           // Send payment failed notification
-          console.log('Payment failed:', event.data.object);
         }
       },
     }),
