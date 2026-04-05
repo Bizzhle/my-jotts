@@ -1,0 +1,107 @@
+name: PR Checks
+
+on:
+  pull_request: # fires on any PR, driven by the source feature/bugfix branch
+
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-checks:
+    name: Frontend — Lint, Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: cd frontend && npm ci
+
+      - name: Lint
+        run: cd frontend && npm run lint
+
+      - name: Build
+        run: cd frontend && npm run build
+
+      - name: Unit tests
+        run: cd frontend && npm run test
+
+  backend-checks:
+    name: Backend — Lint, Build, Unit & E2E Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: myjottsdb_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://admin:admin@localhost:5432/myjottsdb_e2e
+      NODE_ENV: test
+      # Better Auth (mocked in tests — dummy values are fine)
+      BETTER_AUTH_SECRET: ci-dummy-secret
+      BETTER_AUTH_URL: http://localhost:4000
+      # Stripe (mocked in tests)
+      STRIPE_SECRET_KEY: sk_test_dummy
+      STRIPE_WEBHOOK_SECRET: whsec_dummy
+      # AWS S3 (UploadService is mocked in tests)
+      AWS_ACCESS_KEY_ID: dummy
+      AWS_SECRET_ACCESS_KEY: dummy
+      AWS_S3_BUCKET_NAME: dummy
+      AWS_S3_REGION: us-east-1
+      # SMTP (not exercised in tests)
+      SMTP_HOST: localhost
+      SMTP_PORT: 1025
+      SMTP_USER: dummy
+      SMTP_PASS: dummy
+      # App
+      FRONTEND_URL: http://localhost:5173
+      MAX_IMAGE_UPLOADS: 2
+      MINIMUM_IMAGE_UPLOADS: 1
+      UN_SUBSCRIBED_MAX_ACTIVITIES: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: portal-backend/package-lock.json
+
+      - name: Install dependencies
+        run: cd portal-backend && npm ci
+
+      - name: Lint
+        run: cd portal-backend && npm run lint
+
+      - name: Build
+        run: cd portal-backend && npm run build
+
+      - name: Unit tests
+        run: cd portal-backend && npm run test
+
+      - name: Reset E2E database
+        run: cd portal-backend && npm run test:db:reset
+
+      - name: E2E tests
+        run: cd portal-backend && npm run test:e2e
