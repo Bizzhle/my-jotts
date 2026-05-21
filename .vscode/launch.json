@@ -37,21 +37,6 @@
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["<node_internals>/**"]
     },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug All Backend E2E Tests",
-      "cwd": "${workspaceFolder}/portal-backend",
-      "runtimeExecutable": "node",
-      "runtimeArgs": [
-        "./node_modules/jest/bin/jest.js",
-        "--runInBand",
-        "--config",
-        "./test/jest-e2e.json"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "skipFiles": ["<node_internals>/**"]
-    }
+
   ]
 }
