@@ -131,7 +131,7 @@ export class TestDatabase {
   // Business entity seeders
   // ---------------------------------------------------------------------------
 
-  async seedCategory(user: User, overrides: Partial<Category> = {}): Promise<Category> {
+  async seedCategory(userId: string, overrides: Partial<Category> = {}): Promise<Category> {
     const repo = this.dataSource.getRepository(Category);
     const now = new Date();
     return repo.save(
@@ -139,7 +139,7 @@ export class TestDatabase {
         category_name: `test-category-${Date.now()}`,
         createdAt: now,
         updatedAt: now,
-        user,
+        user: { id: userId },
         ...overrides,
       }),
     );

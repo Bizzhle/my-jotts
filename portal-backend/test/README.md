@@ -55,6 +55,18 @@ Option B: use your local Postgres installation, but ensure:
 - database: `myjottsdb_e2e`
 - host/port: `localhost:5432`
 
+Option C: use existing dev database container:
+
+```bash
+# Create the e2e database in existing container
+docker exec portal_dbmodel psql -U admin -d postgres -c "CREATE DATABASE myjottsdb_e2e;"
+
+# Initialize schema and seed data
+npm run test:db:reset
+```
+
+**Important**: Always run `npm run test:db:reset` after creating the database for the first time.
+
 ## 5) Understand the e2e test bootstrap
 
 The e2e setup is centralized in:
