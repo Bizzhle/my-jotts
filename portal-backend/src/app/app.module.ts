@@ -1,7 +1,11 @@
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { ClassSerializerInterceptor, Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { ClsModule } from 'nestjs-cls';
+import { DataSource } from 'typeorm';
 import { auth } from '../../auth';
 import { ActivityModule } from '../activity/activity.module';
 import { AuthenticationModule } from '../auth/auth.module';
@@ -41,6 +45,20 @@ import { ExceptionsFilter } from './exceptions.filter';
     SupportModule,
     AuthModule.forRoot({
       auth,
+    }),
+    ClsModule.forRoot({
+      plugins: [
+        new ClsPluginTransactional({
+          imports: [
+            // module in which the database instance is provided
+            TypeOrmRootModule(),
+          ],
+          adapter: new TransactionalAdapterTypeOrm({
+            // the injection token of the database instance
+            dataSourceToken: DataSource,
+          }),
+        }),
+      ],
     }),
   ],
   providers: [
