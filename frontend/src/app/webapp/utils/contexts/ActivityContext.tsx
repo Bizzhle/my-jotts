@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useMemo } from "react";
+import { createContext, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { ApiHandler, isApiError } from "../../../api-service/ApiRequestManager";
 import { ActivityResponseDto } from "../../../api-service/dtos/activity.dto";
@@ -6,7 +6,6 @@ import { CategoryResponseDto } from "../../../api-service/dtos/category.dto";
 import { PageInfoDto } from "../../../api-service/dtos/pageInfo.dto";
 import { useObjectReducer } from "../shared/objectReducer";
 import { useDebounce } from "../shared/useDebounce";
-import { useBetterAuth } from "./hooks/useBetterAuth";
 
 interface Activity extends ActivityResponseDto {}
 
@@ -63,7 +62,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
   }>();
   const [state, setState] = useObjectReducer(initialState);
   const debouncedSearch = useDebounce(state.searchQuery);
-  const { authenticatedUser } = useBetterAuth(); // get user or auth state
+  // const { authenticatedUser } = useBetterAuth(); // get user or auth state
 
   const setPage = useCallback(
     (page: number) => {
@@ -163,12 +162,12 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     }
   };
 
-  useEffect(() => {
-    if (authenticatedUser) {
-      void Promise.all([loadActivities(), fetchCategories()]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticatedUser]);
+  // useEffect(() => {
+  //   if (authenticatedUser) {
+  //     void Promise.all([loadActivities(), fetchCategories()]);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [authenticatedUser]);
 
   //Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
@@ -185,7 +184,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       state,
-      loadActivities,
+      // loadActivities,
       findActivity,
       fetchActivity,
       fetchCategories,

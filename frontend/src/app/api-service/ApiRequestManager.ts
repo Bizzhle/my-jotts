@@ -30,8 +30,9 @@ import { SupportDto } from "./dtos/support.dto";
 import { ENDPOINTS } from "./EndPoints";
 
 interface ApiError {
-  status: number;
-  message?: string;
+  statusCode?: number;
+  status?: number;
+  message?: string | string[];
   error?: string;
 }
 
@@ -247,14 +248,17 @@ export function createActivityFormData(
 }
 
 export function isApiError(error: unknown): string | undefined {
-  let errorMessage;
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<ApiError>;
 
     if (axiosError.response?.data) {
       const apiError = axiosError.response.data;
-      return apiError.message || apiError.error;
+      const message = apiError.message;
+      if (Array.isArray(message)) {
+        return message.join(', ');
+      }
+      return message || apiError.error;
     }
   }
-  return errorMessage;
+  return undefined;
 }

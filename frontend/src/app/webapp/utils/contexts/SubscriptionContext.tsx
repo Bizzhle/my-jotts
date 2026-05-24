@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useState } from "react";
 import { ApiHandler } from "../../../api-service/ApiRequestManager";
 import { PaymentPlanDto } from "../../../api-service/dtos/subscription/payment-plan.dto";
 import { SubscriptionDto } from "../../../api-service/dtos/subscription/subscription.dto";
@@ -10,6 +10,7 @@ interface SubscriptionContextType {
   paymentPlans?: PaymentPlanDto[];
   loading: boolean;
   fetchSubscriptionStatus: () => Promise<void>;
+  fetchPlans: () => Promise<void>;
   error: string | null;
 }
 
@@ -32,6 +33,10 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const fetchSubscriptionStatus = async () => {
     setLoading(true);
     try {
+      if (!authenticatedUser) {
+        setSubscription(undefined);
+        return;
+      }
       const { data: subscriptions } = await authClient.subscription.list();
 
       const activeSubscription = await subscriptions?.find(
@@ -51,12 +56,13 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     setPaymentPlans(plans);
   };
 
-  useEffect(() => {
-    if (authenticatedUser) {
-      fetchSubscriptionStatus();
-      fetchPlans();
-    }
-  }, [authenticatedUser]);
+  // useEffect(() => {
+  //   if (authenticatedUser) {
+  //     fetchSubscriptionStatus();
+  //     // fetchPlans();
+  //   }
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   return (
     <SubscriptionContext.Provider
@@ -65,6 +71,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
         loading,
         fetchSubscriptionStatus,
         paymentPlans,
+        fetchPlans,
         error,
       }}
     >
