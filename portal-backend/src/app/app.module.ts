@@ -24,6 +24,7 @@ import { UtilsModule } from '../utils/util.module';
 import { EnvironmentConfigRootModule } from './configuration/Environment';
 import { TypeOrmRootModule } from './configuration/TypeORM';
 import { ExceptionsFilter } from './exceptions.filter';
+import { RequestContextMiddleware } from './middleware/request-context.middleware';
 
 @Module({
   imports: [
@@ -43,10 +44,14 @@ import { ExceptionsFilter } from './exceptions.filter';
     UtilsModule,
     SubscriptionModule,
     SupportModule,
-    AuthModule.forRoot({
-      auth,
-    }),
     ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        generateId: true,
+        idGenerator: (req) =>
+          req.headers['x-header-id'] || req.headers['x-request-id'] || crypto.randomUUID(),
+      },
       plugins: [
         new ClsPluginTransactional({
           imports: [
@@ -54,15 +59,17 @@ import { ExceptionsFilter } from './exceptions.filter';
             TypeOrmRootModule(),
           ],
           adapter: new TransactionalAdapterTypeOrm({
-            // the injection token of the database instance
             dataSourceToken: DataSource,
           }),
         }),
       ],
     }),
+    AuthModule.forRoot({
+      auth,
+    }),
   ],
   providers: [
-    // RequestContextMiddleware,
+    RequestContextMiddleware,
     Logger,
 
     {
@@ -85,7 +92,7 @@ import { ExceptionsFilter } from './exceptions.filter';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LogsMiddleware).forRoutes('*');
+    consumer.apply(RequestContextMiddleware, LogsMiddleware).forRoutes('*');
     // consumer.apply(AuthVerifierMiddleWare).forRoutes('*');
   }
 }
