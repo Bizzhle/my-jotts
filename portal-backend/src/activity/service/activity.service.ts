@@ -1,13 +1,15 @@
+import { Transactional } from '@nestjs-cls/transactional';
 import {
+  BadRequestException,
   ForbiddenException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config/dist/config.service';
+import 'multer';
 import { User } from 'src/users/entities/User.entity';
-import { DataSource } from 'typeorm';
-import { WithTransactionService } from '../../app/services/with-transaction.services';
 import { Category } from '../../category/entities/category.entity';
 import { CategoryService } from '../../category/services/category.service';
 import { EnvVars } from '../../envvars';
@@ -31,10 +33,11 @@ interface ImageUrlDto {
 }
 // const UN_SUBSCRIBED_MAX_ACTIVITIES = process.env.UN_SUBSCRIBED_MAX_ACTIVITIES;
 @Injectable()
-export class ActivityService extends WithTransactionService {
+export class ActivityService {
   private readonly maxActivitiesForUnsubscribedUsers: number;
   private readonly maxImageUploads: number;
   private readonly minimumImageUploads: number;
+
   constructor(
     private readonly activityRepository: ActivityRepository,
     private readonly imageUploadService: UploadService,
@@ -42,11 +45,9 @@ export class ActivityService extends WithTransactionService {
     private readonly imageFileService: ImageFileService,
     private readonly subscriptionService: SubscriptionService,
     private readonly logService: AppLoggerService,
-    private readonly datasource: DataSource,
     private readonly usersService: UsersService,
     private readonly configService: ConfigService<EnvVars>,
   ) {
-    super();
     this.maxActivitiesForUnsubscribedUsers = this.configService.get<number>(
       'UN_SUBSCRIBED_MAX_ACTIVITIES',
       10,
@@ -55,14 +56,13 @@ export class ActivityService extends WithTransactionService {
     this.minimumImageUploads = this.configService.get<number>('MINIMUM_IMAGE_UPLOADS', 1);
   }
 
+  @Transactional()
   async createActivity(
     emailAddress: string,
     dto: CreateActivityDto,
     headers: HeadersInit,
     file?: Express.Multer.File[],
-  ) {
-    const transaction = await this.createTransaction(this.datasource);
-
+  ): Promise<Activity> {
     try {
       const user = await this.usersService.getUserByEmail(emailAddress);
       await this.validateActivityCreation(user, dto, file, headers);
@@ -71,23 +71,16 @@ export class ActivityService extends WithTransactionService {
       let subCategory = await this.categoryService.getCategoryByName(dto.subCategoryName, user.id);
 
       if (!category) {
-        // Apply transaction to category creation
-        category = await this.datasource.transaction(async (entityManager) => {
-          return await this.categoryService.createCategory(
-            { categoryName: dto.categoryName, subCategoryName: dto.subCategoryName },
-            user.email,
-            headers,
-            entityManager, // Pass the entity manager to handle the transaction
-          );
-        });
+        category = await this.categoryService.createCategory(
+          { categoryName: dto.categoryName, subCategoryName: dto.subCategoryName },
+          user.email,
+          headers,
+        );
       } else if (dto.subCategoryName && !subCategory) {
-        // Create sub-category under existing category
-        subCategory = await this.datasource.transaction(async (entityManager) => {
-          return await this.categoryService.createSubCategory(
-            { parentCategoryId: category.id, subCategoryName: dto.subCategoryName },
-            user.email,
-          );
-        });
+        subCategory = await this.categoryService.createSubCategory(
+          { parentCategoryId: category.id, subCategoryName: dto.subCategoryName },
+          user.email,
+        );
       }
 
       const activity = await this.activityRepository.create({
@@ -129,14 +122,17 @@ export class ActivityService extends WithTransactionService {
         );
       }
 
-      await transaction.commitTransaction();
       return savedActivity;
     } catch (err) {
-      await transaction.rollbackTransaction();
-      await this.logService.debug(err);
-      throw err;
-    } finally {
-      await this.closeTransaction(transaction);
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+      await this.logService.error(
+        `Failed to create activity: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+      );
+      throw new BadRequestException('Failed to create activity');
     }
   }
 
@@ -191,7 +187,11 @@ export class ActivityService extends WithTransactionService {
 
       return this.mapToActivityResponse(activity, imageUrls);
     } catch (err) {
-      await this.logService.debug(err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+      await this.logService.error(
+        `Failed to fetch activity: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+      );
       if (err instanceof NotFoundException) {
         throw err;
       }
@@ -261,13 +261,16 @@ export class ActivityService extends WithTransactionService {
 
       return activityResponse.activities;
     } catch (err) {
-      await this.logService.debug(err);
-
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+      await this.logService.debug(
+        `Failed to fetch activities: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+      );
       throw new InternalServerErrorException('Could not fetch activities');
     }
   }
 
-  // @Transactional()
+  @Transactional()
   async updateActivity(
     activityId: number,
     dto: UpdateActivityDto,
@@ -296,13 +299,10 @@ export class ActivityService extends WithTransactionService {
           headers,
         );
       } else if (dto.subCategoryName && !subCategory) {
-        // Create sub-category under existing category
-        subCategory = await this.datasource.transaction(async (entityManager) => {
-          return await this.categoryService.createSubCategory(
-            { parentCategoryId: category.id, subCategoryName: dto.subCategoryName },
-            user.email,
-          );
-        });
+        subCategory = await this.categoryService.createSubCategory(
+          { parentCategoryId: category.id, subCategoryName: dto.subCategoryName },
+          user.email,
+        );
       }
 
       const updatedActivity = await this.activityRepository.updateActivity(
@@ -322,7 +322,14 @@ export class ActivityService extends WithTransactionService {
         await this.uploadActivityImages(updatedActivity.id, user.id, files, user);
       }
     } catch (err) {
-      await this.logService.debug(err);
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+      await this.logService.debug(
+        `Failed to update activity: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+      );
       throw new InternalServerErrorException('Could not update activity');
     }
   }
@@ -352,7 +359,11 @@ export class ActivityService extends WithTransactionService {
             this.imageFileService.deleteSingleImageFile(imageFile),
           ]);
         } catch (err) {
-          this.logService.error(`Failed to delete image ${imageFile.key}`, err.stack);
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+          this.logService.error(
+            `Failed to delete image ${imageFile.key}: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+          );
           // Continue with other deletions even if one fails
         }
       });
@@ -362,7 +373,11 @@ export class ActivityService extends WithTransactionService {
       // Finally, delete the activity
       await this.activityRepository.delete({ id: activity.id });
     } catch (err) {
-      this.logService.error('Failed to delete activity', err.stack);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+      this.logService.error(
+        `Failed to delete activity: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+      );
       throw new InternalServerErrorException('Failed to delete activity');
     }
   }
@@ -394,14 +409,22 @@ export class ActivityService extends WithTransactionService {
             this.imageFileService.deleteSingleImageFile(imageFile),
           ]);
         } catch (err) {
-          this.logService.error(`Failed to delete image ${imageFile.key}`, err.stack);
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+          this.logService.error(
+            `Failed to delete image ${imageFile.key}: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+          );
           // Continue with other deletions even if one fails
         }
       });
 
       await Promise.all(deletePromises);
     } catch (err) {
-      this.logService.error('Failed to delete activity images', err.stack);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+      this.logService.error(
+        `Failed to delete activity images: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+      );
       throw new InternalServerErrorException('Failed to delete some images');
     }
   }
@@ -436,11 +459,13 @@ export class ActivityService extends WithTransactionService {
 
       await Promise.all(storePromises);
     } catch (err) {
-      this.logService.error('Failed to upload activity images', err.stack);
-
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+      this.logService.error(
+        `Failed to upload activity images: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+      );
       // Attempt cleanup of uploaded files
       // await this.cleanupFailedUploads(files, activityId, userId);
-
       throw new InternalServerErrorException('Failed to upload images');
     }
   }
@@ -525,7 +550,11 @@ export class ActivityService extends WithTransactionService {
       );
       return imageUrls;
     } catch (err) {
-      await this.logService.debug(err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
+      await this.logService.debug(
+        `Failed to fetch activity images: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
+      );
       return [];
     }
   }
@@ -571,7 +600,6 @@ export class ActivityService extends WithTransactionService {
     if (
       userRole === 'user' &&
       !isSubscriptionActive &&
-      !isCustomUser &&
       activityCount >= this.maxActivitiesForUnsubscribedUsers
     ) {
       throw new ForbiddenException({

@@ -25,7 +25,7 @@ export class PermissionsGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const session = request.session; // Assume you have session in request
 
-    const hasPermission = await auth.api.userHasPermission({
+    const hasPermission = await (auth.api as any).userHasPermission({
       body: {
         userId: session.userId,
         permissions: requiredPermissions,

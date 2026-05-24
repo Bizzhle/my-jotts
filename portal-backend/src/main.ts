@@ -1,7 +1,6 @@
 import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app/app.module';
 import { AppLoggerService } from './logger/services/app-logger.service';
 import getLogLevels from './utils/get-log-levels';
@@ -43,7 +42,7 @@ async function bootstrap() {
     }),
   );
   app.useLogger(app.get(AppLoggerService));
-  app.use(cookieParser());
+  // app.use(cookieParser());
   const config = new DocumentBuilder()
     .addBearerAuth()
     .setTitle('Portal Backend Api')

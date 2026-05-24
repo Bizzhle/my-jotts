@@ -23,11 +23,13 @@ import { CancelSubscription } from "./CancelSubscription";
 export default function SubscribePage() {
   const { authenticatedUser } = useBetterAuth();
   const { hideSearchBar } = useContext(LayoutContext);
-  const { subscription, paymentPlans } = useSubscription();
+  const { subscription, paymentPlans, fetchPlans, fetchSubscriptionStatus } = useSubscription();
   const [error, setError] = useState<string | undefined>("");
 
   useEffect(() => {
     hideSearchBar();
+    fetchPlans();
+    fetchSubscriptionStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

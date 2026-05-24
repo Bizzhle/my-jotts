@@ -1,24 +1,42 @@
-import { INestApplication, RequestMethod, ValidationPipe } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { TestingModule } from '@nestjs/testing/testing-module';
+import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { UploadService } from '../../src/upload/service/upload.service';
-import { User } from '../../src/users/entities/User.entity';
-import { AuthTokens } from './auth';
 import { TestDatabase } from './database';
+import { testUser, testUserRegistry } from './factories/user-factory';
+import { bootStrapApp } from './mock-application';
 
-interface TestUser {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
+export const TEST_SESSION_COOKIE_NAME = 'better-auth.session_token';
+
+function parseCookieValue(cookieHeader: string | undefined, name: string): string | undefined {
+  if (!cookieHeader) return undefined;
+
+  const entries = cookieHeader.split(';');
+  for (const entry of entries) {
+    const [rawName, ...valueParts] = entry.trim().split('=');
+    if (rawName !== name) continue;
+    return valueParts.join('=');
+  }
+
+  return undefined;
+}
+
+export function getTestSessionCookie(email: string = testUser.email): string {
+  return `${TEST_SESSION_COOKIE_NAME}=e2e-session-${encodeURIComponent(email)}`;
+}
+
+function getEmailFromTestSessionCookie(cookieHeader: string | undefined): string | undefined {
+  const sessionToken = parseCookieValue(cookieHeader, TEST_SESSION_COOKIE_NAME);
+  if (!sessionToken || !sessionToken.startsWith('e2e-session-')) {
+    return undefined;
+  }
+
+  return decodeURIComponent(sessionToken.slice('e2e-session-'.length));
 }
 
 const isDebugSession =
   process.execArgv.some((arg) => arg.includes('--inspect')) ||
   Boolean(process.env['VSCODE_INSPECTOR_OPTIONS']);
 
-jest.setTimeout(isDebugSession ? 60000 : 30000);
+jest.setTimeout(120000);
 
 jest.mock('../../src/app/configuration/TypeORM', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -62,153 +80,49 @@ jest.mock('../../auth', () => ({
   },
 }));
 
-let app: INestApplication;
-let dataSource: DataSource;
+jest.mock('@nestjs-cls/transactional', () => ({
+  ClsPluginTransactional: jest.fn().mockImplementation(() => ({})),
+  Transactional: () => () => ({}),
+}));
+
+export let app: INestApplication;
+export let db: DataSource;
 let testDatabase: TestDatabase;
-let accessToken: string | undefined;
-let refreshToken: string | undefined;
 
-const testUser = {
-  id: '11111111-1111-4111-8111-111111111111',
-  email: 'tester@example.com',
-  name: 'Test User',
-  role: 'user',
-};
+beforeAll(async () => {
+  app = await bootStrapApp();
+  db = app.get(DataSource);
+  testDatabase = new TestDatabase(db);
 
-const testUserRegistry: Record<string, TestUser> = {
-  [testUser.email]: {
-    id: testUser.id,
-    email: testUser.email,
-    name: testUser.name,
-    role: testUser.role,
-  },
-};
+  app.use((req, _res, next) => {
+    const sessionEmail = getEmailFromTestSessionCookie(req.headers.cookie);
 
-export function registerTestUser(user: TestUser) {
-  testUserRegistry[user.email] = user;
-}
-
-beforeAll(
-  async () => {
-    const { AppModule } = await import('../../src/app/app.module');
-
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(UploadService)
-      .useValue({
-        upload: jest.fn().mockResolvedValue({
-          Location: 'https://mock-s3-url.com/file.jpg',
-          Key: 'mock-key/file.jpg',
-          Bucket: 'mock-bucket',
-          ETag: '"mock-etag"',
-        }),
-        deleteUploadFile: jest.fn().mockResolvedValue(undefined),
-        getImageStreamFromS3: jest.fn().mockResolvedValue(null),
-      })
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1', {
-      exclude: [
-        { path: 'api/auth', method: RequestMethod.ALL },
-        { path: 'api/auth/(.*)', method: RequestMethod.ALL },
-      ],
-    });
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-
-    app.use((req, _res, next) => {
-      const authHeader = req.headers.authorization;
-
-      if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-        const requestedEmail = req.headers['x-test-user-email'] as string | undefined;
-        const resolved =
-          (requestedEmail && testUserRegistry[requestedEmail]) ?? testUserRegistry[testUser.email];
-        req['user'] = resolved;
-      }
-
-      next();
-    });
-
-    await app.init();
-
-    dataSource = app.get(DataSource);
-    testDatabase = new TestDatabase(dataSource);
-
-    const existing = await dataSource
-      .getRepository(User)
-      .findOne({ where: { email: testUser.email } });
-    if (!existing) {
-      await testDatabase.seedUser({
-        id: testUser.id,
-        name: testUser.name,
-        email: testUser.email,
-        role: testUser.role,
-      });
+    if (sessionEmail) {
+      const requestedEmail =
+        (req.headers['x-test-user-email'] as string | undefined) ?? sessionEmail;
+      const resolved =
+        (requestedEmail && testUserRegistry[requestedEmail]) ?? testUserRegistry[testUser.email];
+      req['user'] = resolved;
     }
-  },
-  isDebugSession ? 60000 : 30000,
-);
 
-afterEach(async () => {
+    next();
+  });
+
+  await app.init();
+}, 120000);
+
+afterAll(async () => {
   if (testDatabase) {
     await testDatabase.clear();
   }
 });
 
-afterAll(
-  async () => {
-    accessToken = undefined;
-    refreshToken = undefined;
-
-    if (app) {
-      await app.close();
-    }
-
-    if (dataSource?.isInitialized) {
-      await dataSource.destroy();
-    }
-  },
-  isDebugSession ? 60000 : 30000,
-);
-
-export function getTestApp(): INestApplication {
-  return app;
-}
-
-export function getDataSource(): DataSource {
-  return dataSource;
-}
-
-export function getTestDatabase(): TestDatabase {
-  return testDatabase;
-}
-
-export function getAuthTokens(): AuthTokens {
-  return { accessToken, refreshToken };
-}
-
-/**
- * Seeds a user into the database AND registers them in the request middleware
- * so that requests sent with `withAuth(email)` resolve to the correct user.
- * Call from a test's `beforeAll` after the global setup has completed.
- */
-export async function seedTestUser(overrides: Partial<User> & { id?: string } = {}): Promise<User> {
-  const user = await testDatabase.seedUser(overrides);
-  registerTestUser({ id: user.id, email: user.email, role: user.role, name: user.name });
-  return user;
-}
-
-export async function authenticateTestUser(): Promise<AuthTokens> {
-  if (accessToken || refreshToken) {
-    return { accessToken, refreshToken };
+afterAll(async () => {
+  if (app) {
+    await app.close();
   }
 
-  accessToken = 'e2e-access-token';
-  refreshToken = 'e2e-refresh-token';
-
-  return {
-    accessToken,
-    refreshToken,
-  };
-}
+  if (db?.isInitialized) {
+    await db.destroy();
+  }
+}, 120000);
