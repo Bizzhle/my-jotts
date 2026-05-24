@@ -54,4 +54,20 @@ export class RequestContextService {
   //   get ipAddress(): string | undefined {
   //     return this.request.clientIp || this.request.ip;
   //   }
+
+  get userId(): string {
+    if (!this.request) {
+      throw new Error('Request context is not active');
+    }
+    return this.clsService.get('user:id');
+  }
+
+  setUserId(userId: string): void {
+    if (this.isRequestContextActive) {
+      this.clsService.set('user:id', userId);
+      return;
+    }
+
+    this.clsService.enterWith({ 'user:id': userId } as unknown as RequestContextStore);
+  }
 }

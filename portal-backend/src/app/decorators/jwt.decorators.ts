@@ -22,7 +22,7 @@ function UserFieldDecorator(field: string) {
 export const GetCurrentUserEmail = UserFieldDecorator('email');
 
 // Get UID
-export const GetCurrentUserUid = UserFieldDecorator('uid');
+export const GetCurrentUserUid = UserFieldDecorator('id');
 
 // Get first name
 export const GetCurrentUserFirstName = UserFieldDecorator('first_name');
