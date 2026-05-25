@@ -6,7 +6,6 @@ import Stripe from 'stripe';
 import { AppDataSource } from './sql/data-source';
 import { BetterAuthLoggerPlugin } from './src/logger/services/log-plugin';
 import { ac, roles } from './src/permissions/permissions';
-import { User } from './src/users/entities/user.entity';
 import { loadTemplate } from './src/utils/services/load-template-config';
 import { sendEmail } from './src/utils/services/transporter';
 
@@ -116,26 +115,19 @@ export const auth = betterAuth({
         ], // Define subscription plans here if needed
         requireEmailVerification: true,
         onSubscriptionCreated: async ({ subscription, plan }) => {
-          // Fetch user from subscription referenceId (userId)
-          const userId = subscription.referenceId;
-          const userRepo = AppDataSource.getRepository(User);
-          const user = await userRepo.findOne({ where: { id: userId } });
-
-          if (user) {
-            const html = await loadTemplate('subscription-created.template.html', {
-              emailAddress: user.email,
-              url: '',
-            });
-            // Update user role based on plan
-            await (auth.api as any).setRole({
-              body: {
-                userId: user.id,
-                role: mapSubscriptionPlanToRole(plan.name),
-              },
-              headers: {},
-            });
-            await sendEmail(user.email, 'Subscription Created', html);
-          }
+          // const html = await loadTemplate('subscription-created.template.html', {
+          //   emailAddress: user.email,
+          //   url: '',
+          // });
+          // // Update user role based on plan
+          // await (auth.api as any).setRole({
+          //   body: {
+          //     userId: user.id,
+          //     role: mapSubscriptionPlanToRole(plan.name),
+          //   },
+          //   headers: {},
+          // });
+          // await sendEmail(user.email, 'Subscription Created', html);
         },
         onSubscriptionUpdated: async ({ subscription, plan }) => {
           // Update user role when plan changes
@@ -150,26 +142,19 @@ export const auth = betterAuth({
         },
         onSubscriptionCanceled: async ({ subscription }) => {
           // Fetch user from subscription referenceId (userId)
-          const userId = subscription.referenceId;
-          const userRepo = AppDataSource.getRepository(User);
-          const user = await userRepo.findOne({ where: { id: userId } });
-
-          if (user) {
-            const html = await loadTemplate('subscription-cancelled.template.html', {
-              emailAddress: user.email,
-              url: '',
-            });
-
-            // Downgrade to free tier
-            await (auth.api as any).setRole({
-              body: {
-                userId: user.id,
-                role: 'user',
-              },
-              headers: {},
-            });
-            await sendEmail(user.email, 'Subscription Cancelled', html);
-          }
+          // const html = await loadTemplate('subscription-cancelled.template.html', {
+          //   emailAddress: user.email,
+          //   url: '',
+          // });
+          // // Downgrade to free tier
+          // await (auth.api as any).setRole({
+          //   body: {
+          //     userId: user.id,
+          //     role: 'user',
+          //   },
+          //   headers: {},
+          // });
+          // await sendEmail(user.email, 'Subscription Cancelled', html);
         },
       },
       onEvent: async (event) => {
