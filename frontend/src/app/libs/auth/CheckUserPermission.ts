@@ -1,5 +1,5 @@
-import { Role } from "../../webapp/components/Dashboard/roles";
-import { User } from "../../webapp/utils/contexts/BetterAuthContext";
+import { Role } from "../../features/dashboard/roles";
+import { User } from "../../contexts/BetterAuthContext";
 
 const checkUserPermission = (
   authenticatedUser: User | undefined,

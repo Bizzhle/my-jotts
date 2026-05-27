@@ -1,7 +1,7 @@
 import { Box, CircularProgress } from "@mui/material";
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useBetterAuth } from "../../webapp/utils/contexts/hooks/useBetterAuth";
+import { useBetterAuth } from "../../contexts/hooks/useBetterAuth";
 
 interface ProtectedLoaderProps {
   children: ReactNode;

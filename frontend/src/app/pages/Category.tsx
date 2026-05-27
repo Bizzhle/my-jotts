@@ -1,0 +1,153 @@
+import { Delete, Edit } from "@mui/icons-material";
+import { Box, IconButton, Typography } from "@mui/material";
+import { useContext, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
+import { CategoryResponseDto } from "../api-service/dtos/category.dto";
+import { useActivities } from "../contexts/hooks/useActivities";
+import CategoryForm from "../features/category/CategoryForm";
+import { LayoutContext } from "../layout/LayoutContext";
+import { ConfirmDeletionDialog } from "../ui/ConfirmDeletionDialog";
+
+interface DialogProps {
+  open: boolean;
+  categoryId: number | null;
+}
+export default function Category() {
+  const { categories, fetchCategories } = useActivities();
+  const { hideSearchBar } = useContext(LayoutContext);
+  const [openCategoryForm, setOpenCategoryForm] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] =
+    useState<CategoryResponseDto | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<DialogProps>({
+    open: false,
+    categoryId: null,
+  });
+  const [errors, setErrors] = useState<
+    Record<number, string | null | undefined>
+  >({});
+
+  useEffect(() => {
+    hideSearchBar();
+    fetchCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleClose() {
+    setOpenCategoryForm(false);
+    setSelectedCategory(null);
+  }
+
+  const handleDeleteCategory = async (categoryId: number) => {
+    setErrors({});
+    try {
+      await ApiHandler.deleteCategory(categoryId);
+      await fetchCategories();
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [categoryId]: null,
+      }));
+    } catch (error) {
+      const errorMessage = isApiError(error);
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [categoryId]: errorMessage,
+      }));
+    }
+  };
+
+  const handleEditCategory = (category: CategoryResponseDto) => {
+    setSelectedCategory(category);
+    setOpenCategoryForm(true);
+  };
+
+  return (
+    <>
+      <Box
+        component="div"
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 3 }}>
+          Categories
+        </Typography>
+      </Box>
+      {categories.length === 0 ? (
+        <Typography>No activities found for this category.</Typography>
+      ) : (
+        <Box>
+          {categories.map((category) => (
+            <Box key={category.id}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  border: "1px solid black",
+                  borderRadius: 1,
+                  padding: 1,
+                  mt: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    flexGrow: 1,
+                  }}
+                >
+                  <Link
+                    to={`/categories/${category.id}`}
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <Typography gutterBottom>
+                      {category.categoryName}
+                    </Typography>
+                  </Link>
+                </Box>
+                <IconButton
+                  aria-label="edit category"
+                  onClick={() => handleEditCategory(category)}
+                >
+                  <Edit />
+                </IconButton>
+                <IconButton
+                  aria-label="delete category"
+                  onClick={() =>
+                    setDeleteDialog({ open: true, categoryId: category.id })
+                  }
+                >
+                  <Delete />
+                </IconButton>
+              </Box>
+              {errors[category.id] && (
+                <ErrorAlert message={errors[category.id] as string} />
+              )}
+            </Box>
+          ))}
+          <ConfirmDeletionDialog
+            open={deleteDialog.open}
+            setOpen={(open: boolean) =>
+              setDeleteDialog({
+                open,
+                categoryId: deleteDialog.categoryId,
+              })
+            }
+            value={deleteDialog.categoryId!}
+            onDelete={handleDeleteCategory}
+            section="category"
+          />
+        </Box>
+      )}
+      {selectedCategory && (
+        <CategoryForm
+          open={openCategoryForm}
+          handleClose={handleClose}
+          categoryToEdit={selectedCategory}
+        />
+      )}
+    </>
+  );
+}
