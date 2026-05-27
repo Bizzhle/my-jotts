@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import { User } from "better-auth";
 import { ForgotPasswordData } from "../authentication/ForgotPassword";
 import { SessionState } from "../libs/SessionState";
-import { ActivityData } from "../webapp/components/Activity/ActivityDialogForm";
+import { ActivityData } from "../features/activity/ActivityDialogForm";
 import { ApiMethods } from "./ApiMethods";
 import { ActivityResponseDto } from "./dtos/activity.dto";
 import {
