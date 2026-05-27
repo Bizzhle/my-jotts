@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { isApiError } from "../../api-service/ApiRequestManager";
 import { LayoutContext } from "../../layout/LayoutContext";
 import { authClient } from "../../libs/betterAuthClient";
+import ErrorAlert from "../../ui/ErrorAlert";
 
 export interface ResetPasswordData {
   currentPassword: string;

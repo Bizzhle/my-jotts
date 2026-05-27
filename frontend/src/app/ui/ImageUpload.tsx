@@ -1,8 +1,9 @@
 import { HighlightOff } from "@mui/icons-material";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import React from "react";
-import { ImageUrl } from "../../api-service/dtos/activity.dto";
-import { handleFileCompression } from "../../utils/compressImage";
+import { ImageUrl } from "../api-service/dtos/activity.dto";
+import { handleFileCompression } from "../utils/compressImage";
+
 
 interface ImageUploadProps {
   existingImages: ImageUrl[];

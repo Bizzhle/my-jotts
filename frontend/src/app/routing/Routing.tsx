@@ -17,6 +17,7 @@ import WrappedCheckoutForm from "../features/subscription/CheckoutForm";
 import SubscribePage from "../features/subscription/SubscribePage";
 import Layout from "../layout/Layout";
 import { LayoutProvider } from "../layout/LayoutContext";
+import PublicLayout from "../layout/PublicLayout";
 import { ProtectedRoute } from "../libs/auth/ProtectedRoute";
 import { RequiresAdminPermission } from "../libs/auth/RequiresAdminPermission";
 import Category from "../pages/Category";

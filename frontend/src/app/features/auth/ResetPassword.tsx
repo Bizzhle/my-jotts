@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ApiHandler, isApiError } from "../../api-service/ApiRequestManager";
 import { useLayoutContext } from "../../layout/hooks/useLayoutContext";
+import ErrorAlert from "../../ui/ErrorAlert";
 
 export interface ResetPasswordData {
   newPassword: string;

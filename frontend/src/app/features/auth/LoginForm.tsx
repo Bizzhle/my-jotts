@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { isApiError } from "../../api-service/ApiRequestManager";
 import { useBetterAuth } from "../../contexts/hooks/useBetterAuth";
 import { authClient } from "../../libs/betterAuthClient";
+import ErrorAlert from "../../ui/ErrorAlert";
 
 type LoginData = {
   email: string;

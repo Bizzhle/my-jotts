@@ -9,6 +9,7 @@ import { Appearance, loadStripe } from "@stripe/stripe-js";
 import React, { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LayoutContext } from "../../layout/LayoutContext";
+import ErrorAlert from "../../ui/ErrorAlert";
 
 const stripeKey = import.meta.env.VITE_API_STRIPE_PUBLISHABLE_KEY;
 const domain = import.meta.env.VITE_API_DOMAIN;

@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import { authClient } from "../../libs/betterAuthClient";
+import { authClient } from "../libs/betterAuthClient";
 
 interface AuthUserProviderProps {
   children?: React.ReactElement;

@@ -1,14 +1,12 @@
-import { HighlightOff } from "@mui/icons-material";
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
+  TextField
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ApiHandler, isApiError } from "../../api-service/ApiRequestManager";
 import {
@@ -20,6 +18,7 @@ import { useActivities } from "../../contexts/hooks/useActivities";
 import { useSubscription } from "../../contexts/hooks/useSubscription";
 import AutoCompleteElement from "../../ui/AutoCompleteElement";
 import ErrorAlert from "../../ui/ErrorAlert";
+import ImageUpload from "../../ui/ImageUpload";
 import ActivityRating from "./ActivityRating";
 
 interface DialogFormProps {

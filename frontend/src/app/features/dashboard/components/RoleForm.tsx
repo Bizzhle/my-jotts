@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { User } from "../../../contexts/BetterAuthContext";
 import { authClient } from "../../../libs/betterAuthClient";
 import AutoCompleteElement from "../../../ui/AutoCompleteElement";
+import ErrorAlert from "../../../ui/ErrorAlert";
 import { Role, Roles } from "../roles";
 
 interface RoleFormData {

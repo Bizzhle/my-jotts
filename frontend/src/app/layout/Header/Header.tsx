@@ -14,6 +14,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useActivities } from "../../contexts/hooks/useActivities";
 import { useBetterAuth } from "../../contexts/hooks/useBetterAuth";
 import SearchBar from "../../ui/SearchBar";
+import AccountMenu from "./AccountMenu";
+import CategoryDropdown from "./CategoryDropdown";
 
 interface HeaderProps {
   setOpenNavigation: (value: boolean) => void;

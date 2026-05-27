@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { ApiHandler, isApiError } from "../../api-service/ApiRequestManager";
 import { SupportDto } from "../../api-service/dtos/support.dto";
 import { useBetterAuth } from "../../contexts/hooks/useBetterAuth";
+import ErrorAlert from "../../ui/ErrorAlert";
 
 const contactEmail = import.meta.env.VITE_DOMAIN_EMAIL;
 export const Contact = () => {

@@ -15,6 +15,7 @@ import {
   CategoryResponseDto,
 } from "../../api-service/dtos/category.dto";
 import { useActivities } from "../../contexts/hooks/useActivities";
+import ErrorAlert from "../../ui/ErrorAlert";
 
 interface DialogFormProps {
   open: boolean;

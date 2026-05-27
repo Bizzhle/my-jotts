@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { isApiError } from "../../api-service/ApiRequestManager";
 import { LayoutContext } from "../../layout/LayoutContext";
 import { authClient } from "../../libs/betterAuthClient";
+import ErrorAlert from "../../ui/ErrorAlert";
 
 export interface ForgotPasswordData {
   email: string;

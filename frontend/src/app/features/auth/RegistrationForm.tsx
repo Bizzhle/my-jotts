@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { isApiError } from "../../api-service/ApiRequestManager";
 import { RegisterData } from "../../api-service/dtos/registration.dto";
 import { authClient } from "../../libs/betterAuthClient";
+import ErrorAlert from "../../ui/ErrorAlert";
 
 export default function RegistrationForm() {
   const navigate = useNavigate();
