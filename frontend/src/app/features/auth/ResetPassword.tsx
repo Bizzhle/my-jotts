@@ -1,0 +1,173 @@
+import {
+  Box,
+  Button,
+  Container,
+  Link,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ApiHandler, isApiError } from "../../api-service/ApiRequestManager";
+import { useLayoutContext } from "../../layout/hooks/useLayoutContext";
+
+export interface ResetPasswordData {
+  newPassword: string;
+  token: string;
+  confirmPassword: string;
+}
+
+export const ResetPassword = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+  const [error, setError] = useState<string | undefined>("");
+  const [successMessage, setSuccessMessage] = useState<string | undefined>("");
+  const {
+    handleSubmit,
+    register,
+    watch,
+    formState: { errors },
+  } = useForm<ResetPasswordData>();
+  const { hideNavigation, hideSearchBar, hideHeader } = useLayoutContext();
+
+  useEffect(() => {
+    hideNavigation();
+    hideSearchBar();
+    hideHeader();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onSubmit = async (data: ResetPasswordData) => {
+    const { newPassword } = data;
+    try {
+      await ApiHandler.resetPassword({ newPassword, token: token || "" });
+      setSuccessMessage("Password reset successfully");
+    } catch (error) {
+      const errorMessage = isApiError(error);
+      setError(errorMessage); // Handle error (e.g., show an error message)
+    }
+  };
+
+  const validatePasswordMatch = (value: string) => {
+    const password = watch("newPassword");
+    return value === password || "Passwords do not match";
+  };
+
+  if (successMessage) {
+    return (
+      <Container
+        maxWidth="lg"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          sx={{
+            mt: 20,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h6" color="success.main" sx={{ my: 1 }}>
+            {successMessage}
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/login")}
+            sx={{
+              width: "auto",
+              px: 2,
+            }}
+          >
+            log in again
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
+  return (
+    <Container
+      maxWidth="lg"
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Box>
+        <Box
+          component="form"
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{
+            flexGrow: 1,
+            border: "2px solid orange",
+            p: { xs: 2, md: 2 },
+          }}
+        >
+          <Typography variant="h4" sx={{ mb: 2 }}>
+            Reset Password
+          </Typography>
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            variant="outlined"
+            margin="normal"
+            {...register("newPassword", {
+              required: "password must not be empty",
+            })}
+            error={!!errors.newPassword}
+            helperText={errors.newPassword?.message}
+            color="secondary"
+          />
+          <TextField
+            fullWidth
+            label="Confirm Password"
+            type="password"
+            variant="outlined"
+            margin="dense"
+            {...register("confirmPassword", {
+              required: "password must not be empty",
+              validate: validatePasswordMatch,
+            })}
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword?.message}
+            color="secondary"
+          />
+          {error && (
+            <ErrorAlert message={error} onDismiss={() => setError("")} />
+          )}
+          <Button
+            variant="contained"
+            size="medium"
+            color="primary"
+            fullWidth={true}
+            type="submit"
+            sx={{ textAlign: "center", mt: 1 }}
+          >
+            Reset password
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            mt: 2,
+          }}
+        >
+          <Typography>Do you already have an account? </Typography>
+          <Link href="/login">Log in</Link>
+        </Box>
+      </Box>
+    </Container>
+  );
+};
