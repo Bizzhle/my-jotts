@@ -11,7 +11,7 @@ import { SubscriptionStatus } from '../../src/subscription/enum/subscrition.enum
 import { Account } from '../../src/users/entities/Account.entity';
 import { Session } from '../../src/users/entities/Session.entity';
 import { User } from '../../src/users/entities/User.entity';
-import { Verification } from '../../src/users/entities/Verification';
+import { Verification } from '../../src/users/entities/Verification.entity';
 
 /**
  * Table names owned by the auth system.
