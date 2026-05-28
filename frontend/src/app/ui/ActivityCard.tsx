@@ -98,6 +98,8 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
                 style={{
                   color: "#0A82D8",
                   fontFamily: "Montserrat, sans-serif",
+                  textDecoration: "none",
+                  cursor: "pointer",
                 }}
               >
                 {value.categoryName}

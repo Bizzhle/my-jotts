@@ -1,8 +1,8 @@
 import axios, { AxiosError } from "axios";
 import { User } from "better-auth";
-import { ForgotPasswordData } from "../authentication/ForgotPassword";
-import { SessionState } from "../libs/SessionState";
 import { ActivityData } from "../features/activity/ActivityDialogForm";
+import { ForgotPasswordData } from "../features/auth/ForgotPassword";
+import { SessionState } from "../libs/SessionState";
 import { ApiMethods } from "./ApiMethods";
 import { ActivityResponseDto } from "./dtos/activity.dto";
 import {
