@@ -186,7 +186,7 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       state,
-      // loadActivities,
+      loadActivities,
       findActivity,
       fetchActivity,
       fetchCategories,

@@ -43,7 +43,11 @@ export const ResetPassword = () => {
   const onSubmit = async (data: ResetPasswordData) => {
     const { newPassword } = data;
     try {
-      await ApiHandler.resetPassword({ newPassword, token: token || "" });
+      if (!token) {
+        setError("Invalid or missing token");
+        return;
+      }
+      await ApiHandler.resetPassword({ newPassword, token: token  });
       setSuccessMessage("Password reset successfully");
     } catch (error) {
       const errorMessage = isApiError(error);

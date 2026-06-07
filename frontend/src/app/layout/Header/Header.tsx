@@ -10,7 +10,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useActivities } from "../../contexts/hooks/useActivities";
 import { useBetterAuth } from "../../contexts/hooks/useBetterAuth";
 import SearchBar from "../../ui/SearchBar";
@@ -47,7 +47,6 @@ export default function Header({
   } = useActivities();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (categoryId) {

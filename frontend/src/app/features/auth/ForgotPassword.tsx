@@ -9,9 +9,8 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { isApiError } from "../../api-service/ApiRequestManager";
+import { ApiHandler, isApiError } from "../../api-service/ApiRequestManager";
 import { LayoutContext } from "../../layout/LayoutContext";
-import { authClient } from "../../libs/betterAuthClient";
 import ErrorAlert from "../../ui/ErrorAlert";
 
 export interface ForgotPasswordData {
@@ -33,19 +32,12 @@ export const ForgotPassword = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function storeError(error: string) {
-    setError(error);
-  }
-
   const onSubmit = async (params: ForgotPasswordData) => {
     try {
-      const { data, error } = await authClient.requestPasswordReset(params);
+      const data = await ApiHandler.forgotPassword(params);
       reset({
         email: "",
       });
-      if (error?.message) {
-        await storeError(error.message);
-      }
       if (data) {
         setSuccessMessage(data?.message);
       }
