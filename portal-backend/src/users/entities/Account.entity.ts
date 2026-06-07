@@ -23,10 +23,10 @@ export class Account {
   @Column('text', { name: 'idToken', nullable: true })
   idToken: string;
 
-  @Column('date', { name: 'accessTokenExpiresAt', nullable: true })
+  @Column('timestamptz', { name: 'accessTokenExpiresAt', nullable: true })
   accessTokenExpiresAt: Date;
 
-  @Column('date', { name: 'refreshTokenExpiresAt', nullable: true })
+  @Column('timestamptz', { name: 'refreshTokenExpiresAt', nullable: true })
   refreshTokenExpiresAt: Date;
 
   @Column('text', { name: 'scope', nullable: true })
@@ -35,9 +35,9 @@ export class Account {
   @Column('text', { name: 'password', nullable: true })
   password: string;
 
-  @Column('date', { name: 'createdAt', nullable: false })
+  @Column('timestamptz', { name: 'createdAt', nullable: false })
   createdAt: Date;
 
-  @Column('date', { name: 'updatedAt', nullable: false })
+  @Column('timestamptz', { name: 'updatedAt', nullable: false })
   updatedAt: Date;
 }
