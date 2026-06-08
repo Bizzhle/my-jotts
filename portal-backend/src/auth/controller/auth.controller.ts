@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { GetCurrentUserEmail } from 'src/app/decorators/jwt.decorators';
@@ -22,14 +23,14 @@ export class AuthController {
 
   @Post('sign-in')
   @AllowAnonymous()
-  async signin(@Body() dto: SignInDto) {
-    return await this.authService.signin(dto);
+  async signin(@Body() dto: SignInDto, @Res({ passthrough: true }) res: Response) {
+    return await this.authService.signin(dto, res);
   }
 
   @Post('sign-out')
-  async signout(@Req() req: Request) {
+  async signout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const headers = req.headers;
-    return await this.authService.signout(headers);
+    return await this.authService.signout(headers, res);
   }
 
   @IsAuthorizedUser()

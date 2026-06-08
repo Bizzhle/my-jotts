@@ -1,11 +1,17 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { APIError } from 'better-auth/api';
+import { Response } from 'express';
+import { IncomingHttpHeaders } from 'http';
 import { auth } from '../../../auth';
+import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { UserAccountRepository } from '../../users/repositories/user-account.repository';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dtos/forgot-password.dto';
 import { SignInDto } from '../dtos/signin.dto';
@@ -13,7 +19,65 @@ import { SignUpDto } from '../dtos/signup.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userRepository: UserAccountRepository) {}
+  constructor(
+    private readonly userRepository: UserAccountRepository,
+    private readonly appLogger: AppLoggerService,
+  ) {}
+
+  private applyAuthHeaders(response: Response, headers?: Headers) {
+    if (!headers) {
+      return;
+    }
+
+    const setCookies = typeof headers.getSetCookie === 'function' ? headers.getSetCookie() : [];
+    if (setCookies.length > 0) {
+      response.append('Set-Cookie', setCookies);
+    }
+
+    headers.forEach((value, key) => {
+      if (key.toLowerCase() === 'set-cookie') {
+        return;
+      }
+      response.setHeader(key, value);
+    });
+  }
+
+  private toHeaders(headers: IncomingHttpHeaders): Headers {
+    const requestHeaders = new Headers();
+
+    Object.entries(headers).forEach(([key, value]) => {
+      if (typeof value === 'undefined') {
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        value.forEach((entry) => requestHeaders.append(key, entry));
+        return;
+      }
+
+      requestHeaders.set(key, value);
+    });
+
+    return requestHeaders;
+  }
+
+  private isUnauthorizedApiError(error: unknown): boolean {
+    if (!(error instanceof APIError)) {
+      return false;
+    }
+
+    const apiError = error as APIError & {
+      status?: string;
+      statusCode?: number;
+      body?: { code?: string };
+    };
+
+    return (
+      apiError.status === 'UNAUTHORIZED' ||
+      apiError.statusCode === 401 ||
+      apiError.body?.code === 'UNAUTHORIZED'
+    );
+  }
 
   async signup(dto: SignUpDto) {
     const { email, password, name } = dto;
@@ -39,7 +103,7 @@ export class AuthService {
     }
   }
 
-  async signin(dto: SignInDto) {
+  async signin(dto: SignInDto, response: Response) {
     const { email, password } = dto;
 
     try {
@@ -48,15 +112,22 @@ export class AuthService {
           email,
           password,
         },
-        //   headers: await headers(),
+        returnHeaders: true,
       });
 
+      this.applyAuthHeaders(response, result.headers);
+
       return {
-        email: result.user.email,
-        token: result.token,
+        email: result.response.user.email,
+        token: result.response.token,
       };
     } catch (error) {
-      throw new UnauthorizedException('User does not exist');
+      if (this.isUnauthorizedApiError(error)) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      this.appLogger.error('Signin failed', error);
+      throw new InternalServerErrorException('Unable to sign in right now');
     }
   }
 
@@ -65,16 +136,29 @@ export class AuthService {
       const result = await this.userRepository.findOneBy({
         email,
       });
+
+      if (!result) {
+        throw new NotFoundException('User does not exist');
+      }
+
       return result;
     } catch (error) {
-      throw new UnauthorizedException('User does not exist');
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      this.appLogger.error('Failed to fetch user data', error);
+      throw new InternalServerErrorException('Unable to fetch user data');
     }
   }
 
-  async signout(headers: HeadersInit) {
-    await auth.api.signOut({
-      headers,
+  async signout(headers: IncomingHttpHeaders, response: Response) {
+    const result = await auth.api.signOut({
+      headers: this.toHeaders(headers),
+      returnHeaders: true,
     });
+
+    this.applyAuthHeaders(response, result.headers);
 
     return { message: 'Signed out successfully' };
   }
@@ -86,26 +170,43 @@ export class AuthService {
       if (!user) {
         throw new NotFoundException('User does not exist');
       }
-      const result = await auth.api.sendVerificationEmail({
+      await auth.api.sendVerificationEmail({
         body: { email },
       });
-      if (!result.status) {
-        throw new BadRequestException('Invalid or expired token');
-      }
+
+      return { message: 'Verification email sent' };
     } catch (error) {
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
-      throw new BadRequestException(error.message || 'User verification failed');
+
+      if (this.isUnauthorizedApiError(error)) {
+        throw new UnauthorizedException('Unable to validate user');
+      }
+
+      this.appLogger.error('Failed to validate user', error);
+      throw new InternalServerErrorException('Unable to validate user');
     }
   }
   async requestResetPassword(dto: ForgotPasswordDto) {
-    const { emailAddress } = dto;
-    await auth.api.requestPasswordReset({
-      body: {
-        email: emailAddress,
-      },
-    });
+    const { email } = dto;
+
+    try {
+      await auth.api.requestPasswordReset({
+        body: {
+          email,
+          redirectTo: `${process.env.FRONTEND_URL}/reset-password`,
+        },
+      });
+    } catch (error) {
+      if (!(error instanceof APIError)) {
+        this.appLogger.error('Failed to request password reset', error);
+        throw new InternalServerErrorException('Unable to process reset request');
+      }
+    }
+
+    // Always return the same response to avoid account enumeration.
+    return { message: 'If an account exists, a password reset email has been sent' };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
@@ -119,13 +220,19 @@ export class AuthService {
         },
       });
 
-      if (!result.status) {
-        throw new BadRequestException('Invalid or expired token');
+      return {
+        success: true,
+        data: result,
+        error: null,
+        message: 'Password reset successfully',
+      };
+    } catch (error) {
+      this.appLogger.verbose('Password reset failed', error);
+      if (this.isUnauthorizedApiError(error)) {
+        throw new UnauthorizedException('Invalid or expired reset token');
       }
 
-      return { message: 'Password reset successfully' };
-    } catch (error) {
-      throw new BadRequestException(error.message || 'Password reset failed');
+      throw new InternalServerErrorException('Unable to reset password right now');
     }
   }
 
@@ -145,7 +252,16 @@ export class AuthService {
 
       return { message: 'User verified' };
     } catch (error) {
-      throw new BadRequestException(error.message || 'User verification failed failed');
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      if (this.isUnauthorizedApiError(error)) {
+        throw new BadRequestException('Invalid or expired verification token');
+      }
+
+      this.appLogger.error('Email verification failed', error);
+      throw new InternalServerErrorException('Unable to verify email right now');
     }
   }
 }
