@@ -13,7 +13,7 @@ function cliOptions() {
 
 function serverOptions(config: DatabaseConfig) {
   return {
-    migrationsRun: config.runMigrations,
+    migrationsRun: config.runMigrations || config.runDevMigrations,
   };
 }
 

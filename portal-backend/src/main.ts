@@ -1,6 +1,7 @@
 import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { seedLocalUsers } from '../sql/seeders/seed-local-users';
 import { AppModule } from './app/app.module';
 import { AppLoggerService } from './logger/services/app-logger.service';
 import getLogLevels from './utils/get-log-levels';
@@ -50,9 +51,13 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  // if (process.env.NODE_ENV !== 'production') {
-  //   await seedLocalUsers();
-  // }
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      await seedLocalUsers();
+    } catch (error) {
+      console.error('Failed to seed local users on startup', error);
+    }
+  }
 
   await app.listen(4000, '0.0.0.0');
 }

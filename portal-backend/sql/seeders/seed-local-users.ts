@@ -29,8 +29,8 @@ export const seedLocalUsers = async () => {
   const dummyUsers = [
     {
       id: '11111111-1111-1111-1111-111111111111',
-      name: 'Admin User',
-      email: 'admin@myjotts.com',
+      name: 'Test User',
+      email: 'test@myjotts.com',
       role: 'admin',
       emailVerified: true,
     },
