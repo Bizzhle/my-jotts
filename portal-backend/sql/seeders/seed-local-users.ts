@@ -3,10 +3,16 @@ import { hash } from 'bcryptjs';
 import { DataSource } from 'typeorm';
 import { auth } from '../../auth';
 import { AppLoggerService } from '../../src/logger/services/app-logger.service';
+import { RequestContextService } from '../../src/utils/services/request-context.service';
 import { AppDataSource } from '../data-source';
 
 export const seedLocalUsers = async () => {
-  const logger = new AppLoggerService('BetterAuth', null, new ConfigService());
+  const logger = new AppLoggerService(
+    'BetterAuth',
+    null,
+    new ConfigService(),
+    new RequestContextService(null),
+  );
   logger.log('Attempting to seed user');
 
   const isProduction = process.env.NODE_ENV === 'production';
@@ -23,8 +29,8 @@ export const seedLocalUsers = async () => {
   const dummyUsers = [
     {
       id: '11111111-1111-1111-1111-111111111111',
-      name: 'Admin User',
-      email: 'admin@myjotts.com',
+      name: 'Test User',
+      email: 'test@myjotts.com',
       role: 'admin',
       emailVerified: true,
     },
@@ -59,7 +65,7 @@ export const seedLocalUsers = async () => {
       });
 
       // Update role using BetterAuth’s internal API
-      await auth.api.setRole({
+      await (auth.api as any).setRole({
         body: {
           userId: created.user?.id || user.id,
           role: user.role as 'admin' | 'user',

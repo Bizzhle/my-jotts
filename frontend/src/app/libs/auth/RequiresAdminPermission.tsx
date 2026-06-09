@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useBetterAuth } from "../../webapp/utils/contexts/hooks/useBetterAuth";
+import { useBetterAuth } from "../../contexts/hooks/useBetterAuth";
 
 interface RequiresAdminPermissionProps {
   children: React.ReactNode;

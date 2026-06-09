@@ -1,7 +1,11 @@
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { ClassSerializerInterceptor, Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { ClsModule } from 'nestjs-cls';
+import { DataSource } from 'typeorm';
 import { auth } from '../../auth';
 import { ActivityModule } from '../activity/activity.module';
 import { AuthenticationModule } from '../auth/auth.module';
@@ -20,6 +24,7 @@ import { UtilsModule } from '../utils/util.module';
 import { EnvironmentConfigRootModule } from './configuration/Environment';
 import { TypeOrmRootModule } from './configuration/TypeORM';
 import { ExceptionsFilter } from './exceptions.filter';
+import { RequestContextMiddleware } from './middleware/request-context.middleware';
 
 @Module({
   imports: [
@@ -39,12 +44,32 @@ import { ExceptionsFilter } from './exceptions.filter';
     UtilsModule,
     SubscriptionModule,
     SupportModule,
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        generateId: true,
+        idGenerator: (req) =>
+          req.headers['x-header-id'] || req.headers['x-request-id'] || crypto.randomUUID(),
+      },
+      plugins: [
+        new ClsPluginTransactional({
+          imports: [
+            // module in which the database instance is provided
+            TypeOrmRootModule(),
+          ],
+          adapter: new TransactionalAdapterTypeOrm({
+            dataSourceToken: DataSource,
+          }),
+        }),
+      ],
+    }),
     AuthModule.forRoot({
       auth,
     }),
   ],
   providers: [
-    // RequestContextMiddleware,
+    RequestContextMiddleware,
     Logger,
 
     {
@@ -67,7 +92,7 @@ import { ExceptionsFilter } from './exceptions.filter';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LogsMiddleware).forRoutes('*');
+    consumer.apply(RequestContextMiddleware, LogsMiddleware).forRoutes('*');
     // consumer.apply(AuthVerifierMiddleWare).forRoutes('*');
   }
 }

@@ -1,14 +1,11 @@
-export interface CategoryResponseDto {
+export interface CategoryInfo {
   id: number;
   categoryName: string;
   description?: string;
-  parentCategory?: CategoryResponseDto;
+  parentCategory?: CategoryInfo;
 }
 
-export interface CategoryData {
-  categoryName: string;
-  description?: string;
-}
+export interface CategoryRequestData extends Omit<CategoryInfo, "id"> {}
 
 export interface SubCategoryData {
   categoryName: string;

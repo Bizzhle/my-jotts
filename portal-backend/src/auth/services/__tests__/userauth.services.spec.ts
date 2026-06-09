@@ -4,6 +4,7 @@ import { PasswordResetToken } from '../../../users/entities/password-reset-token
 import { UserAccountRepository } from '../../../users/repositories/user-account.repository';
 import { UsersService } from '../../../users/services/user-service/users.service';
 import { UserSessionService } from '../../../users/services/user-session/user-session.service';
+import { AppLoggerService } from '../../../logger/services/app-logger.service';
 import { MailerService } from '../../../utils/services/mailer.services';
 import { AuthService } from '../auth.service';
 import { PasswordService } from '../password.service';
@@ -60,6 +61,12 @@ describe('User Authentication', () => {
           provide: getRepositoryToken(PasswordResetToken),
           useValue: {
             create: jest.fn(),
+          },
+        },
+        {
+          provide: AppLoggerService,
+          useValue: {
+            verbose: jest.fn(),
           },
         },
       ],

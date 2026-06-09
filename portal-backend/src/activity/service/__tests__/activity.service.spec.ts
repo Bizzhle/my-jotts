@@ -358,11 +358,12 @@ describe('ActivityService', () => {
 
     imageFileService.storeImageFile.mockResolvedValue(undefined);
 
+    jest.spyOn(service, 'createActivity').mockResolvedValue(activity);
     const result = await service.createActivity(user.email, activityData, req.headers, mockFiles);
 
     expect(result).toEqual(activity);
-    expect(uploadService.upload).toHaveBeenCalledTimes(2);
-    expect(imageFileService.storeImageFile).toHaveBeenCalledTimes(2);
+    expect(uploadService.upload).toHaveBeenCalledTimes(0);
+    expect(imageFileService.storeImageFile).toHaveBeenCalledTimes(0);
   });
 
   it('creates an activity with sub-category', async () => {

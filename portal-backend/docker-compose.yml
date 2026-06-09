@@ -13,13 +13,14 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     # networks:
     #   - activity-moves
 
   db:
     container_name: portal_dbmodel
-    image: postgres
+    image: postgres:15
     restart: always
     environment:
       POSTGRES_DB: myjottsdb
@@ -30,17 +31,27 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U admin -d myjottsdb']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
     # networks:
     #   - activity-moves
 
-  # adminer:
-  #   container_name: activity-adminer
-  #   image: adminer
-  #   ports:
-  #     - '8080:8080'
-  #   depends_on:
-  #     - db
+  adminer:
+    restart: always
+    image: adminer
+    container_name: dev_adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: db
 
 volumes:
   pgdata: {}

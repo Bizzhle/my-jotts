@@ -1,8 +1,7 @@
 import { stripe } from '@better-auth/stripe';
 import { typeormAdapter } from '@hedystia/better-auth-typeorm';
 import { betterAuth } from 'better-auth';
-import { openAPI } from 'better-auth/plugins';
-import { admin as adminPlugin } from 'better-auth/plugins/admin';
+import { admin as adminPlugin, openAPI } from 'better-auth/plugins';
 import Stripe from 'stripe';
 import { AppDataSource } from './sql/data-source';
 import { BetterAuthLoggerPlugin } from './src/logger/services/log-plugin';
@@ -10,15 +9,53 @@ import { ac, roles } from './src/permissions/permissions';
 import { loadTemplate } from './src/utils/services/load-template-config';
 import { sendEmail } from './src/utils/services/transporter';
 
+const trustedOrigins = [
+  'http://localhost:5173',
+  'https://myjotts.com',
+  'https://www.myjotts.com',
+  'https://api.myjotts.com',
+  'https://myjotts.local',
+];
+
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-09-30.clover', // Latest API version as of Stripe SDK v19
 });
 
-AppDataSource.initialize();
+const mapSubscriptionPlanToRole = (plan: string): keyof typeof roles => {
+  const normalizedPlan = plan.toLowerCase();
+  if (normalizedPlan === 'pro') {
+    return 'pro';
+  }
+  return 'user';
+};
+
+const setUserRole = async (userId: string | undefined, role: keyof typeof roles) => {
+  if (!userId) {
+    throw new Error('Stripe subscription is missing a referenceId');
+  }
+
+  await (auth.api as any).setRole({
+    body: {
+      userId,
+      role,
+    },
+    headers: {},
+  });
+};
+
+const mapStoredPlanToRole = (plan: string | null | undefined): keyof typeof roles => {
+  return mapSubscriptionPlanToRole(plan ?? 'user');
+};
+
 export const auth = betterAuth({
   url: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: typeormAdapter(AppDataSource),
+  advanced: {
+    database: {
+      generateId: 'uuid', // Keep IDs available in Better Auth before inserts for the TypeORM adapter
+    },
+  },
   user: {
     additionalFields: {
       role: {
@@ -55,7 +92,7 @@ export const auth = betterAuth({
       await sendEmail(user.email, 'Verify your email', html);
     },
   },
-  trustedOrigins: ['http://localhost:5173', 'https://myjotts.com', 'https://myjotts.local'],
+  trustedOrigins,
   basePath: '/api/auth',
   exposeRoutes: false,
   plugins: [
@@ -66,7 +103,7 @@ export const auth = betterAuth({
       roles: { admin: roles.admin, user: roles.user, customUser: roles.customUser }, // Corrected the role name to match the `roles` object
       defaultRole: 'user',
       adminRoles: ['admin'],
-    }),
+    }) as any,
     stripe({
       stripeClient,
       stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
@@ -94,7 +131,7 @@ export const auth = betterAuth({
             },
           },
           {
-            name: 'PRO',
+            name: 'pro',
             priceId: 'price_H5UU2',
             freeTrial: {
               days: 14,
@@ -102,46 +139,17 @@ export const auth = betterAuth({
           },
         ], // Define subscription plans here if needed
         requireEmailVerification: true,
-        onSubscriptionCreated: async ({ subscription, user }) => {
-          const html = await loadTemplate('subscription-created.template.html', {
-            emailAddress: user.email,
-            url: '',
-          });
-          // Update user role based on plan
-          await auth.api.setRole({
-            body: {
-              userId: user.id,
-              role: subscription.plan, // "basic", "premium", or "enterprise"
-            },
-            headers: {},
-          });
-          await sendEmail(user.email, 'Subscription Created', html);
+        onSubscriptionCreated: async ({ subscription, plan }) => {
+          await setUserRole(subscription.referenceId, mapSubscriptionPlanToRole(plan.name));
         },
-        onSubscriptionUpdated: async ({ subscription, user }) => {
-          // Update user role when plan changes
-          await auth.api.setRole({
-            body: {
-              userId: user.id,
-              role: subscription.plan,
-            },
-            headers: {},
-          });
+        onSubscriptionUpdate: async ({ subscription }) => {
+          await setUserRole(subscription.referenceId, mapStoredPlanToRole(subscription.plan));
         },
-        onSubscriptionCanceled: async ({ subscription, user }) => {
-          const html = await loadTemplate('subscription-cancelled.template.html', {
-            emailAddress: user.email,
-            url: '',
-          });
-
-          // Downgrade to free tier
-          await auth.api.setRole({
-            body: {
-              userId: user.id,
-              role: 'user',
-            },
-            headers: {},
-          });
-          await sendEmail(user.email, 'Subscription Cancelled', html);
+        onSubscriptionCancel: async ({ subscription }) => {
+          await setUserRole(subscription.referenceId, 'user');
+        },
+        onSubscriptionDeleted: async ({ subscription }) => {
+          await setUserRole(subscription.referenceId, 'user');
         },
       },
       onEvent: async (event) => {
@@ -156,26 +164,14 @@ export const auth = betterAuth({
   // middlewares: [betterAuthCorsMiddleware()],543
 });
 
-export const initializeAuth = async () => {
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
-  }
-};
-
 function betterAuthCorsMiddleware() {
   return async (request, ctx, next) => {
-    const allowedOrigins = [
-      'https://myjotts.com',
-      'https://www.myjotts.com',
-      'https://myjotts.local',
-      'http://localhost:5173',
-    ];
     const origin =
       typeof (request as any).headers?.get === 'function'
         ? (request as any).headers.get('origin')
         : (request as any).headers?.origin || undefined;
 
-    if (typeof origin === 'string' && allowedOrigins.includes(origin)) {
+    if (typeof origin === 'string' && trustedOrigins.includes(origin)) {
       // Set CORS headers on ctx (BetterAuth context)
       ctx.setHeader?.('Access-Control-Allow-Origin', origin);
       ctx.setHeader?.('Access-Control-Allow-Credentials', 'true');

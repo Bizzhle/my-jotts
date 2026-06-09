@@ -62,7 +62,7 @@ export class SubscriptionService {
   }
 
   async getUserSubscriptionOfUser(headers: HeadersInit) {
-    const subscriptions = await auth.api.listActiveSubscriptions({
+    const subscriptions = await (auth.api as any).listActiveSubscriptions({
       // This endpoint requires session cookies.
       headers: await headers,
     });
@@ -81,7 +81,7 @@ export class SubscriptionService {
     try {
       event = this.stripe.webhooks.constructEvent(req.body, sig, this.webhookSecret);
     } catch (err) {
-      res.status(400).send(`Webhook Error: ${err.message}`);
+      res.status(400).send(`Webhook Error: ${err}`);
       return;
     }
 

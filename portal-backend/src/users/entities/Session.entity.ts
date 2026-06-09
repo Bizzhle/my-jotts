@@ -5,16 +5,16 @@ export class Session {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('date', { name: 'expiresAt', nullable: false })
+  @Column('timestamptz', { name: 'expiresAt', nullable: false })
   expiresAt: Date;
 
   @Column('text', { name: 'token', nullable: false, unique: true })
   token: string;
 
-  @Column('date', { name: 'createdAt', nullable: false })
+  @Column('timestamptz', { name: 'createdAt', nullable: false })
   createdAt: Date;
 
-  @Column('date', { name: 'updatedAt', nullable: false })
+  @Column('timestamptz', { name: 'updatedAt', nullable: false })
   updatedAt: Date;
 
   @Column('text', { name: 'ipAddress', nullable: true })

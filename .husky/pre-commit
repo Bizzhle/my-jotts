@@ -1,0 +1,4 @@
+echo "Running linters before commit..."
+
+cd frontend && npm run lint
+cd ../portal-backend && npm run lint

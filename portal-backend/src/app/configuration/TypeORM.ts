@@ -11,9 +11,9 @@ function cliOptions() {
   };
 }
 
-function serverOptions() {
+function serverOptions(config: DatabaseConfig) {
   return {
-    migrationsRun: process.env['NODE_ENV'] !== 'dist',
+    migrationsRun: config.runMigrations || config.runDevMigrations,
   };
 }
 
@@ -23,7 +23,7 @@ export function TypeOrmRootModule(cli = false) {
     inject: [DatabaseConfig],
     useFactory: (config: DatabaseConfig) => {
       const { url, useSsl } = config;
-      const environmentOptions = cli ? cliOptions() : serverOptions();
+      const environmentOptions = cli ? cliOptions() : serverOptions(config);
       const database = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
       const migrationPath = resolve(__dirname, '../../../sql/db_migrations/*.{js,ts}');
       const devMigration = resolve(__dirname, '../../../sql/db_migrations/dev/*.{js,ts}');
@@ -40,7 +40,10 @@ export function TypeOrmRootModule(cli = false) {
         database,
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: false,
-        logging: config.logQueries,
+        logging: config.logQueries
+          ? ['query', 'error', 'warn', 'migration']
+          : ['error', 'warn', 'migration'],
+        maxQueryExecutionTime: 5000, // log any query taking longer than 5s
         autoLoadEntities: true,
         connectTimeoutMS: 60000,
         namingStrategy: new CustomNamingStrategy(),
@@ -50,5 +53,12 @@ export function TypeOrmRootModule(cli = false) {
       };
       return result;
     },
+    // async dataSourceFactory(options) {
+    //   if (!options) {
+    //     throw new Error('Invalid options passed');
+    //   }
+
+    //   return addTransactionalDataSource(new DataSource(options));
+    // },
   });
 }

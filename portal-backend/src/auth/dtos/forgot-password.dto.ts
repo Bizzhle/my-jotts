@@ -9,7 +9,7 @@ export class ForgotPasswordDto {
   })
   @IsEmail()
   @IsNotEmpty()
-  emailAddress: string;
+  email: string;
 }
 
 export class ResetPasswordDto {

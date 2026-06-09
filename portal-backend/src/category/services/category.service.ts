@@ -7,7 +7,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
 import { ActivityRepository } from '../../activity/repositories/activity.repository';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
@@ -33,7 +32,6 @@ export class CategoryService {
     dto: CreateCategoryDto,
     emailAddress: string,
     headers: HeadersInit,
-    entityManager?: EntityManager,
   ): Promise<Category> {
     try {
       let createdCategory;
@@ -54,34 +52,29 @@ export class CategoryService {
         throw new ForbiddenException('Maximum categories');
       }
 
-      const category = await this.categoryRepository.findCategoryByName(dto.categoryName, user.id);
+      const existingCategory = await this.categoryRepository.findCategoryByName(
+        dto.categoryName,
+        user.id,
+      );
 
-      if (category) {
+      if (existingCategory) {
         throw new ConflictException('Category with this name already exists.');
       }
 
-      if (entityManager) {
-        const category = await this.categoryRepository.create({
+      const category = await this.categoryRepository.createCategory(dto, user.id);
+
+      if (dto.subCategoryName) {
+        const subCategory = this.categoryRepository.create({
           user: { id: user.id },
-          category_name: dto.categoryName,
-          description: dto.description,
+          category_name: dto.subCategoryName,
+          parentCategory: category,
           createdAt: new Date(),
         });
-        createdCategory = await entityManager.save(Category, category);
-        if (dto.subCategoryName) {
-          const subCategory = await this.categoryRepository.create({
-            user: { id: user.id },
-            category_name: dto.subCategoryName,
-            parentCategory: createdCategory,
-            createdAt: new Date(),
-          });
-          await entityManager.save(Category, subCategory);
-        }
-      } else {
-        createdCategory = await this.categoryRepository.createCategory(dto, user.id);
+        await this.categoryRepository.save(subCategory);
       }
+
       await this.loggerService.log('Category created');
-      return createdCategory;
+      return category;
     } catch (error) {
       if (error instanceof UnauthorizedException || error instanceof ConflictException) {
         throw error;

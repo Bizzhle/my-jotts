@@ -1,9 +1,37 @@
 {
+  "jest.runMode": "on-demand",
+  "jest.autoRun": "off",
+  "jest.virtualFolders": [
+    {
+      "name": "backend-unit",
+      "rootPath": "portal-backend",
+      "jestCommandLine": "npm test --",
+      "autoRun": "off"
+    },
+    {
+      "name": "backend-e2e",
+      "rootPath": "portal-backend",
+      "jestCommandLine": "npm run test:e2e --",
+      "autoRun": "off"
+    }
+  ],
+  "jest.outputConfig": {
+    "revealOn": "run",
+    "revealWithFocus": "test-results",
+    "clearOnRun": "terminal"
+  },
+  "jest.coverageFormatter": "DefaultFormatter",
+  "testing.automaticallyOpenPeekView": "never",
+  "vitest.exclude": ["**/portal-backend/**"],
+  "vitest.enable": true,
   "cSpell.words": [
     "debugd",
+    "e2e",
     "myjotts",
     "myjottsdb",
+    "PGDATA",
     "servicesd",
-    "Taskfile"
+    "Taskfile",
+    "timestamptz"
   ]
 }

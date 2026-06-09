@@ -1,7 +1,7 @@
 import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
+import { seedLocalUsers } from '../sql/seeders/seed-local-users';
 import { AppModule } from './app/app.module';
 import { AppLoggerService } from './logger/services/app-logger.service';
 import getLogLevels from './utils/get-log-levels';
@@ -43,7 +43,7 @@ async function bootstrap() {
     }),
   );
   app.useLogger(app.get(AppLoggerService));
-  app.use(cookieParser());
+  // app.use(cookieParser());
   const config = new DocumentBuilder()
     .addBearerAuth()
     .setTitle('Portal Backend Api')
@@ -51,9 +51,13 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  // if (process.env.NODE_ENV !== 'production') {
-  //   await seedLocalUsers();
-  // }
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      await seedLocalUsers();
+    } catch (error) {
+      console.error('Failed to seed local users on startup', error);
+    }
+  }
 
   await app.listen(4000, '0.0.0.0');
 }
