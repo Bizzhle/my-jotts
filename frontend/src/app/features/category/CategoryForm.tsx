@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ApiHandler, isApiError } from "../../api-service/ApiRequestManager";
 import {
-  CategoryData,
-  CategoryResponseDto,
+  CategoryInfo,
+  CategoryRequestData,
 } from "../../api-service/dtos/category.dto";
 import { useActivities } from "../../contexts/hooks/useActivities";
 import ErrorAlert from "../../ui/ErrorAlert";
@@ -20,7 +20,7 @@ import ErrorAlert from "../../ui/ErrorAlert";
 interface DialogFormProps {
   open: boolean;
   handleClose: () => void;
-  categoryToEdit?: CategoryResponseDto;
+  categoryToEdit?: CategoryInfo;
 }
 
 export default function CategoryForm({
@@ -30,7 +30,7 @@ export default function CategoryForm({
 }: DialogFormProps) {
   const [error, setError] = useState<string | undefined>("");
   const { fetchCategories } = useActivities();
-  const { handleSubmit, register, reset } = useForm<CategoryData>();
+  const { handleSubmit, register, reset } = useForm<CategoryRequestData>();
 
   function onClose() {
     reset();
@@ -49,18 +49,21 @@ export default function CategoryForm({
     }
   }, [categoryToEdit, reset]);
 
-  const onSubmit = async (data: CategoryData) => {
+  const onSubmit = async (data: CategoryRequestData) => {
     const { categoryName, description } = data;
-    const categoryData = {
-      categoryName,
-      description,
-    };
+  
 
     try {
       if (categoryToEdit) {
-        await ApiHandler.updateCategory(categoryToEdit.id, categoryData);
+        await ApiHandler.updateCategory(categoryToEdit.id, {
+          categoryName,
+          description,
+        });
       } else {
-        await ApiHandler.createCategory(categoryData);
+        await ApiHandler.createCategory({
+          categoryName,
+          description,
+        });
       }
       await fetchCategories();
       onClose();

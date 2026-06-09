@@ -3,11 +3,12 @@ import { Box, IconButton, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
-import { CategoryResponseDto } from "../api-service/dtos/category.dto";
+import { CategoryInfo } from "../api-service/dtos/category.dto";
 import { useActivities } from "../contexts/hooks/useActivities";
 import CategoryForm from "../features/category/CategoryForm";
 import { LayoutContext } from "../layout/LayoutContext";
 import { ConfirmDeletionDialog } from "../ui/ConfirmDeletionDialog";
+import ErrorAlert from "../ui/ErrorAlert";
 
 interface DialogProps {
   open: boolean;
@@ -18,7 +19,7 @@ export default function Category() {
   const { hideSearchBar } = useContext(LayoutContext);
   const [openCategoryForm, setOpenCategoryForm] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] =
-    useState<CategoryResponseDto | null>(null);
+    useState<CategoryInfo | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<DialogProps>({
     open: false,
     categoryId: null,
@@ -56,7 +57,7 @@ export default function Category() {
     }
   };
 
-  const handleEditCategory = (category: CategoryResponseDto) => {
+  const handleEditCategory = (category: CategoryInfo) => {
     setSelectedCategory(category);
     setOpenCategoryForm(true);
   };

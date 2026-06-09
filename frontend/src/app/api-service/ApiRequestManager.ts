@@ -6,8 +6,8 @@ import { SessionState } from "../libs/SessionState";
 import { ApiMethods } from "./ApiMethods";
 import { ActivityResponseDto } from "./dtos/activity.dto";
 import {
-  CategoryData,
-  CategoryResponseDto,
+  CategoryInfo,
+  CategoryRequestData,
   SubCategoryData,
 } from "./dtos/category.dto";
 import { ChangePasswordDto } from "./dtos/change-password.dto";
@@ -125,14 +125,14 @@ export class ApiHandler {
     categoryId: string | number,
   ): Promise<
     PageDto<{
-      category: CategoryResponseDto;
+      category: CategoryInfo;
       activities: ActivityResponseDto[];
     }>
   > => {
     const url = ENDPOINTS.GET_ACTIVITIES_BY_CATEGORY_ID(categoryId);
     return ApiMethods.get<
       PageDto<{
-        category: CategoryResponseDto;
+        category: CategoryInfo;
         activities: ActivityResponseDto[];
       }>
     >(url);
@@ -169,17 +169,17 @@ export class ApiHandler {
     const url = ENDPOINTS.DELETE_ACTIVITY(activityId);
     return ApiMethods.delete(url);
   };
-  static getCategories = (): Promise<CategoryResponseDto[]> => {
+  static getCategories = (): Promise<CategoryInfo[]> => {
     const url = ENDPOINTS.GET_CATEGORIES();
     return ApiMethods.get(url);
   };
   static getCategory = (
     categoryId: number | string,
-  ): Promise<CategoryResponseDto> => {
+  ): Promise<CategoryInfo> => {
     const url = ENDPOINTS.GET_CATEGORY(categoryId);
     return ApiMethods.get(url);
   };
-  static createCategory = (params: CategoryData): Promise<void> => {
+  static createCategory = (params: CategoryRequestData): Promise<void> => {
     const url = ENDPOINTS.CREATE_CATEGORY();
     return ApiMethods.post(url, params);
   };
@@ -189,7 +189,7 @@ export class ApiHandler {
   };
   static updateCategory = (
     categoryId: number,
-    params: CategoryData,
+    params: CategoryRequestData,
   ): Promise<void> => {
     const url = ENDPOINTS.UPDATE_CATEGORY(categoryId);
     return ApiMethods.patch(url, params);

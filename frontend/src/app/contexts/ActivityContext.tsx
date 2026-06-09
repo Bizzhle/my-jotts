@@ -2,7 +2,7 @@ import { createContext, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { ApiHandler, isApiError } from "../api-service/ApiRequestManager";
 import { ActivityResponseDto } from "../api-service/dtos/activity.dto";
-import { CategoryResponseDto } from "../api-service/dtos/category.dto";
+import { CategoryInfo } from "../api-service/dtos/category.dto";
 import { PageInfoDto } from "../api-service/dtos/pageInfo.dto";
 import { useObjectReducer } from "../utils/objectReducer";
 import { useDebounce } from "../utils/useDebounce";
@@ -15,14 +15,14 @@ interface ActivityProviderProps {
 
 interface ActivityContextState {
   activities: ActivityResponseDto[];
-  categories: CategoryResponseDto[];
+  categories: CategoryInfo[];
   searchQuery: string;
   error?: string;
   loading: boolean;
   activityData: Activity | null;
   activityDataLoading: boolean;
   activityDataError?: string;
-  category: CategoryResponseDto | null;
+  category: CategoryInfo | null;
   pageInfo: PageInfoDto;
 }
 

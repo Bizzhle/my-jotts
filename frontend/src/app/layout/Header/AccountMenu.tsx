@@ -1,8 +1,8 @@
 import { AccountCircle } from "@mui/icons-material";
 import { Box, IconButton, Menu, MenuItem } from "@mui/material";
+import { User } from "better-auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User } from "../../api-service/dtos/user.dto";
 import checkUserPermission from "../../libs/auth/CheckUserPermission";
 
 interface AccountMenuProps {

@@ -44,6 +44,7 @@ export default function Header({
     findActivity,
     loadActivities,
     loadActivitiesByCategory,
+    fetchCategories,
   } = useActivities();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -142,6 +143,7 @@ export default function Header({
             categories={categories}
             displayNavigation={displayNavigation}
             isMobile={isMobile}
+            fetchCategories={fetchCategories}
           />
           <AccountMenu
             authenticatedUser={authenticatedUser}

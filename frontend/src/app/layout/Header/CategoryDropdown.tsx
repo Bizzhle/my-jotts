@@ -10,35 +10,47 @@ import {
   Popper,
 } from "@mui/material";
 import { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { CategoryData } from "../../api-service/dtos/category.dto";
+import { useNavigate } from "react-router-dom";
+import { CategoryInfo } from "../../api-service/dtos/category.dto";
 
 interface CategoryDropdownProps {
-  categories: CategoryData[];
+  categories: CategoryInfo[];
   displayNavigation?: boolean;
   isMobile: boolean;
+  fetchCategories: () => void | Promise<void>;
 }
 
 export default function CategoryDropdown({
   categories,
   displayNavigation,
   isMobile,
+  fetchCategories,
 }: CategoryDropdownProps) {
   const anchorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const handleToggle = () => {
+  const handleToggle = async () => {
+    if (!open) {
+      await fetchCategories();
+    }
     setOpen((prevOpen) => !prevOpen);
   };
 
-  const handleMenuItemClick = (
-    _event: React.MouseEvent<HTMLLIElement, MouseEvent>,
+  const handleAllCategoriesClick = () => {
+    setSelectedIndex(null);
+    setOpen(false);
+    navigate("/categories");
+  };
+
+  const handleCategoryClick = (
     index: number,
+    categoryId: number,
   ) => {
     setSelectedIndex(index);
     setOpen(false);
+    navigate(`/categories/${categoryId}`);
   };
 
   const handleClose = (event: Event) => {
@@ -92,25 +104,17 @@ export default function CategoryDropdown({
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="split-button-menu" autoFocusItem>
-                  <MenuItem onClick={() => navigate("/categories")}>
+                  <MenuItem onClick={handleAllCategoriesClick}>
                     All Categories
                   </MenuItem>
                   {categories.map((category, index) => (
-                    <Link
-                      to={`/categories/${category.id}`}
+                    <MenuItem
                       key={index}
-                      style={{
-                        textDecoration: "none",
-                        color: "inherit",
-                      }}
+                      selected={index === selectedIndex}
+                      onClick={() => handleCategoryClick(index, category.id)}
                     >
-                      <MenuItem
-                        selected={index === selectedIndex}
-                        onClick={(event) => handleMenuItemClick(event, index)}
-                      >
-                        {category.categoryName}
-                      </MenuItem>
-                    </Link>
+                      {category.categoryName}
+                    </MenuItem>
                   ))}
                 </MenuList>
               </ClickAwayListener>
