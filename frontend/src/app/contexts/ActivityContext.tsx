@@ -183,7 +183,6 @@ export function ActivityProvider({ children }: ActivityProviderProps) {
       deleteActivity,
       setPage,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       state,
       loadActivities,
