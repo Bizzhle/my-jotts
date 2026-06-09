@@ -1,67 +1,75 @@
 import { createTheme } from "@mui/material";
+import { tokens } from "./tokens";
 
 export const theme = createTheme({
   palette: {
     primary: {
-      main: "#fff",
-      light: "#ECECEC",
-      dark: "#DEDEE0",
+      main: tokens.color.white,
+      light: tokens.color.gray100,
+      dark: tokens.color.gray200,
     },
     secondary: {
-      main: "#000",
-      light: "#5C5C5F",
-      dark: "#108BE3",
+      main: tokens.color.black,
+      light: tokens.color.gray500,
+      dark: tokens.color.brand, // The actual action/brand color
     },
-    divider: "#5C5C5F",
+    info: {
+      main: tokens.color.brand,
+      dark: tokens.color.brandDark,
+      light: tokens.color.brandLight,
+    },
+    divider: tokens.color.gray500,
+    warning: {
+      main: tokens.color.warningAmber,
+    },
     success: {
-      main: "#D48B1C",
-      light: "#A5D6A7",
-      dark: "#388E3C",
+      main: tokens.color.successGreen,
+      light: tokens.color.successGreenLight,
     },
     error: {
-      main: "#D32F2F",
-      light: "#EF9A9A",
-      dark: "#C62828",
+      main: tokens.color.errorRed,
+      light: tokens.color.errorRedLight,
+      dark: tokens.color.errorRedDark,
     },
   },
   typography: {
-    fontFamily: "'Montserrat', 'Poppins', 'sans-serif'",
+    fontFamily: tokens.typography.fontFamily.primary,
     h1: {
-      fontFamily: "'Montserrat', sans-serif",
-      fontWeight: 700,
+      fontFamily: tokens.typography.fontFamily.primary,
+      fontWeight: tokens.typography.fontWeights.bold,
       fontSize: "2.5rem",
     },
     h2: {
-      fontFamily: "'Montserrat', sans-serif",
-      fontWeight: 500,
+      fontFamily: tokens.typography.fontFamily.primary,
+      fontWeight: tokens.typography.fontWeights.medium,
       fontSize: "2rem",
     },
     h3: {
-      fontFamily: "'Montserrat', sans-serif",
-      fontWeight: 500,
+      fontFamily: tokens.typography.fontFamily.primary,
+      fontWeight: tokens.typography.fontWeights.medium,
       fontSize: "1.875rem",
     },
     h4: {
-      fontFamily: "'Montserrat', sans-serif",
-      fontWeight: 500,
+      fontFamily: tokens.typography.fontFamily.primary,
+      fontWeight: tokens.typography.fontWeights.medium,
       fontSize: "1.75rem",
     },
     h5: {
-      fontFamily: "'Montserrat', sans-serif",
-      fontWeight: 500,
+      fontFamily: tokens.typography.fontFamily.primary,
+      fontWeight: tokens.typography.fontWeights.medium,
       fontSize: "1.25rem",
     },
     h6: {
-      fontFamily: "'Montserrat', sans-serif",
-      fontWeight: 500,
+      fontFamily: tokens.typography.fontFamily.primary,
+      fontWeight: tokens.typography.fontWeights.medium,
       fontSize: "1.2rem",
     },
     body1: {
-      fontFamily: "'Montserrat', 'sans-serif'",
+      fontFamily: tokens.typography.fontFamily.primary,
       fontSize: "1rem",
     },
     body2: {
-      fontFamily: "'Montserrat', 'sans-serif'",
+      fontFamily: tokens.typography.fontFamily.primary,
       fontSize: "0.875rem",
     },
   },
@@ -69,10 +77,10 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          backgroundColor: "#108BE3",
-          color: "#fff",
+          backgroundColor: tokens.color.brand,
+          color: tokens.color.white,
           "&:hover": {
-            backgroundColor: "#0268B0",
+            backgroundColor: tokens.color.brandDark,
           },
           ":focus": {
             outline: "none",
@@ -83,8 +91,7 @@ export const theme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
-          // backgroundColor: "#108BE3",
-          color: "#108BE3",
+          color: tokens.color.brand,
           ":focus": {
             outline: "none",
           },
@@ -94,10 +101,10 @@ export const theme = createTheme({
     MuiFab: {
       styleOverrides: {
         root: {
-          backgroundColor: "#108BE3",
-          color: "#fff",
+          backgroundColor: tokens.color.brand,
+          color: tokens.color.white,
           "&:hover": {
-            backgroundColor: "#0268B0",
+            backgroundColor: tokens.color.brandDark,
           },
           ":focus": {
             outline: "none",
@@ -108,46 +115,14 @@ export const theme = createTheme({
     MuiLink: {
       styleOverrides: {
         root: {
-          fontFamily: "'Montserrat', 'Poppins', 'sans-serif'",
+          fontFamily: tokens.typography.fontFamily.primary,
           fontSize: "1rem",
-          color: "#108BE3",
+          color: tokens.color.brand,
           "&:hover": {
-            color: "#0268B0",
+            color: tokens.color.brandDark,
           },
         },
       },
     },
-    // MuiCard: {
-    //   styleOverrides: {
-    //     root: {
-    //       backgroundColor: "#fff",
-    //       // boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-    //       // borderRadius: "8px",
-    //       // ":hover": {
-    //       //   boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-    //       // },
-    //     },
-    //   },
-    // },
-    // MuiTextField: {
-    //   styleOverrides: {
-    //     root: {
-    //       "& .MuiInputBase-root": {
-    //         backgroundColor: "#f5f5f5",
-    //       },
-    //       "& .MuiOutlinedInput-root": {
-    //         "& fieldset": {
-    //           borderColor: "#ccc",
-    //         },
-    //         "&:hover fieldset": {
-    //           borderColor: "#888",
-    //         },
-    //         "&.Mui-focused fieldset": {
-    //           borderColor: "#000",
-    //         },
-    //       },
-    //     },
-    //   },
-    // },
   },
 });

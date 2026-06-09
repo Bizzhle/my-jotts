@@ -21,10 +21,10 @@ export class User {
   @Column('text', { name: 'image', nullable: true })
   image: string;
 
-  @Column('date', { name: 'createdAt', nullable: false })
+  @Column('timestamptz', { name: 'createdAt', nullable: false })
   createdAt: Date;
 
-  @Column('date', { name: 'updatedAt', nullable: false })
+  @Column('timestamptz', { name: 'updatedAt', nullable: false })
   updatedAt: Date;
 
   @Column('text', { nullable: true })
@@ -32,6 +32,15 @@ export class User {
 
   @Column('text', { name: 'role', nullable: false, default: 'user' })
   role: string;
+
+  @Column('boolean', { name: 'banned', nullable: true, default: false })
+  banned: boolean;
+
+  @Column('text', { name: 'banReason', nullable: true })
+  banReason: string;
+
+  @Column('timestamptz', { name: 'banExpiresAt', nullable: true })
+  banExpires: Date | null;
 
   @OneToMany(() => Category, (category) => category.user)
   categories: Category[];

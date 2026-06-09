@@ -29,7 +29,9 @@
     "e2e",
     "myjotts",
     "myjottsdb",
+    "PGDATA",
     "servicesd",
-    "Taskfile"
+    "Taskfile",
+    "timestamptz"
   ]
 }
