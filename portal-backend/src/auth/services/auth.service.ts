@@ -7,7 +7,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { APIError } from 'better-auth/api';
 import { Response } from 'express';
 import { IncomingHttpHeaders } from 'http';
 import { auth } from '../../../auth';
@@ -62,11 +61,11 @@ export class AuthService {
   }
 
   private isUnauthorizedApiError(error: unknown): boolean {
-    if (!(error instanceof APIError)) {
+    if (!error || typeof error !== 'object') {
       return false;
     }
 
-    const apiError = error as APIError & {
+    const apiError = error as {
       status?: string;
       statusCode?: number;
       body?: { code?: string };
@@ -76,6 +75,24 @@ export class AuthService {
       apiError.status === 'UNAUTHORIZED' ||
       apiError.statusCode === 401 ||
       apiError.body?.code === 'UNAUTHORIZED'
+    );
+  }
+
+  private isBetterAuthApiError(error: unknown): boolean {
+    if (!error || typeof error !== 'object') {
+      return false;
+    }
+
+    const apiError = error as {
+      status?: unknown;
+      statusCode?: unknown;
+      body?: { code?: unknown };
+    };
+
+    return (
+      typeof apiError.status === 'string' ||
+      typeof apiError.statusCode === 'number' ||
+      typeof apiError.body?.code === 'string'
     );
   }
 
@@ -199,7 +216,7 @@ export class AuthService {
         },
       });
     } catch (error) {
-      if (!(error instanceof APIError)) {
+      if (!this.isBetterAuthApiError(error)) {
         this.appLogger.error('Failed to request password reset', error);
         throw new InternalServerErrorException('Unable to process reset request');
       }
