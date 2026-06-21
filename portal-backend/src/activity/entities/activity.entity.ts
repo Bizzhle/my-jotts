@@ -25,16 +25,22 @@ export class Activity {
   @Expose({ name: 'activityTitle' })
   activity_title: string;
 
-  @ApiProperty({ description: 'Name of activity', example: 'EarBuds' })
-  @Column({ type: 'integer' })
-  @Transform(({ obj }) => obj.category?.category_name || null)
-  @Expose({ name: 'categoryName' })
+  @ApiProperty({ description: 'ID of the category', example: 1 })
+  @Column({ type: 'integer', name: 'category_id' })
+  @Expose({ name: 'categoryId' })
   category_id: number;
 
   @ManyToOne(() => Category, (category) => category.activities)
   @JoinColumn({ name: 'category_id' })
   @Exclude()
   category: Category;
+
+  @ApiProperty({ description: 'Name of the category', example: 'Electronics' })
+  @Expose({ name: 'categoryName' })
+  @Transform(({ obj }) => obj.category?.category_name || null)
+  get categoryName(): string | null {
+    return this.category?.category_name || null;
+  }
 
   @ApiProperty({ description: 'Price  of item if given', example: 50 })
   @Column({ type: 'integer', nullable: true })
@@ -67,6 +73,23 @@ export class Activity {
   @Column({ type: 'date', nullable: true })
   @Expose({ name: 'dateUpdated' })
   date_updated: Date;
+
+  @ApiProperty({ description: 'ID of the sub-category', example: 1 })
+  @Column({ type: 'integer', nullable: true, name: 'sub_category_id' })
+  @Expose({ name: 'subCategoryId' })
+  subCategoryId: number;
+
+  @ManyToOne(() => Category, (category) => category.activities)
+  @JoinColumn({ name: 'sub_category_id' })
+  @Exclude()
+  subCategory: Category;
+
+  @ApiProperty({ description: 'Name of the sub-category', example: 'Headphones' })
+  @Expose({ name: 'subCategoryName' })
+  @Transform(({ obj }) => obj.subCategory?.category_name || null)
+  get subCategoryName(): string | null {
+    return this.subCategory?.category_name || null;
+  }
 
   @ManyToOne(() => User, (user) => user.activities)
   @JoinColumn({ name: 'userId' })

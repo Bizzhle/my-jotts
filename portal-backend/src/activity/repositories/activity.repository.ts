@@ -17,13 +17,13 @@ export class ActivityRepository extends Repository<Activity> {
     activityLimit: number,
   ) {
     const query = await this.createQueryBuilder('activity')
-      .leftJoin('activity.category', 'parentCategory')
-      .leftJoin('parentCategory.parentCategory', 'subCategory')
+      .leftJoin('activity.category', 'category')
+      .leftJoin('activity.subCategory', 'subCategory')
       .addSelect([
+        'category.category_name',
+        'category.id',
         'subCategory.category_name',
         'subCategory.id',
-        'parentCategory.category_name',
-        'parentCategory.id',
       ])
       .skip(startOffset)
       .take(activityLimit)
@@ -51,13 +51,13 @@ export class ActivityRepository extends Repository<Activity> {
 
   async getActivityByUserIdAndActivityId(activityId: number, userId: string) {
     const query = await this.createQueryBuilder('activity')
-      .leftJoin('activity.category', 'parentCategory')
-      .leftJoin('parentCategory.parentCategory', 'subCategory')
+      .leftJoin('activity.category', 'category')
+      .leftJoin('activity.subCategory', 'subCategory')
       .addSelect([
+        'category.category_name',
+        'category.id',
         'subCategory.category_name',
         'subCategory.id',
-        'parentCategory.category_name',
-        'parentCategory.id',
       ])
       .where('activity.userId = :userId', { userId })
       .andWhere('activity.id = :activityId', { activityId })
@@ -72,28 +72,28 @@ export class ActivityRepository extends Repository<Activity> {
     startOffset: number,
     activityLimit: number,
   ) {
-    // Fetch the category with its parent
+    // Fetch the category with its subcategories
     const category = await this.manager
       .getRepository(Category)
       .createQueryBuilder('category')
-      .leftJoinAndSelect('category.parentCategory', 'parentCategory')
       .where('category.id = :categoryId', { categoryId })
       .getOne();
 
     // Fetch activities for this category
     const activities = await this.createQueryBuilder('activity')
       .leftJoin('activity.category', 'category')
-      .leftJoin('category.parentCategory', 'parentCategory')
+      .leftJoin('activity.subCategory', 'subCategory')
       .addSelect([
-        'parentCategory.category_name',
-        'parentCategory.id',
         'category.category_name',
         'category.id',
+        'subCategory.category_name',
+        'subCategory.id',
       ])
       .where('activity.userId = :userId', { userId })
-      .andWhere('category.id = :categoryId', { categoryId })
+      .andWhere('category.id = :categoryId OR subCategory.id = :categoryId', { categoryId })
       .skip(startOffset)
       .take(activityLimit)
+      .orderBy('activity.date_created', 'DESC')
       .getMany();
 
     return { category, activities };
@@ -112,10 +112,12 @@ export class ActivityRepository extends Repository<Activity> {
     activity: Activity,
     dto: UpdateActivityDto,
     categoryId: number,
+    subCategoryId?: number,
   ): Promise<Activity> {
     const activityData: Partial<Activity> = {
       activity_title: dto.activityTitle,
       category_id: categoryId,
+      subCategoryId: subCategoryId ?? null,
       price: dto.price,
       location: dto.location,
       rating: dto.rating,

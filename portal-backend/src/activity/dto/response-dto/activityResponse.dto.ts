@@ -17,18 +17,18 @@ export class ActivityResponseDto {
   categoryName: string;
 
   @ApiProperty({ description: 'name of sub-category activity is assigned to' })
-  parentCategoryName?: string;
+  subCategoryName?: string;
 
   @ApiProperty({ description: 'id of activity category' })
   categoryId?: number;
 
   @ApiProperty({ description: 'id of activity sub-category' })
-  parentCategoryId?: number;
+  subCategoryId?: number;
 
   @ApiProperty({ description: 'Price of activity or item' })
   price: number | null;
 
-  @ApiProperty({ description: 'Title of the activity' })
+  @ApiProperty({ description: 'Location of the activity' })
   location: string | null;
 
   @ApiProperty({ description: 'Rating' })

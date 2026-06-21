@@ -7,9 +7,9 @@ export interface ActivityResponseDto {
   id: number;
   activityTitle: string;
   categoryName: string;
-  parentCategoryName?: string;
+  subCategoryName?: string;
   categoryId: number;
-  parentCategoryId?: number;
+  subCategoryId?: number;
   price: number;
   location: string;
   rating: number;
