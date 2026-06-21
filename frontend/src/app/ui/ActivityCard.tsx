@@ -86,7 +86,7 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
               px: { xs: 2, sm: 2, md: 0, lg: 0 },
             }}
           >
-            <Typography variant="body1" noWrap sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+            <Typography variant="body1"  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
               {value.activityTitle}
             </Typography>
 
@@ -94,7 +94,7 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
 
             <Box onClick={(e) => e.stopPropagation()}>
               <Link
-                to={`/categories/${value.categoryId}`}
+                to={`/categories/${value.subCategoryId ?? value.categoryId}`}
                 style={{
                   color: "#0A82D8",
                   fontFamily: "Montserrat, sans-serif",
@@ -102,7 +102,7 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
                   cursor: "pointer",
                 }}
               >
-                {value.categoryName}
+                {value.subCategoryName ? value.subCategoryName : value.categoryName}
               </Link>
             </Box>
           </Box>
