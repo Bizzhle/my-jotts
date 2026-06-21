@@ -50,10 +50,10 @@ export default function ActivityDetail() {
             Activities
           </Link>
           <Link
-            to={`/categories/${activityData.categoryId}`}
+            to={`/categories/${activityData.subCategoryId ?? activityData.categoryId}`}
             style={{ textDecoration: "none", color: "inherit" }}
           >
-            {activityData.categoryName}
+            {activityData.subCategoryName ? activityData.subCategoryName : activityData.categoryName}
           </Link>
         </Breadcrumbs>
       </Box>

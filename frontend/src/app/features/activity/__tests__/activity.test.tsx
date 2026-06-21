@@ -18,7 +18,7 @@ vi.mock("../../../contexts/hooks/useActivities", () => ({
     categories: [],
     loadActivities: vi.fn(),
     fetchActivity: vi.fn(),
-    reloadCategories: vi.fn(),
+    fetchCategories: vi.fn(),
   }),
 }));
 
@@ -112,7 +112,7 @@ describe("Activity Component", () => {
     const activityToEdit = {
       id: 1,
       activityTitle: "Test Activity",
-      categoryName: "Test Sub Category",
+      categoryName: "Test Category",
       categoryId: 1,
       rating: 4,
       price: 10,
@@ -121,7 +121,7 @@ describe("Activity Component", () => {
       dateCreated: new Date(),
       dateUpdated: new Date(),
       imageUrls: [],
-      parentCategoryName: "Test Category",
+      subCategoryName: "Test Sub Category",
     };
     render(
       <ActivityDialogForm

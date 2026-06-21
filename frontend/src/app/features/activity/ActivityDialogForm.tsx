@@ -34,7 +34,7 @@ export interface ActivityData {
   price: number;
   location?: string;
   description?: string;
-  parentCategoryName?: string;
+  subCategoryName?: string;
 }
 
 export default function ActivityDialogForm({
@@ -45,11 +45,11 @@ export default function ActivityDialogForm({
   const { categories, loadActivities, fetchActivity, fetchCategories } =
     useActivities();
   const [value, setValue] = useState(
-    activityToEdit?.parentCategoryName ?? activityToEdit?.categoryName ?? "",
+    activityToEdit?.categoryName || "",
   );
 
   const [subCategory, setSubCategory] = useState(
-    activityToEdit?.parentCategoryName ? activityToEdit?.categoryName : "",
+    activityToEdit?.subCategoryName ? activityToEdit?.subCategoryName : "",
   );
   const [error, setError] = useState<string | undefined>("");
   const [files, setFiles] = useState<File[]>([]);
@@ -64,12 +64,17 @@ export default function ActivityDialogForm({
   const { subscription } = useSubscription();
 
   useEffect(() => {
+    fetchCategories();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (activityToEdit) {
       // Only reset with allowed fields
       const {
         activityTitle,
         categoryName,
-        parentCategoryName,
+        subCategoryName,
         rating,
         price,
         location,
@@ -79,7 +84,7 @@ export default function ActivityDialogForm({
       reset({
         activityTitle,
         categoryName,
-        parentCategoryName,
+        subCategoryName,
         rating,
         price,
         location,
@@ -94,6 +99,7 @@ export default function ActivityDialogForm({
     // Fetch sub-categories if editing an activity with a parent category
     const fetchInitialSubCategories = async () => {
       if (activityToEdit && value) {
+      
         const selectedCategory = categories.find(
           (cat) => cat.categoryName === value,
         );

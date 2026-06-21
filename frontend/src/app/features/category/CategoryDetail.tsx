@@ -5,8 +5,8 @@ import { useActivities } from "../../contexts/hooks/useActivities";
 import { LayoutContext } from "../../layout/LayoutContext";
 import ActivityCard from "../../ui/ActivityCard";
 import EmptyState from "../../ui/EmptyState";
-import LoadingState from "../../ui/LoadingState";
 import { WithIntersectionObserver } from "../../ui/InfiniteScroll";
+import LoadingState from "../../ui/LoadingState";
 
 export interface responseError {
   [key: number]: string | null | undefined;
@@ -26,6 +26,7 @@ export default function CategoryDetail() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   const handleDeleteClick = async (activityId: number) => {
     setError({});

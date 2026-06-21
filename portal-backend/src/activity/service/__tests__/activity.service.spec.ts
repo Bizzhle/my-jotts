@@ -100,8 +100,8 @@ const returnedActivities = [
     categoryId: 1,
     categoryName: 'test',
     imageUrls: [],
-    parentCategoryId: null,
-    parentCategoryName: null,
+    subCategoryId: null,
+    subCategoryName: null,
   },
   {
     id: 2,
@@ -115,8 +115,8 @@ const returnedActivities = [
     categoryId: 1,
     categoryName: 'test',
     imageUrls: [],
-    parentCategoryId: null,
-    parentCategoryName: null,
+    subCategoryId: null,
+    subCategoryName: null,
   },
 ];
 
@@ -140,7 +140,7 @@ const activity = {
     updatedAt: new Date('2023-10-10'),
     user,
     activities: null,
-    parentCategory: null,
+    subCategory: null,
     subCategories: null,
   },
   userAccount: null,
@@ -411,8 +411,8 @@ describe('ActivityService', () => {
       dateCreated: activity.date_created,
       dateUpdated: activity.date_updated,
       imageUrls: [],
-      parentCategoryId: null,
-      parentCategoryName: null,
+      subCategoryId: null,
+      subCategoryName: null,
     });
   });
 
