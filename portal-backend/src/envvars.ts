@@ -14,6 +14,9 @@ export interface EnvVars {
   NODE_ENV: string;
   MAX_IMAGE_UPLOADS: number;
   MINIMUM_IMAGE_UPLOADS: number;
+  REDIS_HOST: string;
+  REDIS_PASSWORD: string;
+  REDIS_PORT: string;
   SMTP_HOST: string;
   SMTP_PASS: string;
   SMTP_PORT: string;
