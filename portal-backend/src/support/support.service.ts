@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { sendEmail } from '../utils/services/transporter';
+import { MailerService } from '../utils/services/mailer.services';
 import { SupportRequestDto } from './dto/support-request.dto';
 
 @Injectable()
 export class SupportRequestService {
-  constructor() {}
+  constructor(private readonly mailerService: MailerService) {}
 
   async submitSupportRequest(dto: SupportRequestDto): Promise<void> {
-    await sendEmail(dto.email, `Support Request: ${dto.subject}`, dto.description);
+    await this.mailerService.sendSupportRequestEmail(
+      dto.email,
+      `Support Request: ${dto.subject}`,
+      dto.description,
+    );
   }
 }
