@@ -2,6 +2,7 @@ import { Exclude } from 'class-transformer';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Activity } from '../../activity/entities/activity.entity';
 import { User } from '../../users/entities/User.entity';
+import { ImageProcessingStatus } from '../enum/image-processing-status.enum';
 
 @Entity()
 export class ImageFile {
@@ -17,6 +18,12 @@ export class ImageFile {
   @Column()
   @Exclude()
   activity_id: number;
+
+  @Column({
+    type: 'enum',
+    enum: ImageProcessingStatus,
+  })
+  status: ImageProcessingStatus;
 
   @ManyToOne(() => Activity, (activity) => activity)
   activity: Activity;
