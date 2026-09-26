@@ -80,6 +80,34 @@ jest.mock('../../auth', () => ({
   },
 }));
 
+jest.mock('@nestjs/bullmq', () => {
+  const { Inject, Module } = jest.requireActual('@nestjs/common');
+  const queueToken = 'E2E_BULLMQ_QUEUE';
+
+  class BullModule {
+    static forRootAsync() {
+      return { module: BullModule };
+    }
+
+    static registerQueue() {
+      return {
+        module: BullModule,
+        providers: [{ provide: queueToken, useValue: { add: jest.fn() } }],
+        exports: [queueToken],
+      };
+    }
+  }
+
+  Module({})(BullModule);
+
+  return {
+    BullModule,
+    InjectQueue: () => Inject(queueToken),
+    Processor: () => () => undefined,
+    WorkerHost: class WorkerHost {},
+  };
+});
+
 jest.mock('@nestjs-cls/transactional', () => ({
   ClsPluginTransactional: jest.fn().mockImplementation(() => ({})),
   Transactional: () => () => ({}),
