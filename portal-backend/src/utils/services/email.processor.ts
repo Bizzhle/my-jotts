@@ -28,6 +28,11 @@ export interface SendSupportRequestPayload {
   description: string;
 }
 
+export interface SendVerificationEmailPayload {
+  to: string;
+  url: string;
+}
+
 @Processor(QueueName.EMAIL)
 export class EmailProcessor extends WorkerHost {
   private readonly logger = new Logger(EmailProcessor.name);
@@ -44,6 +49,8 @@ export class EmailProcessor extends WorkerHost {
         return this.handleRegistration(job.data);
       case EmailJobName.SEND_SUPPORT_REQUEST:
         return this.handleSupportRequest(job.data);
+      case EmailJobName.SEND_VERIFICATION_EMAIL:
+        return this.handleVerificationEmail(job.data);
       default:
         throw new Error(`Unknown job name: ${job.name}`);
     }
@@ -62,7 +69,7 @@ export class EmailProcessor extends WorkerHost {
     const { to, resetLink } = payload;
     const html = await this.loadTemplate('reset-password.template', {
       emailAddress: to,
-      token: resetLink,
+      url: resetLink,
     });
     return await sendEmail(to, 'Password reset request', html);
   }
@@ -94,5 +101,13 @@ export class EmailProcessor extends WorkerHost {
     const compiledTemplate = handlebars.compile(template);
 
     return compiledTemplate(data);
+  }
+  private async handleVerificationEmail(payload: SendVerificationEmailPayload) {
+    const { to, url } = payload;
+    const html = await this.loadTemplate('email-verification.template', {
+      emailAddress: to,
+      url,
+    });
+    return await sendEmail(to, 'Verification Email', html);
   }
 }
