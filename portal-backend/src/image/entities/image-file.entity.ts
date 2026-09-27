@@ -9,11 +9,11 @@ export class ImageFile {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  url: string;
+  @Column({ nullable: true })
+  url: string | null;
 
-  @Column()
-  key: string;
+  @Column({ nullable: true })
+  key: string | null;
 
   @Column()
   @Exclude()
