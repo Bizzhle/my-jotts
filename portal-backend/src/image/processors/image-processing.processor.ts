@@ -1,8 +1,8 @@
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { readFile, rm } from 'fs/promises';
 import { parse } from 'path';
+import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { ImageJobName, QueueName } from '../../queue/constants/queue.constants';
 import { UploadService } from '../../upload/service/upload.service';
 import { ImageProcessingStatus } from '../enum/image-processing-status.enum';
@@ -24,17 +24,18 @@ export interface ProcessActivityImageDeletePayload {
 
 @Processor(QueueName.IMAGE_PROCESSING)
 export class ImageProcessingProcessor extends WorkerHost {
-  private readonly logger = new Logger(ImageProcessingProcessor.name);
-
   constructor(
     private readonly imageCompressionService: ImageCompressionService,
     private readonly uploadService: UploadService,
     private readonly imageFileService: ImageFileService,
+    private readonly logService: AppLoggerService,
   ) {
     super();
   }
 
   async process(job: Job): Promise<unknown> {
+    this.logService.log(`Processing email job ${job.id} of type ${job.name}`);
+
     switch (job.name) {
       case ImageJobName.PROCESS_ACTIVITY_IMAGE_UPLOAD:
         return this.processUpload(job as Job<ProcessActivityImageUploadPayload>);
@@ -78,7 +79,7 @@ export class ImageProcessingProcessor extends WorkerHost {
       const isFinalAttempt = job.attemptsMade + 1 >= attempts;
       if (succeeded || isFinalAttempt) {
         await rm(tempFilePath, { force: true }).catch((error: Error) => {
-          this.logger.warn(`Unable to remove processed image temp file: ${error.message}`);
+          this.logService.warn(`Unable to remove processed image temp file: ${error.message}`);
         });
       }
     }
@@ -101,7 +102,7 @@ export class ImageProcessingProcessor extends WorkerHost {
     }
 
     const payload = job.data as ProcessActivityImageUploadPayload;
-    this.logger.error(`Image upload job ${job.id} exhausted retries: ${error.message}`);
+    this.logService.error(`Image upload job ${job.id} exhausted retries: ${error.message}`);
     await this.imageFileService.updateImageFile(payload.imageFileId, {
       status: ImageProcessingStatus.FAILED,
     });

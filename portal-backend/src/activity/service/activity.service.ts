@@ -8,13 +8,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config/dist/config.service';
+import { writeFile } from 'fs/promises';
 import 'multer';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { User } from 'src/users/entities/User.entity';
+import { v4 as uuidv4 } from 'uuid';
 import { Category } from '../../category/entities/category.entity';
 import { CategoryService } from '../../category/services/category.service';
 import { EnvVars } from '../../envvars';
 import { ImageFile } from '../../image/entities/image-file.entity';
+import { ImageProcessingStatus } from '../../image/enum/image-processing-status.enum';
 import { ImageFileService } from '../../image/services/image-file.service';
+import { ImageQueueService } from '../../image/services/image-queue.service';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
 import { UploadService } from '../../upload/service/upload.service';
@@ -28,8 +34,9 @@ import { Activity } from '../entities/activity.entity';
 import { ActivityRepository } from '../repositories/activity.repository';
 
 interface ImageUrlDto {
-  signedUrl: string;
-  rawUrl: string;
+  signedUrl: string | null;
+  rawUrl: string | null;
+  status: ImageProcessingStatus;
 }
 // const UN_SUBSCRIBED_MAX_ACTIVITIES = process.env.UN_SUBSCRIBED_MAX_ACTIVITIES;
 @Injectable()
@@ -43,6 +50,7 @@ export class ActivityService {
     private readonly imageUploadService: UploadService,
     private readonly categoryService: CategoryService,
     private readonly imageFileService: ImageFileService,
+    private readonly imageQueueService: ImageQueueService,
     private readonly subscriptionService: SubscriptionService,
     private readonly logService: AppLoggerService,
     private readonly usersService: UsersService,
@@ -99,28 +107,7 @@ export class ActivityService {
       const savedActivity = await this.activityRepository.save(activity);
 
       if (file && file.length > 0) {
-        const uploadedFiles = await Promise.all(
-          file.map(
-            async (file) =>
-              await this.imageUploadService.upload({
-                file,
-                userId: user.id,
-                activityId: savedActivity.id,
-              }),
-          ),
-        );
-
-        await Promise.all(
-          uploadedFiles.map(
-            async (uploadedFile) =>
-              await this.imageFileService.storeImageFile(
-                uploadedFile.Location,
-                uploadedFile.Key,
-                savedActivity.id,
-                user,
-              ),
-          ),
-        );
+        await this.enqueueActivityImageUploads(savedActivity.id, file, user);
       }
 
       return savedActivity;
@@ -402,24 +389,15 @@ export class ActivityService {
         this.logService.warn(`Some images not found for deletion: ${notFound.join(', ')}`);
       }
 
-      // Delete from S3 and database in parallel
-      const deletePromises = imagesToRemove.map(async (imageFile) => {
-        try {
-          await Promise.all([
-            this.imageUploadService.deleteUploadFile(imageFile.key),
-            this.imageFileService.deleteSingleImageFile(imageFile),
-          ]);
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-          const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
-          this.logService.error(
-            `Failed to delete image ${imageFile.key}: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
-          );
-          // Continue with other deletions even if one fails
-        }
-      });
-
-      await Promise.all(deletePromises);
+      // Deletion of the S3 object and the ImageFile row happens asynchronously in the processor
+      await Promise.all(
+        imagesToRemove.map((imageFile) =>
+          this.imageQueueService.enqueueImageDelete({
+            imageFileId: imageFile.id,
+            key: imageFile.key,
+          }),
+        ),
+      );
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
@@ -437,38 +415,38 @@ export class ActivityService {
     user: User,
   ): Promise<void> {
     try {
-      // Upload files to S3
-      const uploadPromises = files.map((file) =>
-        this.imageUploadService.upload({
-          file,
-          userId,
-          activityId,
-        }),
-      );
-
-      const uploadedFiles = await Promise.all(uploadPromises);
-
-      // Store metadata in database
-      const storePromises = uploadedFiles.map((uploadedFile) =>
-        this.imageFileService.storeImageFile(
-          uploadedFile.Location,
-          uploadedFile.Key,
-          activityId,
-          user,
-        ),
-      );
-
-      await Promise.all(storePromises);
+      await this.enqueueActivityImageUploads(activityId, files, user);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : undefined;
       this.logService.error(
         `Failed to upload activity images: ${errorMessage}${errorCode ? ` (code: ${errorCode})` : ''}`,
       );
-      // Attempt cleanup of uploaded files
-      // await this.cleanupFailedUploads(files, activityId, userId);
       throw new InternalServerErrorException('Failed to upload images');
     }
+  }
+
+  private async enqueueActivityImageUploads(
+    activityId: number,
+    files: Express.Multer.File[],
+    user: User,
+  ): Promise<void> {
+    await Promise.all(
+      files.map(async (file) => {
+        const tempFilePath = join(tmpdir(), `${uuidv4()}-${file.originalname}`);
+        await writeFile(tempFilePath, file.buffer);
+
+        const imageFile = await this.imageFileService.createPendingImageFile(activityId, user);
+
+        await this.imageQueueService.enqueueImageUpload({
+          activityId,
+          imageFileId: imageFile.id,
+          tempFilePath,
+          userId: user.id,
+          originalFilename: file.originalname,
+        });
+      }),
+    );
   }
 
   // private async cleanupFailedUploads(
@@ -524,15 +502,16 @@ export class ActivityService {
   private async groupImagesByActivityId(
     imageFiles: ImageFile[],
   ): Promise<Map<number, ImageUrlDto[]>> {
-    const grouped = new Map<number, { signedUrl: string; rawUrl: string }[]>();
+    const grouped = new Map<number, ImageUrlDto[]>();
 
     for (const img of imageFiles) {
       if (!grouped.has(img.activity_id)) {
         grouped.set(img.activity_id, []);
       }
       grouped.get(img.activity_id)!.push({
-        signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
+        signedUrl: img.key ? await this.imageUploadService.getImageStreamFromS3(img.key) : null,
         rawUrl: img.url,
+        status: img.status,
       });
     }
 
@@ -545,8 +524,9 @@ export class ActivityService {
         (await this.imageFileService.fetchImageFilesById(activityId, userId)) || [];
       const imageUrls = await Promise.all(
         imageFiles.map(async (img) => ({
-          signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
+          signedUrl: img.key ? await this.imageUploadService.getImageStreamFromS3(img.key) : null,
           rawUrl: img.url,
+          status: img.status,
         })),
       );
       return imageUrls;
@@ -560,10 +540,7 @@ export class ActivityService {
     }
   }
 
-  private mapToActivityResponse(
-    activity: Activity,
-    imageUrls: { signedUrl: string; rawUrl: string }[],
-  ): ActivityResponseDto {
+  private mapToActivityResponse(activity: Activity, imageUrls: ImageUrlDto[]): ActivityResponseDto {
     return {
       id: activity.id,
       activityTitle: activity.activity_title,

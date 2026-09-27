@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { UploadService } from '../../upload/service/upload.service';
 import { ImageFile } from '../entities/image-file.entity';
+import { ImageProcessingStatus } from '../enum/image-processing-status.enum';
 
 @Injectable()
 export class ImageFileService {
@@ -20,9 +21,21 @@ export class ImageFileService {
       key: imageKey,
       activity_id: activityId,
       user,
+      status: ImageProcessingStatus.COMPLETED,
     });
     const image = await this.imageFileRepository.save(imageFile);
     return image;
+  }
+
+  async createPendingImageFile(activityId: number, user: User): Promise<ImageFile> {
+    const imageFile = this.imageFileRepository.create({
+      url: null,
+      key: null,
+      activity_id: activityId,
+      user,
+      status: ImageProcessingStatus.PENDING,
+    });
+    return this.imageFileRepository.save(imageFile);
   }
 
   async deleteImageFile(userId: string, activityId: number): Promise<void> {
@@ -70,7 +83,7 @@ export class ImageFileService {
     return await Promise.all(
       files.map(async (img) => ({
         ...img,
-        signedUrl: await this.imageUploadService.getImageStreamFromS3(img.key),
+        signedUrl: img.key ? await this.imageUploadService.getImageStreamFromS3(img.key) : null,
       })),
     );
   }
