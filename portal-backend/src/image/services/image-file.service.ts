@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/User.entity';
 import { Repository } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { UploadService } from '../../upload/service/upload.service';
 import { ImageFile } from '../entities/image-file.entity';
 
@@ -76,5 +77,16 @@ export class ImageFileService {
 
   async deleteSingleImageFile(imageFile: ImageFile): Promise<void> {
     await this.imageFileRepository.remove(imageFile);
+  }
+
+  async updateImageFile(
+    imageFileId: number,
+    changes: QueryDeepPartialEntity<ImageFile>,
+  ): Promise<void> {
+    await this.imageFileRepository.update(imageFileId, changes);
+  }
+
+  async deleteImageFileById(imageFileId: number): Promise<void> {
+    await this.imageFileRepository.delete(imageFileId);
   }
 }
