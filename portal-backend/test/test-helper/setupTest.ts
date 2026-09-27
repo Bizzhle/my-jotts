@@ -103,6 +103,7 @@ jest.mock('@nestjs/bullmq', () => {
   return {
     BullModule,
     InjectQueue: () => Inject(queueToken),
+    OnWorkerEvent: () => () => undefined,
     Processor: () => () => undefined,
     WorkerHost: class WorkerHost {},
   };
