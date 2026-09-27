@@ -1,14 +1,15 @@
-import { DeleteOutline } from "@mui/icons-material";
+import { DeleteOutline, ErrorOutline } from "@mui/icons-material";
 import {
-  Box,
-  Card,
-  CardActionArea,
-  CardActions,
-  CardContent,
-  CardMedia,
-  IconButton,
-  Rating,
-  Typography,
+    Box,
+    Card,
+    CardActionArea,
+    CardActions,
+    CardContent,
+    CardMedia,
+    CircularProgress,
+    IconButton,
+    Rating,
+    Typography,
 } from "@mui/material";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -25,6 +26,7 @@ interface CardProps {
 export default function ActivityCard({ value, onDelete, error }: CardProps) {
   const navigate = useNavigate();
   const imageUrl = value.imageUrls?.[0]?.signedUrl;
+  const imageStatus = value.imageUrls?.[0]?.status?.toUpperCase();
   const [open, setOpen] = useState(false);
 
   const handleCardClick = () => {
@@ -61,7 +63,7 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
           flexDirection: { xs: "column", sm: "row" },
         }}
       >
-        {imageUrl && (
+        {imageUrl ? (
           <CardMedia
             component="img"
             image={imageUrl}
@@ -74,7 +76,34 @@ export default function ActivityCard({ value, onDelete, error }: CardProps) {
               typography: "body2",
             }}
           />
-        )}
+        ) : imageStatus === "PENDING" || imageStatus === "PROCESSING" ? (
+          <Box
+            sx={{
+              width: { xs: "100%", sm: 140 },
+              height: 140,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "action.hover",
+            }}
+          >
+            <CircularProgress size={26} aria-label="Processing image" />
+          </Box>
+        ) : imageStatus === "FAILED" ? (
+          <Box
+            sx={{
+              width: { xs: "100%", sm: 140 },
+              height: 140,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "error.50",
+              color: "error.main",
+            }}
+          >
+            <ErrorOutline aria-label="Image processing failed" />
+          </Box>
+        ) : null}
 
         <CardContent
           sx={{

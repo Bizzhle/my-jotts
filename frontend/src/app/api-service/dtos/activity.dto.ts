@@ -1,7 +1,18 @@
 export interface ImageUrl {
-  signedUrl: string;
-  rawUrl: string;
+  signedUrl: string | null;
+  rawUrl: string | null;
+  status: ImageProcessingStatus;
 }
+
+export type ImageProcessingStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED"
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed";
 
 export interface ActivityResponseDto {
   id: number;
