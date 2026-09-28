@@ -1,6 +1,7 @@
 export enum QueueName {
   EMAIL = 'email',
   IMAGE_PROCESSING = 'image-processing',
+  DEAD_LETTER = 'dead-letter',
 }
 
 export enum EmailJobName {

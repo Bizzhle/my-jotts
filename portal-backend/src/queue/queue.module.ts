@@ -2,6 +2,8 @@ import { BullModule } from '@nestjs/bullmq';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EnvVars } from '../envvars';
+import { QueueName } from './constants/queue.constants';
+import { DeadLetterService } from './dead-letter.service';
 
 @Global()
 @Module({
@@ -19,6 +21,13 @@ import { EnvVars } from '../envvars';
         },
       }),
     }),
+    BullModule.registerQueue(
+      { name: QueueName.EMAIL },
+      { name: QueueName.IMAGE_PROCESSING },
+      { name: QueueName.DEAD_LETTER },
+    ),
   ],
+  providers: [DeadLetterService],
+  exports: [BullModule, DeadLetterService],
 })
 export class QueueModule {}
