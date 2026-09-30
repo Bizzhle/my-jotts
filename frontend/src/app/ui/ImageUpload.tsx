@@ -1,5 +1,5 @@
 import { HighlightOff } from "@mui/icons-material";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, IconButton, Typography } from "@mui/material";
 import React from "react";
 import { ImageUrl } from "../api-service/dtos/activity.dto";
 import { handleFileCompression } from "../utils/compressImage";
@@ -77,18 +77,40 @@ export default function ImageUpload({
           <Box display="flex" gap={2} flexWrap="wrap">
             {existingImages.map((imageUrl, index) => (
               <Box
-                key={imageUrl.signedUrl}
+                key={imageUrl.rawUrl ?? `image-${index}`}
                 position="relative"
                 width={100}
                 height={100}
               >
-                <img
-                  src={imageUrl.signedUrl}
-                  alt={`Activity image ${index + 1}`}
-                  className="activity-form-image"
-                />
+                {imageUrl.signedUrl ? (
+                  <img
+                    src={imageUrl.signedUrl}
+                    alt={`Activity image ${index + 1}`}
+                    className="activity-form-image"
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      width: 100,
+                      height: 100,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      bgcolor: "action.hover",
+                    }}
+                  >
+                    {imageUrl.status.toUpperCase() === "FAILED" ? (
+                      <Typography color="error" variant="caption">
+                        Failed
+                      </Typography>
+                    ) : (
+                      <CircularProgress size={22} />
+                    )}
+                  </Box>
+                )}
                 <IconButton
-                  onClick={() => onRemoveExisting(imageUrl)}
+                  onClick={() => imageUrl.rawUrl && onRemoveExisting(imageUrl)}
+                  disabled={!imageUrl.rawUrl}
                   sx={{
                     position: "absolute",
                     top: -8,

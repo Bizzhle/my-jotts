@@ -1,11 +1,11 @@
 import {
-  Box,
-  Breadcrumbs,
-  Button,
-  Container,
-  Paper,
-  Rating,
-  Typography,
+    Box,
+    Breadcrumbs,
+    Button,
+    Container,
+    Paper,
+    Rating,
+    Typography,
 } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -25,6 +25,21 @@ export default function ActivityDetail() {
     fetchActivity();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const hasImagesInProgress = activityData?.imageUrls?.some((image) => {
+      const status = image.status.toUpperCase();
+      return status === "PENDING" || status === "PROCESSING";
+    });
+
+    if (!hasImagesInProgress) return;
+
+    const intervalId = window.setInterval(() => {
+      void fetchActivity();
+    }, 3000);
+
+    return () => window.clearInterval(intervalId);
+  }, [activityData?.imageUrls, fetchActivity]);
 
   function handleClose() {
     setActivityFormOpen(false);

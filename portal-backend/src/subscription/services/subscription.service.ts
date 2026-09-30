@@ -27,7 +27,7 @@ export class SubscriptionService {
   ) {
     const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     this.stripe = new Stripe(secretKey, {
-      apiVersion: '2025-09-30.clover',
+      apiVersion: '2025-10-29.clover',
     });
     this.webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
   }

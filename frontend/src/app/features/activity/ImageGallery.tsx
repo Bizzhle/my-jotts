@@ -3,20 +3,24 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
+  CircularProgress,
   IconButton,
   ImageList,
   ImageListItem,
   Modal,
+  Typography,
 } from "@mui/material";
 import { useState } from "react";
+import { ImageUrl } from "../../api-service/dtos/activity.dto";
 
 interface ImageGalleryProps {
-  images: { signedUrl: string }[];
+  images: ImageUrl[];
 }
 
 export default function ImageGallery({ images }: ImageGalleryProps) {
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedImageUrl = images[selectedIndex]?.signedUrl;
 
   const handleOpen = (index: number) => {
     setSelectedIndex(index);
@@ -39,20 +43,47 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
         {images.map((img, idx) => (
           <ImageListItem
             key={idx}
-            onClick={() => handleOpen(idx)}
-            sx={{ cursor: "pointer" }}
+            onClick={() => img.signedUrl && handleOpen(idx)}
+            sx={{ cursor: img.signedUrl ? "pointer" : "default" }}
           >
-            <Box
-              component="img"
-              src={img.signedUrl}
-              alt={`Activity image ${idx + 1}`}
-              sx={{
-                width: "100%",
-                height: { xs: 180, sm: 200, md: 250 },
-                objectFit: "cover",
-              }}
-              loading="lazy"
-            />
+            {img.signedUrl ? (
+              <Box
+                component="img"
+                src={img.signedUrl}
+                alt={`Activity image ${idx + 1}`}
+                sx={{
+                  width: "100%",
+                  height: { xs: 180, sm: 200, md: 250 },
+                  objectFit: "cover",
+                }}
+                loading="lazy"
+              />
+            ) : (
+              <Box
+                sx={{
+                  height: { xs: 180, sm: 200, md: 250 },
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "column",
+                  gap: 1,
+                  bgcolor: "action.hover",
+                }}
+              >
+                {img.status.toUpperCase() === "FAILED" ? (
+                  <Typography color="error" variant="body2">
+                    Image processing failed
+                  </Typography>
+                ) : (
+                  <>
+                    <CircularProgress size={28} />
+                    <Typography variant="body2" color="text.secondary">
+                      Processing image...
+                    </Typography>
+                  </>
+                )}
+              </Box>
+            )}
           </ImageListItem>
         ))}
       </ImageList>
@@ -103,21 +134,14 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
               <ArrowBackIosNewIcon fontSize="large" />
             </IconButton>
           )}
-          <img
-            src={images[selectedIndex]?.signedUrl}
-            alt={`Full view ${selectedIndex + 1}`}
-            className="activity-image-large"
-            onClick={(e) => e.stopPropagation()}
-            // onTouchStart={(e) =>
-            //   ((e.currentTarget as any).touchStartX = e.touches[0].clientX)
-            // }
-            // onTouchEnd={(e) => {
-            //   const startX = (e.currentTarget as any).touchStartX;
-            //   const endX = e.changedTouches[0].clientX;
-            //   if (startX - endX > 50) handleSwipe("left");
-            //   else if (endX - startX > 50) handleSwipe("right");
-            // }}
-          />
+          {selectedImageUrl && (
+            <img
+              src={selectedImageUrl}
+              alt={`Full view ${selectedIndex + 1}`}
+              className="activity-image-large"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
           {selectedIndex < images.length - 1 && (
             <IconButton
               onClick={(e) => {

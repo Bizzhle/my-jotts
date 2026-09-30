@@ -58,6 +58,23 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Dead-letter queue
+
+List exhausted email and image jobs without displaying their payloads:
+
+```bash
+npm run queue:dead-letter -- list
+```
+
+Replay a retained source job or discard it and its dead-letter entry only after reviewing the failure:
+
+```bash
+npm run queue:dead-letter -- replay <dead-letter-job-id> --confirm
+npm run queue:dead-letter -- acknowledge <dead-letter-job-id> --confirm
+```
+
+Replay reuses the original failed job and resets its attempt counters. Email reset and verification links may have expired; inspect the email flow before replaying. Acknowledgement removes a still-failed source job, but retains it if it has completed successfully.
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).

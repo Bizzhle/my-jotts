@@ -1,13 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { AppLoggerService } from '../../../logger/services/app-logger.service';
 import { PasswordResetToken } from '../../../users/entities/password-reset-token.entity';
 import { UserAccountRepository } from '../../../users/repositories/user-account.repository';
 import { UsersService } from '../../../users/services/user-service/users.service';
 import { UserSessionService } from '../../../users/services/user-session/user-session.service';
-import { AppLoggerService } from '../../../logger/services/app-logger.service';
 import { MailerService } from '../../../utils/services/mailer.services';
 import { AuthService } from '../auth.service';
 import { PasswordService } from '../password.service';
+
+jest.mock('@nestjs/bullmq', () => ({
+  InjectQueue: () => () => undefined,
+}));
 
 jest.mock('../../../../auth', () => ({
   auth: {

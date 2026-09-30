@@ -14,6 +14,7 @@ import { CertificateModule } from '../certificates/certificate.module';
 import { ImageModule } from '../image/image.module';
 import { LogsModule } from '../logger/logs.module';
 import { LogsMiddleware } from '../logger/middlewares/log.middleware';
+import { QueueModule } from '../queue/queue.module';
 import { SubscriptionModule } from '../subscription/subscription.module';
 import { SupportModule } from '../support/support.module';
 import { UploadModule } from '../upload/upload.module';
@@ -36,6 +37,7 @@ import { RequestContextMiddleware } from './middleware/request-context.middlewar
     UploadModule,
     LogsModule,
     ImageModule,
+    QueueModule,
     JwtModule.register({
       global: true,
     }),

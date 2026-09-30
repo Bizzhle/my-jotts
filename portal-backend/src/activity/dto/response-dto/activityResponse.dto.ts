@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Category } from '../../../category/entities/category.entity';
+import { ImageProcessingStatus } from '../../../image/enum/image-processing-status.enum';
 
 export type ActivityDTO = {
   category: Category;
@@ -44,16 +45,18 @@ export class ActivityResponseDto {
   dateUpdated: Date;
 
   @ApiProperty({
-    description: 'Array of image objects with signed and raw URLs',
+    description:
+      'Array of image objects with signed and raw URLs. Images still being processed have status "PENDING"/"PROCESSING" and null URLs until upload completes.',
     type: 'array',
     items: {
       type: 'object',
       properties: {
-        signedUrl: { type: 'string' },
-        rawUrl: { type: 'string' },
+        signedUrl: { type: 'string', nullable: true },
+        rawUrl: { type: 'string', nullable: true },
+        status: { enum: Object.values(ImageProcessingStatus), type: 'string' },
       },
     },
     required: false,
   })
-  imageUrls: { signedUrl: string; rawUrl: string }[];
+  imageUrls: { signedUrl: string | null; rawUrl: string | null; status: ImageProcessingStatus }[];
 }

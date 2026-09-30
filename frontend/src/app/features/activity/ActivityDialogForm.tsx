@@ -1,17 +1,17 @@
 import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ApiHandler, isApiError } from "../../api-service/ApiRequestManager";
 import {
-  ActivityResponseDto,
-  ImageUrl,
+    ActivityResponseDto,
+    ImageUrl,
 } from "../../api-service/dtos/activity.dto";
 import { SubCategoryData } from "../../api-service/dtos/category.dto";
 import { useActivities } from "../../contexts/hooks/useActivities";
@@ -187,7 +187,9 @@ export default function ActivityDialogForm({
 
   const handleRemoveExistingImage = (imageUrl: ImageUrl) => {
     setExistingImages((prev) => prev.filter((url) => url !== imageUrl));
-    setImagesToDelete((prev) => [...prev, imageUrl.rawUrl]);
+    if (imageUrl.rawUrl) {
+      setImagesToDelete((prev) => [...prev, imageUrl.rawUrl as string]);
+    }
   };
 
   const handleFilesChange = (newFiles: File[]) => {
