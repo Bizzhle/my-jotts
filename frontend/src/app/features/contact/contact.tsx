@@ -1,12 +1,13 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { env } from "../../../config/env";
 import { ApiHandler, isApiError } from "../../api-service/ApiRequestManager";
 import { SupportDto } from "../../api-service/dtos/support.dto";
 import { useBetterAuth } from "../../contexts/hooks/useBetterAuth";
 import ErrorAlert from "../../ui/ErrorAlert";
 
-const contactEmail = import.meta.env.VITE_DOMAIN_EMAIL;
+const contactEmail = env.REACT_APP_CONTACT_EMAIL;
 export const Contact = () => {
   const { authenticatedUser } = useBetterAuth();
   const [error, setError] = useState<string | undefined>("");
