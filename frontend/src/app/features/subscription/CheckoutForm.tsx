@@ -8,11 +8,12 @@ import {
 import { Appearance, loadStripe } from "@stripe/stripe-js";
 import React, { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { env } from "../../../config/env";
 import { LayoutContext } from "../../layout/LayoutContext";
 import ErrorAlert from "../../ui/ErrorAlert";
 
-const stripeKey = import.meta.env.VITE_API_STRIPE_PUBLISHABLE_KEY;
-const domain = import.meta.env.VITE_API_DOMAIN;
+const stripeKey = env.REACT_APP_API_STRIPE_PUBLISHABLE_KEY;
+const domain = env.REACT_APP_API_DOMAIN;
 const stripePromise = loadStripe(stripeKey);
 
 const CheckoutForm: React.FC = () => {
