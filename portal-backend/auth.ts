@@ -30,7 +30,7 @@ const trustedOrigins = [
 ];
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-09-30.clover', // Latest API version as of Stripe SDK v19
+  apiVersion: '2025-10-29.clover', // Latest API version as of Stripe SDK v19
 });
 
 const mapSubscriptionPlanToRole = (plan: string): keyof typeof roles => {
