@@ -13,8 +13,8 @@ const env = dotenv.config({ path: path.resolve(__dirname, ".env") }).parsed;
 
 // Whitelist only safe keys for frontend
 const allowedKeys = [
-  "VITE_API_URL",
-  "VITE_STRIPE_PUBLISHABLE_KEY",
+  "REACT_APP_API_URL",
+  "REACT_APP_API_STRIPE_PUBLISHABLE_KEY",
   "VITE_ANALYTICS_ID",
 ];
 
