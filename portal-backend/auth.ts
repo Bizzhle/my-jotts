@@ -2,12 +2,24 @@ import { stripe } from '@better-auth/stripe';
 import { typeormAdapter } from '@hedystia/better-auth-typeorm';
 import { betterAuth } from 'better-auth';
 import { admin as adminPlugin, openAPI } from 'better-auth/plugins';
+import { Queue } from 'bullmq';
 import Stripe from 'stripe';
 import { AppDataSource } from './sql/data-source';
 import { BetterAuthLoggerPlugin } from './src/logger/services/log-plugin';
 import { ac, roles } from './src/permissions/permissions';
-import { loadTemplate } from './src/utils/services/load-template-config';
-import { sendEmail } from './src/utils/services/transporter';
+import {
+  QueueName,
+  SEND_PASSWORD_RESET,
+  SEND_VERIFICATION_EMAIL,
+} from './src/queue/constants/queue.constants';
+
+const emailQueue = new Queue(QueueName.EMAIL, {
+  connection: {
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: Number(process.env.REDIS_PORT ?? 6379),
+    ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
+  },
+});
 
 const trustedOrigins = [
   'http://localhost:5173',
@@ -18,7 +30,7 @@ const trustedOrigins = [
 ];
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-09-30.clover', // Latest API version as of Stripe SDK v19
+  apiVersion: '2025-10-29.clover', // Latest API version as of Stripe SDK v19
 });
 
 const mapSubscriptionPlanToRole = (plan: string): keyof typeof roles => {
@@ -69,27 +81,28 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-    sendResetPassword: async ({ user, url, token }) => {
-      const frontendUrl = process.env.FRONTEND_URL;
-      const callbackURL = `${frontendUrl}/reset-password?token=${token}`;
-      const html = await loadTemplate('reset-password.template', {
-        emailAddress: user.email,
-        url: callbackURL,
-      });
-      await sendEmail(user.email, 'Reset your password', html);
+    sendResetPassword: async ({ user, url }) => {
+      await emailQueue.add(
+        SEND_PASSWORD_RESET,
+        {
+          to: user.email,
+          resetLink: url,
+        },
+        { attempts: 3, backoff: { type: 'exponential', delay: 2000 } },
+      );
     },
   },
   emailVerification: {
     sendOnSignUp: true, // Send verification email on signup
     autoSignInAfterVerification: true, // Optional: auto sign-in after verification
-    sendVerificationEmail: async ({ user, url, token }, request) => {
+    sendVerificationEmail: async ({ user, token }, request) => {
       const frontendUrl = process.env.FRONTEND_URL;
-      const callbackURL = `${frontendUrl}/verify-email?token=${token}`;
-      const html = await loadTemplate('email-verification.template', {
-        emailAddress: user.email,
-        url: callbackURL,
-      });
-      await sendEmail(user.email, 'Verify your email', html);
+      const url = `${frontendUrl}/verify-email?token=${token}`;
+      await emailQueue.add(
+        SEND_VERIFICATION_EMAIL,
+        { to: user.email, url },
+        { attempts: 3, backoff: { type: 'exponential', delay: 2000 } },
+      );
     },
   },
   trustedOrigins,

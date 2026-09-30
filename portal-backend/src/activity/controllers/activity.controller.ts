@@ -52,7 +52,11 @@ export class ActivityController {
     summary: 'Creates an activity',
     description: 'An activity is created by a user',
   })
-  @ApiOkResponse({ description: 'The Activity has been successfully created.' })
+  @ApiOkResponse({
+    description:
+      'The Activity has been successfully created. Uploaded images may be returned with status "PENDING"/"PROCESSING" and a null url until processing completes.',
+    type: ActivityResponseDto,
+  })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })
@@ -153,7 +157,11 @@ export class ActivityController {
     summary: 'Updates an activity',
     description: 'An activity is updated by a user',
   })
-  @ApiOkResponse({ description: 'The Activity has been successfully updated.' })
+  @ApiOkResponse({
+    description:
+      'The Activity has been successfully updated. Uploaded images may be returned with status "PENDING"/"PROCESSING" and a null url until processing completes.',
+    type: ActivityResponseDto,
+  })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'User not logged in or invalid credentials' })
   @ApiInternalServerErrorResponse({ description: 'Server unavailable' })

@@ -71,6 +71,21 @@ services:
     ports:
       - "5432"
 
+  redis:
+    image: redis:8.6.6
+    container_name: redis
+    restart: always
+    ports:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    entrypoint: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    
+
   adminer:
     restart: always
     image: adminer
@@ -91,6 +106,7 @@ services:
 
 volumes:
   db_data: {}
+  redis_data: {}
 
 networks:
   my-jotts:

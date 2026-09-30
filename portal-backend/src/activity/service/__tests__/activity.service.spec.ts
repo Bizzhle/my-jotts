@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 import { CategoryService } from '../../../category/services/category.service';
 import { ImageFileService } from '../../../image/services/image-file.service';
+import { ImageQueueService } from '../../../image/services/image-queue.service';
 import { AppLoggerService } from '../../../logger/services/app-logger.service';
 import { SubscriptionService } from '../../../subscription/services/subscription.service';
 import { UploadService } from '../../../upload/service/upload.service';
@@ -12,6 +13,14 @@ import { ActivityController } from '../../controllers/activity.controller';
 import { CreateActivityDto } from '../../dto/create-activity.dto';
 import { ActivityRepository } from '../../repositories/activity.repository';
 import { ActivityService } from '../activity.service';
+
+jest.mock('@nestjs/bullmq', () => ({
+  InjectQueue: () => () => undefined,
+}));
+
+jest.mock('fs/promises', () => ({
+  writeFile: jest.fn().mockResolvedValue(undefined),
+}));
 
 jest.mock('../../../../auth', () => ({
   auth: {
@@ -152,6 +161,7 @@ describe('ActivityService', () => {
   let activityRepository;
   let categoryService;
   let imageFileService;
+  let imageQueueService;
   let uploadService;
   let usersService;
   let subscriptionService;
@@ -224,9 +234,17 @@ describe('ActivityService', () => {
           provide: ImageFileService,
           useValue: {
             storeImageFile: jest.fn(),
+            createPendingImageFile: jest.fn(),
             getImageFileById: jest.fn(),
             fetchImageFilesById: jest.fn(),
             fetchImageFilesByActivityIds: jest.fn(),
+          },
+        },
+        {
+          provide: ImageQueueService,
+          useValue: {
+            enqueueImageUpload: jest.fn(),
+            enqueueImageDelete: jest.fn(),
           },
         },
         {
@@ -266,6 +284,7 @@ describe('ActivityService', () => {
     usersService = module.get<UsersService>(UsersService);
     categoryService = module.get<CategoryService>(CategoryService);
     imageFileService = module.get<ImageFileService>(ImageFileService);
+    imageQueueService = module.get<ImageQueueService>(ImageQueueService);
     uploadService = module.get<UploadService>(UploadService);
     subscriptionService = module.get<SubscriptionService>(SubscriptionService);
     configService = module.get<ConfigService>(ConfigService);
@@ -514,22 +533,7 @@ describe('ActivityService', () => {
       } as Express.Multer.File,
     ];
 
-    const mockUploadResults = [
-      {
-        Location:
-          'https://s3.amazonaws.com/bucket/users/user-id/activities/1/uuid-updated-image-1.jpg',
-        Key: 'users/user-id/activities/1/uuid-updated-image-1.jpg',
-        ETag: '"etag-updated-1"',
-        Bucket: 'bucket',
-      },
-      {
-        Location:
-          'https://s3.amazonaws.com/bucket/users/user-id/activities/1/uuid-updated-image-2.png',
-        Key: 'users/user-id/activities/1/uuid-updated-image-2.png',
-        ETag: '"etag-updated-2"',
-        Bucket: 'bucket',
-      },
-    ];
+    const mockPendingImageFiles = [{ id: 101 }, { id: 102 }];
 
     usersService.getUserByEmail.mockResolvedValue(user);
     activityRepository.getActivityByUserIdAndActivityId.mockResolvedValue(activity);
@@ -539,38 +543,32 @@ describe('ActivityService', () => {
       activity_title: updateDto.activityTitle,
     });
 
-    uploadService.upload
-      .mockResolvedValueOnce(mockUploadResults[0])
-      .mockResolvedValueOnce(mockUploadResults[1]);
-
-    imageFileService.storeImageFile.mockResolvedValue(undefined);
+    imageFileService.createPendingImageFile
+      .mockResolvedValueOnce(mockPendingImageFiles[0])
+      .mockResolvedValueOnce(mockPendingImageFiles[1]);
+    imageQueueService.enqueueImageUpload.mockResolvedValue(undefined);
 
     await service.updateActivity(activity.id, updateDto, user.email, req.headers, mockFiles);
 
     expect(activityRepository.updateActivity).toHaveBeenCalled();
-    expect(uploadService.upload).toHaveBeenCalledTimes(2);
-    expect(uploadService.upload).toHaveBeenCalledWith({
-      file: mockFiles[0],
-      userId: user.id,
-      activityId: activity.id,
-    });
-    expect(uploadService.upload).toHaveBeenCalledWith({
-      file: mockFiles[1],
-      userId: user.id,
-      activityId: activity.id,
-    });
-    expect(imageFileService.storeImageFile).toHaveBeenCalledTimes(2);
-    expect(imageFileService.storeImageFile).toHaveBeenCalledWith(
-      mockUploadResults[0].Location,
-      mockUploadResults[0].Key,
-      activity.id,
-      user,
+    expect(imageFileService.createPendingImageFile).toHaveBeenCalledTimes(2);
+    expect(imageFileService.createPendingImageFile).toHaveBeenCalledWith(activity.id, user);
+    expect(imageQueueService.enqueueImageUpload).toHaveBeenCalledTimes(2);
+    expect(imageQueueService.enqueueImageUpload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activityId: activity.id,
+        imageFileId: mockPendingImageFiles[0].id,
+        userId: user.id,
+        originalFilename: mockFiles[0].originalname,
+      }),
     );
-    expect(imageFileService.storeImageFile).toHaveBeenCalledWith(
-      mockUploadResults[1].Location,
-      mockUploadResults[1].Key,
-      activity.id,
-      user,
+    expect(imageQueueService.enqueueImageUpload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activityId: activity.id,
+        imageFileId: mockPendingImageFiles[1].id,
+        userId: user.id,
+        originalFilename: mockFiles[1].originalname,
+      }),
     );
   });
 
