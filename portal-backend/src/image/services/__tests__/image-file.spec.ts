@@ -65,6 +65,7 @@ describe('ImageFileService', () => {
         url: 'https://s3.amazonaws.com/bucket/image.jpg',
         key: 'uploads/image-123.jpg',
         activity_id: 456,
+        status: 'COMPLETED',
         user: mockUser,
       });
       expect(imageFileRepository.save).toHaveBeenCalledWith(mockImageFile);
