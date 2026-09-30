@@ -1,11 +1,12 @@
 import { mkdtemp, readFile, rm, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { ImageJobName } from '../../../queue/constants/queue.constants';
+import { ImageJobName, QueueName } from '../../../queue/constants/queue.constants';
 import { ImageProcessingStatus } from '../../enum/image-processing-status.enum';
 import { ImageProcessingProcessor } from '../image-processing.processor';
 
 jest.mock('@nestjs/bullmq', () => ({
+  InjectQueue: () => () => undefined,
   OnWorkerEvent: () => () => undefined,
   Processor: () => () => undefined,
   WorkerHost: class WorkerHost {},
@@ -16,6 +17,7 @@ describe('ImageProcessingProcessor', () => {
   let imageCompressionService: { compress: jest.Mock };
   let uploadService: { upload: jest.Mock; deleteUploadFile: jest.Mock };
   let imageFileService: { updateImageFile: jest.Mock; deleteImageFileById: jest.Mock };
+  let deadLetterService: { recordFailure: jest.Mock };
   let tempDirectory: string;
 
   beforeEach(async () => {
@@ -38,10 +40,13 @@ describe('ImageProcessingProcessor', () => {
       updateImageFile: jest.fn().mockResolvedValue(undefined),
       deleteImageFileById: jest.fn().mockResolvedValue(undefined),
     };
+    deadLetterService = { recordFailure: jest.fn().mockResolvedValue(undefined) };
     processor = new ImageProcessingProcessor(
       imageCompressionService as never,
       uploadService as never,
       imageFileService as never,
+      { log: jest.fn(), warn: jest.fn(), error: jest.fn() } as never,
+      deadLetterService as never,
     );
   });
 
@@ -106,11 +111,18 @@ describe('ImageProcessingProcessor', () => {
     await expect(readFile(tempFilePath)).resolves.toEqual(Buffer.from('original'));
 
     await processor.handleFailedJob({ ...job, attemptsMade: 1 } as never, new Error('retrying'));
+    expect(deadLetterService.recordFailure).not.toHaveBeenCalled();
     expect(imageFileService.updateImageFile).not.toHaveBeenCalledWith(22, {
       status: ImageProcessingStatus.FAILED,
     });
 
-    await processor.handleFailedJob({ ...job, attemptsMade: 3 } as never, new Error('exhausted'));
+    const exhaustedJob = { ...job, attemptsMade: 3 };
+    await processor.handleFailedJob(exhaustedJob as never, new Error('exhausted'));
+    expect(deadLetterService.recordFailure).toHaveBeenCalledWith(
+      QueueName.IMAGE_PROCESSING,
+      exhaustedJob,
+      expect.any(Error),
+    );
     expect(imageFileService.updateImageFile).toHaveBeenLastCalledWith(22, {
       status: ImageProcessingStatus.FAILED,
     });
@@ -127,5 +139,24 @@ describe('ImageProcessingProcessor', () => {
     expect(uploadService.deleteUploadFile.mock.invocationCallOrder[0]).toBeLessThan(
       imageFileService.deleteImageFileById.mock.invocationCallOrder[0],
     );
+  });
+
+  it('dead-letters exhausted image delete jobs', async () => {
+    const job = {
+      id: 'image-delete-1',
+      name: ImageJobName.PROCESS_ACTIVITY_IMAGE_DELETE,
+      data: { imageFileId: 22, key: 'image.webp' },
+      opts: { attempts: 3 },
+      attemptsMade: 3,
+    };
+
+    await processor.handleFailedJob(job as never, new Error('S3 unavailable'));
+
+    expect(deadLetterService.recordFailure).toHaveBeenCalledWith(
+      QueueName.IMAGE_PROCESSING,
+      job,
+      expect.any(Error),
+    );
+    expect(imageFileService.updateImageFile).not.toHaveBeenCalled();
   });
 });

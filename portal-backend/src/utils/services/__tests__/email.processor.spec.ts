@@ -1,8 +1,10 @@
-import { EmailJobName } from '../../../queue/constants/queue.constants';
+import { EmailJobName, QueueName } from '../../../queue/constants/queue.constants';
 import { EmailProcessor } from '../email.processor';
 import { sendEmail } from '../transporter';
 
 jest.mock('@nestjs/bullmq', () => ({
+  InjectQueue: () => () => undefined,
+  OnWorkerEvent: () => () => undefined,
   Processor: () => () => undefined,
   WorkerHost: class WorkerHost {},
 }));
@@ -15,11 +17,16 @@ const sendEmailMock = sendEmail as jest.Mock;
 
 describe('EmailProcessor', () => {
   let processor: EmailProcessor;
+  let deadLetterService: { recordFailure: jest.Mock };
 
   beforeEach(() => {
     sendEmailMock.mockReset();
     sendEmailMock.mockResolvedValue({ messageId: 'message-1' });
-    processor = new EmailProcessor();
+    deadLetterService = { recordFailure: jest.fn().mockResolvedValue(undefined) };
+    processor = new EmailProcessor(
+      deadLetterService as never,
+      { log: jest.fn(), error: jest.fn() } as never,
+    );
   });
 
   it('sends a reset password confirmation email with the templated body', async () => {
@@ -119,5 +126,26 @@ describe('EmailProcessor', () => {
       processor.process({ id: 'job-7', name: 'unknown-job', data: {} } as never),
     ).rejects.toThrow('Unknown job name: unknown-job');
     expect(sendEmailMock).not.toHaveBeenCalled();
+  });
+
+  it('dead-letters only email jobs that exhausted their attempts', async () => {
+    const job = {
+      id: 'email-job-1',
+      name: EmailJobName.SEND_PASSWORD_RESET,
+      data: { to: 'user@example.com', resetLink: 'https://app/reset?token=secret' },
+      opts: { attempts: 3 },
+      attemptsMade: 2,
+    };
+
+    await processor.handleFailedJob(job as never, new Error('SMTP rejected private details'));
+    expect(deadLetterService.recordFailure).not.toHaveBeenCalled();
+
+    const exhaustedJob = { ...job, attemptsMade: 3 };
+    await processor.handleFailedJob(exhaustedJob as never, new Error('SMTP rejected'));
+    expect(deadLetterService.recordFailure).toHaveBeenCalledWith(
+      QueueName.EMAIL,
+      exhaustedJob,
+      expect.any(Error),
+    );
   });
 });

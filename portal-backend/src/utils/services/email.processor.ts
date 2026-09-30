@@ -1,10 +1,12 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger, NotFoundException } from '@nestjs/common';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
+import { NotFoundException } from '@nestjs/common';
 import { Job } from 'bullmq';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
 import * as path from 'path';
+import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { EmailJobName, QueueName } from '../../queue/constants/queue.constants';
+import { DeadLetterService } from '../../queue/dead-letter.service';
 import { sendEmail } from './transporter';
 
 export interface SendResetPasswordConfirmationPayload {
@@ -35,10 +37,15 @@ export interface SendVerificationEmailPayload {
 
 @Processor(QueueName.EMAIL)
 export class EmailProcessor extends WorkerHost {
-  private readonly logger = new Logger(EmailProcessor.name);
+  constructor(
+    private readonly deadLetterService: DeadLetterService,
+    private readonly appLogger: AppLoggerService,
+  ) {
+    super();
+  }
 
   async process(job: Job<any, any, string>): Promise<any> {
-    this.logger.log(`Processing email job ${job.id} of type ${job.name}`);
+    this.appLogger.log(`Processing email job ${job.id} of type ${job.name}`);
 
     switch (job.name) {
       case EmailJobName.SEND_RESET_PASSWORD_CONFIRMATION:
@@ -54,6 +61,16 @@ export class EmailProcessor extends WorkerHost {
       default:
         throw new Error(`Unknown job name: ${job.name}`);
     }
+  }
+
+  @OnWorkerEvent('failed')
+  async handleFailedJob(job: Job | undefined, error: Error): Promise<void> {
+    if (!job || job.attemptsMade < (job.opts.attempts ?? 1)) {
+      return;
+    }
+
+    this.appLogger.error(`Email job ${job.id} exhausted retries`);
+    await this.deadLetterService.recordFailure(QueueName.EMAIL, job, error);
   }
 
   private async handleResetPasswordConfirmation(payload: SendResetPasswordConfirmationPayload) {

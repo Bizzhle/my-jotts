@@ -4,6 +4,7 @@ import { readFile, rm } from 'fs/promises';
 import { parse } from 'path';
 import { AppLoggerService } from '../../logger/services/app-logger.service';
 import { ImageJobName, QueueName } from '../../queue/constants/queue.constants';
+import { DeadLetterService } from '../../queue/dead-letter.service';
 import { UploadService } from '../../upload/service/upload.service';
 import { ImageProcessingStatus } from '../enum/image-processing-status.enum';
 import { ImageCompressionService } from '../services/image-compression.service';
@@ -29,6 +30,7 @@ export class ImageProcessingProcessor extends WorkerHost {
     private readonly uploadService: UploadService,
     private readonly imageFileService: ImageFileService,
     private readonly logService: AppLoggerService,
+    private readonly deadLetterService: DeadLetterService,
   ) {
     super();
   }
@@ -92,7 +94,7 @@ export class ImageProcessingProcessor extends WorkerHost {
 
   @OnWorkerEvent('failed')
   async handleFailedJob(job: Job | undefined, error: Error): Promise<void> {
-    if (!job || job.name !== ImageJobName.PROCESS_ACTIVITY_IMAGE_UPLOAD) {
+    if (!job) {
       return;
     }
 
@@ -101,10 +103,20 @@ export class ImageProcessingProcessor extends WorkerHost {
       return;
     }
 
-    const payload = job.data as ProcessActivityImageUploadPayload;
-    this.logService.error(`Image upload job ${job.id} exhausted retries: ${error.message}`);
-    await this.imageFileService.updateImageFile(payload.imageFileId, {
-      status: ImageProcessingStatus.FAILED,
-    });
+    this.logService.error(`Image job ${job.id} exhausted retries: ${error.name}`);
+    const failureUpdates = [
+      this.deadLetterService.recordFailure(QueueName.IMAGE_PROCESSING, job, error),
+    ];
+
+    if (job.name === ImageJobName.PROCESS_ACTIVITY_IMAGE_UPLOAD) {
+      const payload = job.data as ProcessActivityImageUploadPayload;
+      failureUpdates.push(
+        this.imageFileService.updateImageFile(payload.imageFileId, {
+          status: ImageProcessingStatus.FAILED,
+        }),
+      );
+    }
+
+    await Promise.all(failureUpdates);
   }
 }
