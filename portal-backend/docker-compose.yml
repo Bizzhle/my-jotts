@@ -15,8 +15,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # networks:
-    #   - activity-moves
 
   db:
     container_name: portal_dbmodel
@@ -38,10 +36,6 @@ services:
       timeout: 5s
       retries: 12
       start_period: 10s
-    # networks:
-    #   - activity-moves
-    depends_on:
-      - redis
 
   redis:
     container_name: dev_redis
@@ -57,8 +51,6 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     entrypoint: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     
-    # networks:
-    #   - activity-moves
 
   adminer:
     restart: always
