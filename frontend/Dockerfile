@@ -5,15 +5,15 @@ LABEL description="Frontend for MyJotts"
 # Set the working directory
 WORKDIR /app
 
-COPY package.json package-lock.json ./ 
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # ---------- Build Stage ----------
 FROM base as builder
 
 COPY src ./src
 COPY public ./public
-COPY tsconfig*.json vite.config.ts index.html ./
+COPY tsconfig*.json vite.config.ts index.html generate-env.js ./
 
 # Copy environment variables used by Vite at build time
 COPY .env ./
