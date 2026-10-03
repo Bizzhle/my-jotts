@@ -1,1 +1,4 @@
-
+window.env = {
+  "REACT_APP_API_URL": "http://localhost:4000",
+  "REACT_APP_API_STRIPE_PUBLISHABLE_KEY": "pk_test_51JvVskDBaBvvlYIJfIEAORJevwHxMf75PSO4jYET6xe1wWq5zFkOiJhbMTN3RSl7Qwx9jpa2SpyoLJy50XVPeFCl00Q6QX1gzL"
+};
