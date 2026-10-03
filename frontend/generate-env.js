@@ -15,6 +15,8 @@ const env = dotenv.config({ path: path.resolve(__dirname, ".env") }).parsed;
 const allowedKeys = [
   "REACT_APP_API_URL",
   "REACT_APP_API_STRIPE_PUBLISHABLE_KEY",
+  "REACT_APP_API_DOMAIN",
+  "REACT_APP_CONTACT_EMAIL",
   "VITE_ANALYTICS_ID",
 ];
 
@@ -26,6 +28,6 @@ for (const key of allowedKeys) {
 // Write to public/env.js
 
 const envString = `window.env = ${JSON.stringify(publicEnv, null, 2)};`;
-fs.writeFileSync(path.resolve(__dirname, "frontend/public/env.js"), envString);
+fs.writeFileSync(path.resolve(__dirname, "public/env.js"), envString);
 
 console.log("✅ public/env.js generated");
