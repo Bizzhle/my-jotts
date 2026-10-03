@@ -4,7 +4,8 @@ export class AddStatusColumn1790410541342 implements MigrationInterface {
   name = 'AddStatusColumn1790410541342';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE "image_file" DROP COLUMN "status"`);
+    await queryRunner.query(`ALTER TABLE "image_file" DROP COLUMN IF EXISTS "status"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "public"."image_file_status_enum"`);
     await queryRunner.query(
       `CREATE TYPE "public"."image_file_status_enum" AS ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED')`,
     );

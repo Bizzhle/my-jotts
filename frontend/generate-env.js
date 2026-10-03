@@ -2,6 +2,7 @@
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+import process from "process";
 import { fileURLToPath } from "url";
 
 // Define __dirname for ES Modules
@@ -9,7 +10,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load from .env
-const env = dotenv.config({ path: path.resolve(__dirname, ".env") }).parsed;
+const env = {
+  ...dotenv.config({ path: path.resolve(__dirname, ".env") }).parsed,
+  ...process.env,
+};
 
 // Whitelist only safe keys for frontend
 const allowedKeys = [

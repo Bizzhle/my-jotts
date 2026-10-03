@@ -9,7 +9,7 @@ tasks:
   dev:start:
     desc: starts all docker containers as background services to enable local dev
     cmds:
-      - docker-compose -f docker-compose.dev.yml up -d
+      - docker-compose -f docker-compose.dev.yml up -d --build --remove-orphans
 
   dev:stop:
     desc: Stops dev docker container
