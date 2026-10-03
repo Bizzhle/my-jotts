@@ -24,11 +24,16 @@ jobs:
           username: ${{ secrets.HETZNER_SSH_USERNAME }}
           key: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
           script: |
+            set -euo pipefail
+
             echo "Deploying to production over SSH..."
-            set -e
+
             cd /root/app/my-jotts
 
+            echo "Fetching latest main..."
             git fetch origin main
+
+            echo "Validating required environment variables..."
 
             temp_dir="$(mktemp -d)"
             trap 'rm -rf "$temp_dir"' EXIT
@@ -62,6 +67,30 @@ jobs:
               [ -n "$frontend_missing" ] && printf 'Frontend missing:\n%s\n' "$frontend_missing"
               exit 1
             fi
+
+            echo "Environment validation passed."
+
+            echo "Proceeding with deployment..."
+
+            git log -1 --oneline origin/main
+
             git pull --ff-only origin main
+            
+            if [ -d traefik/acme.json ]; then
+              if ! rmdir traefik/acme.json; then
+                echo "::error::traefik/acme.json is a non-empty directory."
+                exit 1
+              fi
+            fi
+            [ -e traefik/acme.json ] || touch traefik/acme.json
+            if [ ! -f traefik/acme.json ]; then
+              echo "::error::traefik/acme.json must be a regular file."
+              exit 1
+            fi
+
             chmod 600 traefik/acme.json
+            echo "Validating Docker Compose configuration..."
+
+            docker compose -f docker-compose.yml config -q
             docker compose -f docker-compose.yml up -d --build --remove-orphans
+            echo "Deployment complete."
